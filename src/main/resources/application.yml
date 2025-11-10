@@ -1,0 +1,15 @@
+#?????? ?? -> ???? 8080 ???? ????, ???? ?????? ??.
+server:
+  port: 8080
+
+spring:
+  datasource:
+    # driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/dbp_week3?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    # url: jdbc:mysql://localhost:{port??}/{DB??}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: user_01
+    password: 1234
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  config-location: classpath:mybatis-config.xml

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>도서 정보 수정하기</title>
+</head>
+<body>
+  <form th:action="@{/goUpdate/{id}(id=${bookDetail.bookid})}" method="post" name="updateForm">
+      bookid : <input type="text" readonly="readonly" name="bookid" th:value="${bookDetail.bookid}">
+      <br>
+      bookname : <input type="text"  name="bookname" th:value="${bookDetail.bookname}">
+      <br>
+      publisher : <input type="text" name="publisher" th:value="${bookDetail.publisher}">
+      <br>
+      price : <input type="text"  name="price" th:value="${bookDetail.price}">
+      <br><br>
+      <input type="button" value="수정1" onclick="goUpdate()">
+      <button type="button" onclick="goList()">목록1</button>
+      <!-- button 태그를 form 태그 안에서 사용할 시 -->
+      <!-- type="button" 속성을 추가해줘야 일반 버튼처럼 사용 가능. -->
+      <!-- 속성 추가 안하고 아래의 '목록2', '수정2' 처럼 사용하면 form 태그 안의 button 태그는 기본값이 submit이다. -->
+  </form>
+  <br><br>
+  <!-- button 태그는 form 태그 밖에서 사용할 것 -->
+  <button onclick="goUpdate()">수정2</button>
+  <button onclick="goList()">목록2</button>
+</body>
+
+<script th:inline="javascript">
+    const goUpdate = () => { //수정한 거 저장하는 버튼
+        if (confirm("수정된 내용을 저장하시겠습니까?")) {
+            updateForm.submit();
+        }
+    }
+
+    // 목록으로 이동
+    const goList = () => {
+        location.href = "/list";
+    }
+</script>
+</html>
