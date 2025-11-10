@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>식재료 수정</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            max-width: 600px;
+        }
+        h1 {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input[readonly] {
+            background-color: #f0f0f0;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <h1>식재료 수정</h1>
+
+    <form th:action="@{/ingredient/update/{id}(id=${ingredient.ingredientId})}" method="post" name="updateForm">
+        <input type="hidden" name="ingredientId" th:value="${ingredient.ingredientId}">
+
+        <div class="form-group">
+            <label for="ingredientId">ID</label>
+            <input type="text" id="ingredientId" readonly="readonly" th:value="${ingredient.ingredientId}">
+        </div>
+
+        <div class="form-group">
+            <label for="ingredientName">식재료명 *</label>
+            <input type="text" id="ingredientName" name="ingredientName" required
+                   th:value="${ingredient.ingredientName}">
+        </div>
+
+        <div class="form-group">
+            <label for="categoryId">카테고리 *</label>
+            <select id="categoryId" name="categoryId" required>
+                <option th:each="category : ${categories}"
+                        th:value="${category.categoryId}"
+                        th:text="${category.categoryName}"
+                        th:selected="${category.categoryId == ingredient.categoryId}">
+                </option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="purchaseDate">구매일 *</label>
+            <input type="date" id="purchaseDate" name="purchaseDate" required
+                   th:value="${#temporals.format(ingredient.purchaseDate, 'yyyy-MM-dd')}">
+        </div>
+
+        <div class="form-group">
+            <label for="expiryDate">유통기한 *</label>
+            <input type="date" id="expiryDate" name="expiryDate" required
+                   th:value="${#temporals.format(ingredient.expiryDate, 'yyyy-MM-dd')}">
+        </div>
+
+        <div class="form-group">
+            <label for="quantity">수량</label>
+            <input type="text" id="quantity" name="quantity"
+                   th:value="${ingredient.quantity}"
+                   placeholder="예: 3개, 500g, 1L">
+        </div>
+
+        <div class="form-group">
+            <label for="memo">메모</label>
+            <textarea id="memo" name="memo" th:text="${ingredient.memo}"></textarea>
+        </div>
+
+        <button type="button" class="btn btn-primary" onclick="submitUpdate()">저장</button>
+        <button type="button" class="btn btn-secondary" onclick="goList()">취소</button>
+    </form>
+
+    <script>
+        function submitUpdate() {
+            if (confirm('수정된 내용을 저장하시겠습니까?')) {
+                updateForm.submit();
+            }
+        }
+
+        function goList() {
+            location.href = '/ingredient/list';
+        }
+    </script>
+</body>
+</html>

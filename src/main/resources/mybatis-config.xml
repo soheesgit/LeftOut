@@ -5,7 +5,13 @@
     <typeAliases>
         <typeAlias type="com.example.demo.TEST_001.controller.IndexController" alias="IndexController"></typeAlias>
 
-        <typeAlias type="com.example.demo.TEST_001.dto.BoardDTO" alias="board"></typeAlias>
+        <!-- 식재료 관리 시스템 -->
+        <typeAlias type="com.example.demo.TEST_001.dto.IngredientDTO" alias="ingredient"></typeAlias>
+        <typeAlias type="com.example.demo.TEST_001.dto.CategoryDTO" alias="category"></typeAlias>
+        <typeAlias type="com.example.demo.TEST_001.dto.IngredientDefaultExpiryDTO" alias="ingredientDefaultExpiry"></typeAlias>
+
+        <!-- 사용자 관리 -->
+        <typeAlias type="com.example.demo.TEST_001.dto.UserDTO" alias="user"></typeAlias>
 
     </typeAliases>
 </configuration>

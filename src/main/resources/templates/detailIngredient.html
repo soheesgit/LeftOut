@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>식재료 상세 정보</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            max-width: 600px;
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+            width: 30%;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-warning {
+            background-color: #ff9800;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.8;
+        }
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        .status-active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .status-consumed {
+            background-color: #9e9e9e;
+            color: white;
+        }
+        .d-day {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .expired {
+            color: red;
+        }
+        .expiring-soon {
+            color: orange;
+        }
+        .safe {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>식재료 상세 정보</h1>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <td th:text="${ingredient.ingredientId}"></td>
+        </tr>
+        <tr>
+            <th>식재료명</th>
+            <td th:text="${ingredient.ingredientName}"></td>
+        </tr>
+        <tr>
+            <th>카테고리</th>
+            <td th:text="${ingredient.categoryName}"></td>
+        </tr>
+        <tr>
+            <th>구매일</th>
+            <td th:text="${#temporals.format(ingredient.purchaseDate, 'yyyy-MM-dd')}"></td>
+        </tr>
+        <tr>
+            <th>유통기한</th>
+            <td th:text="${#temporals.format(ingredient.expiryDate, 'yyyy-MM-dd')}"></td>
+        </tr>
+        <tr>
+            <th>D-day</th>
+            <td>
+                <span class="d-day"
+                      th:classappend="${ingredient.daysUntilExpiry != null and ingredient.daysUntilExpiry < 0} ? 'expired' :
+                                     (${ingredient.daysUntilExpiry != null and ingredient.daysUntilExpiry <= 3} ? 'expiring-soon' : 'safe')"
+                      th:text="${ingredient.daysUntilExpiry != null and ingredient.daysUntilExpiry < 0} ?
+                               ('D+' + ${-ingredient.daysUntilExpiry} + ' (기한만료)') :
+                               (${ingredient.daysUntilExpiry != null and ingredient.daysUntilExpiry == 0} ? 'D-Day (오늘 만료)' :
+                               ('D-' + ${ingredient.daysUntilExpiry}))">
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <th>수량</th>
+            <td th:text="${ingredient.quantity} ?: '-'"></td>
+        </tr>
+        <tr>
+            <th>메모</th>
+            <td th:text="${ingredient.memo} ?: '-'"></td>
+        </tr>
+        <tr>
+            <th>상태</th>
+            <td>
+                <span class="status-badge"
+                      th:classappend="${ingredient.status == 'active'} ? 'status-active' : 'status-consumed'"
+                      th:text="${ingredient.status == 'active'} ? '활성' : '소비완료'">
+                </span>
+            </td>
+        </tr>
+        <tr th:if="${ingredient.consumeDate != null}">
+            <th>소비일</th>
+            <td th:text="${#temporals.format(ingredient.consumeDate, 'yyyy-MM-dd')}"></td>
+        </tr>
+    </table>
+
+    <div>
+        <button class="btn btn-secondary" onclick="goList()">목록</button>
+        <button class="btn btn-primary" onclick="goUpdate()">수정</button>
+        <button class="btn btn-warning" onclick="markAsConsumed()" th:if="${ingredient.status == 'active'}">다 먹음</button>
+        <button class="btn btn-danger" onclick="goDelete()">삭제</button>
+    </div>
+
+    <script th:inline="javascript">
+        const ingredientId = /*[[${ingredient.ingredientId}]]*/ 0;
+
+        function goList() {
+            location.href = '/ingredient/list';
+        }
+
+        function goUpdate() {
+            if (confirm('수정하시겠습니까?')) {
+                location.href = `/ingredient/update/${ingredientId}`;
+            }
+        }
+
+        function markAsConsumed() {
+            if (confirm('이 식재료를 "다 먹음" 처리하시겠습니까?\n(메인 목록에서는 보이지 않지만 통계에는 남습니다)')) {
+                location.href = `/ingredient/consume/${ingredientId}`;
+            }
+        }
+
+        function goDelete() {
+            if (confirm('정말 삭제하시겠습니까?\n삭제하면 복구할 수 없습니다.')) {
+                location.href = `/ingredient/delete/${ingredientId}`;
+                alert('삭제되었습니다.');
+            }
+        }
+    </script>
+</body>
+</html>

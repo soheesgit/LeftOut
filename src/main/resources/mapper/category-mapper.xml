@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="category">
+
+    <!-- 모든 카테고리 조회 -->
+    <select id="getAll" resultType="category">
+        SELECT
+            category_id as categoryId,
+            category_name as categoryName
+        FROM category
+        ORDER BY category_id ASC
+    </select>
+
+    <!-- 카테고리 상세 조회 -->
+    <select id="getById" parameterType="int" resultType="category">
+        SELECT
+            category_id as categoryId,
+            category_name as categoryName
+        FROM category
+        WHERE category_id = #{id}
+    </select>
+
+    <!-- 카테고리 추가 -->
+    <insert id="save" parameterType="category">
+        INSERT INTO category(category_name)
+        VALUES (#{categoryName})
+    </insert>
+
+    <!-- 카테고리 삭제 -->
+    <delete id="delete" parameterType="int">
+        DELETE FROM category
+        WHERE category_id = #{id}
+    </delete>
+
+</mapper>

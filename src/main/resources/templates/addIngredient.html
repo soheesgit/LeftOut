@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>식재료 추가</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            max-width: 600px;
+        }
+        h1 {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.8;
+        }
+        .info-box {
+            padding: 10px;
+            background-color: #e7f3fe;
+            border-left: 4px solid #2196F3;
+            margin: 10px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>식재료 추가</h1>
+
+    <form action="/ingredient/add" method="post" name="addForm">
+        <div class="form-group">
+            <label for="ingredientName">식재료명 *</label>
+            <input type="text" id="ingredientName" name="ingredientName" required
+                   placeholder="예: 계란, 우유, 당근"
+                   onchange="checkDefaultExpiry()">
+        </div>
+
+        <div id="defaultExpiryInfo" class="info-box">
+            <span id="defaultExpiryText"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="categoryId">카테고리 *</label>
+            <select id="categoryId" name="categoryId" required>
+                <option value="">선택하세요</option>
+                <option th:each="category : ${categories}"
+                        th:value="${category.categoryId}"
+                        th:text="${category.categoryName}">
+                </option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="purchaseDate">구매일 *</label>
+            <input type="date" id="purchaseDate" name="purchaseDate" required
+                   onchange="calculateExpiryDate()">
+        </div>
+
+        <div class="form-group">
+            <label for="expiryDate">유통기한 *</label>
+            <input type="date" id="expiryDate" name="expiryDate" required>
+            <small style="color: #666;">자동 계산된 날짜를 직접 수정할 수 있습니다.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="quantity">수량</label>
+            <input type="text" id="quantity" name="quantity"
+                   placeholder="예: 3개, 500g, 1L">
+        </div>
+
+        <div class="form-group">
+            <label for="memo">메모</label>
+            <textarea id="memo" name="memo"
+                      placeholder="추가 정보를 입력하세요 (선택사항)"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">저장</button>
+        <button type="button" class="btn btn-secondary" onclick="goList()">취소</button>
+    </form>
+
+    <script th:inline="javascript">
+        // 기본 유통기한 데이터
+        const defaultExpiryData = /*[[${defaultExpiryList}]]*/ [];
+        const defaultExpiryMap = {};
+
+        // Map 형태로 변환
+        defaultExpiryData.forEach(item => {
+            defaultExpiryMap[item.ingredientName] = {
+                days: item.defaultExpiryDays,
+                categoryId: item.categoryId
+            };
+        });
+
+        // 오늘 날짜를 기본값으로 설정
+        document.getElementById('purchaseDate').valueAsDate = new Date();
+
+        // 식재료명 입력 시 기본 유통기한 체크
+        function checkDefaultExpiry() {
+            const ingredientName = document.getElementById('ingredientName').value.trim();
+            const infoBox = document.getElementById('defaultExpiryInfo');
+            const infoText = document.getElementById('defaultExpiryText');
+
+            if (ingredientName && defaultExpiryMap[ingredientName]) {
+                const days = defaultExpiryMap[ingredientName].days;
+                const categoryId = defaultExpiryMap[ingredientName].categoryId;
+
+                infoText.textContent = `이 식재료의 평균 유통기한은 ${days}일입니다.`;
+                infoBox.style.display = 'block';
+
+                // 카테고리 자동 선택
+                if (categoryId) {
+                    document.getElementById('categoryId').value = categoryId;
+                }
+
+                // 유통기한 자동 계산
+                calculateExpiryDate();
+            } else {
+                infoBox.style.display = 'none';
+            }
+        }
+
+        // 유통기한 자동 계산
+        function calculateExpiryDate() {
+            const ingredientName = document.getElementById('ingredientName').value.trim();
+            const purchaseDate = document.getElementById('purchaseDate').value;
+
+            if (ingredientName && purchaseDate && defaultExpiryMap[ingredientName]) {
+                const days = defaultExpiryMap[ingredientName].days;
+                const purchase = new Date(purchaseDate);
+                const expiry = new Date(purchase);
+                expiry.setDate(expiry.getDate() + days);
+
+                // yyyy-MM-dd 형식으로 변환
+                const expiryDateStr = expiry.toISOString().split('T')[0];
+                document.getElementById('expiryDate').value = expiryDateStr;
+            }
+        }
+
+        function goList() {
+            location.href = '/ingredient/list';
+        }
+    </script>
+</body>
+</html>
