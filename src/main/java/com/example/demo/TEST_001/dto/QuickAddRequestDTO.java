@@ -10,5 +10,6 @@ import lombok.ToString;
 public class QuickAddRequestDTO {
     private String ingredientName;
     private Integer categoryId;
-    private String quantity;
+    private Double quantity;
+    private String unit;
 }

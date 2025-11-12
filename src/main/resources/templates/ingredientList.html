@@ -126,7 +126,7 @@
                                ('D-' + ${ingredient.daysUntilExpiry}))">
                 </span>
             </td>
-            <td th:text="${ingredient.quantity}"></td>
+            <td th:text="${ingredient.quantity != null ? ingredient.quantity + (ingredient.unit != null ? ingredient.unit : '') : '-'}"></td>
             <td th:text="${ingredient.memo}"></td>
             <td>
                 <a th:href="@{/ingredient/detail/{id}(id=${ingredient.ingredientId})}"

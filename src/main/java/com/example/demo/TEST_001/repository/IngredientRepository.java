@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @RequiredArgsConstructor
@@ -13,18 +15,24 @@ public class IngredientRepository {
     private final SqlSessionTemplate sql;
 
     // 식재료 목록 조회 (유통기한 임박순, active 상태만)
-    public List<IngredientDTO> getList() {
-        return sql.selectList("ingredient.getList");
+    public List<IngredientDTO> getList(Long userId) {
+        return sql.selectList("ingredient.getList", userId);
     }
 
     // 카테고리별 식재료 목록 조회
-    public List<IngredientDTO> getListByCategory(Integer categoryId) {
-        return sql.selectList("ingredient.getListByCategory", categoryId);
+    public List<IngredientDTO> getListByCategory(Long userId, Integer categoryId) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        params.put("categoryId", categoryId);
+        return sql.selectList("ingredient.getListByCategory", params);
     }
 
     // 식재료 상세 조회
-    public IngredientDTO detail(Integer id) {
-        return sql.selectOne("ingredient.detail", id);
+    public IngredientDTO detail(Long userId, Integer id) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        params.put("id", id);
+        return sql.selectOne("ingredient.detail", params);
     }
 
     // 식재료 추가
@@ -38,12 +46,18 @@ public class IngredientRepository {
     }
 
     // 식재료 소비 완료 처리
-    public void markAsConsumed(Integer id) {
-        sql.update("ingredient.markAsConsumed", id);
+    public void markAsConsumed(Long userId, Integer id) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        params.put("id", id);
+        sql.update("ingredient.markAsConsumed", params);
     }
 
     // 식재료 완전 삭제
-    public void delete(Integer id) {
-        sql.delete("ingredient.delete", id);
+    public void delete(Long userId, Integer id) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        params.put("id", id);
+        sql.delete("ingredient.delete", params);
     }
 }

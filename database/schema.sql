@@ -1,10 +1,15 @@
 -- 기존 book 테이블 삭제
 DROP TABLE IF EXISTS book;
 
+-- 테이블 삭제 순서 (외래키 제약조건 고려)
+DROP TABLE IF EXISTS ingredient;
+DROP TABLE IF EXISTS ingredient_default_expiry;
+DROP TABLE IF EXISTS category;
+DROP TABLE IF EXISTS users;
+
 -- 사용자 관리 시스템
 
 -- 0. 사용자 테이블
-DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -16,7 +21,6 @@ CREATE TABLE users (
 -- 식재료 관리 시스템 테이블 생성
 
 -- 1. 카테고리 테이블
-DROP TABLE IF EXISTS category;
 CREATE TABLE category (
     category_id INT PRIMARY KEY AUTO_INCREMENT,
     category_name VARCHAR(50) NOT NULL UNIQUE,
@@ -24,7 +28,6 @@ CREATE TABLE category (
 );
 
 -- 2. 식재료 기본 유통기한 테이블
-DROP TABLE IF EXISTS ingredient_default_expiry;
 CREATE TABLE ingredient_default_expiry (
     ingredient_name VARCHAR(100) PRIMARY KEY,
     default_expiry_days INT NOT NULL,
@@ -33,20 +36,22 @@ CREATE TABLE ingredient_default_expiry (
     FOREIGN KEY (category_id) REFERENCES category(category_id)
 );
 
--- 3. 식재료 테이블
-DROP TABLE IF EXISTS ingredient;
+-- 3. 식재료 테이블 (사용자별 냉장고 관리)
 CREATE TABLE ingredient (
     ingredient_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
     ingredient_name VARCHAR(100) NOT NULL,
     category_id INT,
     purchase_date DATE NOT NULL,
     expiry_date DATE NOT NULL,
     consume_date DATE,
-    quantity VARCHAR(50),
+    quantity DECIMAL(10,2),
+    unit VARCHAR(20),
     memo TEXT,
     status VARCHAR(20) DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES category(category_id),
     CHECK (status IN ('active', 'consumed'))
 );

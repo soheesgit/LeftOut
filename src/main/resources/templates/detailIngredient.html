@@ -123,7 +123,7 @@
         </tr>
         <tr>
             <th>수량</th>
-            <td th:text="${ingredient.quantity} ?: '-'"></td>
+            <td th:text="${ingredient.quantity != null ? ingredient.quantity + (ingredient.unit != null ? ingredient.unit : '') : '-'}"></td>
         </tr>
         <tr>
             <th>메모</th>

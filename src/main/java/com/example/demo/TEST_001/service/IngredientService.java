@@ -17,25 +17,46 @@ public class IngredientService {
     private final IngredientDefaultExpiryRepository defaultExpiryRepository;
 
     // 식재료 목록 조회 (유통기한 임박순)
-    public List<IngredientDTO> getList() {
-        return ingredientRepository.getList();
+    public List<IngredientDTO> getList(Long userId) {
+        return ingredientRepository.getList(userId);
     }
 
     // 카테고리별 식재료 목록 조회
-    public List<IngredientDTO> getListByCategory(Integer categoryId) {
+    public List<IngredientDTO> getListByCategory(Long userId, Integer categoryId) {
         if (categoryId == null || categoryId == 0) {
-            return getList();
+            return getList(userId);
         }
-        return ingredientRepository.getListByCategory(categoryId);
+        return ingredientRepository.getListByCategory(userId, categoryId);
     }
 
     // 식재료 상세 조회
-    public IngredientDTO detail(Integer id) {
-        return ingredientRepository.detail(id);
+    public IngredientDTO detail(Long userId, Integer id) {
+        return ingredientRepository.detail(userId, id);
     }
 
     // 식재료 추가
-    public void save(IngredientDTO ingredientDTO) {
+    public void save(Long userId, IngredientDTO ingredientDTO) {
+        // 입력 검증
+        if (ingredientDTO == null) {
+            throw new IllegalArgumentException("식재료 정보가 없습니다.");
+        }
+        if (ingredientDTO.getIngredientName() == null || ingredientDTO.getIngredientName().trim().isEmpty()) {
+            throw new IllegalArgumentException("식재료 이름은 필수입니다.");
+        }
+
+        // 수량 검증 (선택사항이므로 null은 허용하되, 값이 있으면 0보다 커야 함)
+        if (ingredientDTO.getQuantity() != null && ingredientDTO.getQuantity() <= 0) {
+            throw new IllegalArgumentException("수량은 0보다 커야 합니다.");
+        }
+
+        // 단위 검증 (수량이 있으면 단위도 필수)
+        if (ingredientDTO.getQuantity() != null && (ingredientDTO.getUnit() == null || ingredientDTO.getUnit().trim().isEmpty())) {
+            throw new IllegalArgumentException("수량을 입력한 경우 단위도 선택해야 합니다.");
+        }
+
+        // userId 설정
+        ingredientDTO.setUserId(userId);
+
         // 유통기한이 null인 경우, 기본 유통기한 조회하여 자동 계산
         if (ingredientDTO.getExpiryDate() == null && ingredientDTO.getPurchaseDate() != null) {
             IngredientDefaultExpiryDTO defaultExpiry =
@@ -57,18 +78,20 @@ public class IngredientService {
     }
 
     // 식재료 수정
-    public void update(IngredientDTO ingredientDTO) {
+    public void update(Long userId, IngredientDTO ingredientDTO) {
+        // userId 설정 (보안 검증을 위해)
+        ingredientDTO.setUserId(userId);
         ingredientRepository.update(ingredientDTO);
     }
 
     // 식재료 '다 먹음' 처리 (소비 완료)
-    public void markAsConsumed(Integer id) {
-        ingredientRepository.markAsConsumed(id);
+    public void markAsConsumed(Long userId, Integer id) {
+        ingredientRepository.markAsConsumed(userId, id);
     }
 
     // 식재료 완전 삭제
-    public void delete(Integer id) {
-        ingredientRepository.delete(id);
+    public void delete(Long userId, Integer id) {
+        ingredientRepository.delete(userId, id);
     }
 
     // 식재료명으로 기본 유통기한 조회

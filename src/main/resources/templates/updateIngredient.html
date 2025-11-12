@@ -98,9 +98,23 @@
 
         <div class="form-group">
             <label for="quantity">수량</label>
-            <input type="text" id="quantity" name="quantity"
+            <input type="number" id="quantity" name="quantity" min="0" step="0.01"
                    th:value="${ingredient.quantity}"
-                   placeholder="예: 3개, 500g, 1L">
+                   placeholder="예: 500">
+        </div>
+
+        <div class="form-group">
+            <label for="unit">단위</label>
+            <select id="unit" name="unit">
+                <option value="">선택하세요</option>
+                <option value="개" th:selected="${ingredient.unit == '개'}">개</option>
+                <option value="g" th:selected="${ingredient.unit == 'g'}">g</option>
+                <option value="kg" th:selected="${ingredient.unit == 'kg'}">kg</option>
+                <option value="mL" th:selected="${ingredient.unit == 'mL'}">mL</option>
+                <option value="L" th:selected="${ingredient.unit == 'L'}">L</option>
+                <option value="봉지" th:selected="${ingredient.unit == '봉지'}">봉지</option>
+                <option value="팩" th:selected="${ingredient.unit == '팩'}">팩</option>
+            </select>
         </div>
 
         <div class="form-group">

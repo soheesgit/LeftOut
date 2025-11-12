@@ -4,9 +4,10 @@
 <mapper namespace="ingredient">
 
     <!-- 식재료 목록 조회 (유통기한 임박순, active 상태만) -->
-    <select id="getList" resultType="ingredient">
+    <select id="getList" parameterType="long" resultType="ingredient">
         SELECT
             i.ingredient_id as ingredientId,
+            i.user_id as userId,
             i.ingredient_name as ingredientName,
             i.category_id as categoryId,
             c.category_name as categoryName,
@@ -14,19 +15,21 @@
             i.expiry_date as expiryDate,
             i.consume_date as consumeDate,
             i.quantity,
+            i.unit,
             i.memo,
             i.status,
             DATEDIFF(i.expiry_date, CURDATE()) as daysUntilExpiry
         FROM ingredient i
         LEFT JOIN category c ON i.category_id = c.category_id
-        WHERE i.status = 'active'
+        WHERE i.status = 'active' AND i.user_id = #{userId}
         ORDER BY i.expiry_date ASC
     </select>
 
     <!-- 카테고리별 식재료 목록 조회 -->
-    <select id="getListByCategory" parameterType="int" resultType="ingredient">
+    <select id="getListByCategory" parameterType="map" resultType="ingredient">
         SELECT
             i.ingredient_id as ingredientId,
+            i.user_id as userId,
             i.ingredient_name as ingredientName,
             i.category_id as categoryId,
             c.category_name as categoryName,
@@ -34,19 +37,21 @@
             i.expiry_date as expiryDate,
             i.consume_date as consumeDate,
             i.quantity,
+            i.unit,
             i.memo,
             i.status,
             DATEDIFF(i.expiry_date, CURDATE()) as daysUntilExpiry
         FROM ingredient i
         LEFT JOIN category c ON i.category_id = c.category_id
-        WHERE i.status = 'active' AND i.category_id = #{categoryId}
+        WHERE i.status = 'active' AND i.user_id = #{userId} AND i.category_id = #{categoryId}
         ORDER BY i.expiry_date ASC
     </select>
 
     <!-- 식재료 상세 조회 -->
-    <select id="detail" parameterType="int" resultType="ingredient">
+    <select id="detail" parameterType="map" resultType="ingredient">
         SELECT
             i.ingredient_id as ingredientId,
+            i.user_id as userId,
             i.ingredient_name as ingredientName,
             i.category_id as categoryId,
             c.category_name as categoryName,
@@ -54,18 +59,19 @@
             i.expiry_date as expiryDate,
             i.consume_date as consumeDate,
             i.quantity,
+            i.unit,
             i.memo,
             i.status,
             DATEDIFF(i.expiry_date, CURDATE()) as daysUntilExpiry
         FROM ingredient i
         LEFT JOIN category c ON i.category_id = c.category_id
-        WHERE i.ingredient_id = #{id}
+        WHERE i.ingredient_id = #{id} AND i.user_id = #{userId}
     </select>
 
     <!-- 식재료 추가 -->
     <insert id="save" parameterType="ingredient">
-        INSERT INTO ingredient(ingredient_name, category_id, purchase_date, expiry_date, quantity, memo, status)
-        VALUES (#{ingredientName}, #{categoryId}, #{purchaseDate}, #{expiryDate}, #{quantity}, #{memo}, 'active')
+        INSERT INTO ingredient(user_id, ingredient_name, category_id, purchase_date, expiry_date, quantity, unit, memo, status)
+        VALUES (#{userId}, #{ingredientName}, #{categoryId}, #{purchaseDate}, #{expiryDate}, #{quantity}, #{unit}, #{memo}, 'active')
     </insert>
 
     <!-- 식재료 수정 -->
@@ -76,22 +82,23 @@
             purchase_date = #{purchaseDate},
             expiry_date = #{expiryDate},
             quantity = #{quantity},
+            unit = #{unit},
             memo = #{memo}
-        WHERE ingredient_id = #{ingredientId}
+        WHERE ingredient_id = #{ingredientId} AND user_id = #{userId}
     </update>
 
     <!-- 식재료 소비 완료 처리 -->
-    <update id="markAsConsumed" parameterType="int">
+    <update id="markAsConsumed" parameterType="map">
         UPDATE ingredient
         SET status = 'consumed',
             consume_date = CURDATE()
-        WHERE ingredient_id = #{id}
+        WHERE ingredient_id = #{id} AND user_id = #{userId}
     </update>
 
     <!-- 식재료 완전 삭제 -->
-    <delete id="delete" parameterType="int">
+    <delete id="delete" parameterType="map">
         DELETE FROM ingredient
-        WHERE ingredient_id = #{id}
+        WHERE ingredient_id = #{id} AND user_id = #{userId}
     </delete>
 
 </mapper>
