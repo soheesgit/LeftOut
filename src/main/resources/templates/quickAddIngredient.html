@@ -483,6 +483,14 @@
                 return;
             }
 
+            // selectedIngredient 데이터를 임시 변수에 저장 (closeModal 전에)
+            const ingredientToAdd = {
+                ingredientName: selectedIngredient.ingredientName,
+                categoryId: selectedIngredient.categoryId,
+                quantity: parseFloat(quantity),
+                unit: unit
+            };
+
             closeModal();
 
             // AJAX 요청
@@ -492,12 +500,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        ingredientName: selectedIngredient.ingredientName,
-                        categoryId: selectedIngredient.categoryId,
-                        quantity: parseFloat(quantity),
-                        unit: unit
-                    })
+                    body: JSON.stringify(ingredientToAdd)
                 });
 
                 const result = await response.json();
