@@ -27,8 +27,8 @@ public class CategoryService {
         categoryRepository.save(categoryDTO);
     }
 
-    // 카테고리 삭제
-    public void delete(Integer id) {
-        categoryRepository.delete(id);
+    // 카테고리 수정
+    public void update(CategoryDTO categoryDTO) {
+        categoryRepository.update(categoryDTO);
     }
 }

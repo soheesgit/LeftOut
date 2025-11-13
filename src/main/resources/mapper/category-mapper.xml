@@ -27,10 +27,11 @@
         VALUES (#{categoryName})
     </insert>
 
-    <!-- 카테고리 삭제 -->
-    <delete id="delete" parameterType="int">
-        DELETE FROM category
-        WHERE category_id = #{id}
-    </delete>
+    <!-- 카테고리 수정 -->
+    <update id="update" parameterType="category">
+        UPDATE category
+        SET category_name = #{categoryName}
+        WHERE category_id = #{categoryId}
+    </update>
 
 </mapper>

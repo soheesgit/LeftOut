@@ -27,8 +27,8 @@ public class CategoryRepository {
         sql.insert("category.save", categoryDTO);
     }
 
-    // 카테고리 삭제
-    public void delete(Integer id) {
-        sql.delete("category.delete", id);
+    // 카테고리 수정
+    public void update(CategoryDTO categoryDTO) {
+        sql.update("category.update", categoryDTO);
     }
 }

@@ -60,4 +60,9 @@ public class IngredientRepository {
         params.put("id", id);
         sql.delete("ingredient.delete", params);
     }
+
+    // 카테고리별 식재료 개수 조회 (카테고리 삭제 검증용)
+    public int countByCategoryId(Integer categoryId) {
+        return sql.selectOne("ingredient.countByCategoryId", categoryId);
+    }
 }
