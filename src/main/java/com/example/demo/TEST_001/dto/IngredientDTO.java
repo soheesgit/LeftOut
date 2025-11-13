@@ -21,6 +21,7 @@ public class IngredientDTO {
     private Double quantity;
     private String unit;
     private String memo;
+    private String storageLocation;  // 냉장, 냉동, 실온
     private String status;  // active, consumed
     private Integer daysUntilExpiry;  // 유통기한까지 남은 일수 (계산용)
 }

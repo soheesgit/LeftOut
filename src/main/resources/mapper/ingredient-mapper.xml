@@ -17,6 +17,7 @@
             i.quantity,
             i.unit,
             i.memo,
+            i.storage_location as storageLocation,
             i.status,
             DATEDIFF(i.expiry_date, CURDATE()) as daysUntilExpiry
         FROM ingredient i
@@ -39,6 +40,7 @@
             i.quantity,
             i.unit,
             i.memo,
+            i.storage_location as storageLocation,
             i.status,
             DATEDIFF(i.expiry_date, CURDATE()) as daysUntilExpiry
         FROM ingredient i
@@ -61,6 +63,7 @@
             i.quantity,
             i.unit,
             i.memo,
+            i.storage_location as storageLocation,
             i.status,
             DATEDIFF(i.expiry_date, CURDATE()) as daysUntilExpiry
         FROM ingredient i
@@ -71,6 +74,9 @@
         </if>
         <if test="searchKeyword != null and searchKeyword != ''">
             AND i.ingredient_name LIKE CONCAT('%', #{searchKeyword}, '%')
+        </if>
+        <if test="storageLocation != null and storageLocation != ''">
+            AND i.storage_location = #{storageLocation}
         </if>
         ORDER BY i.expiry_date ASC
     </select>
@@ -89,6 +95,7 @@
             i.quantity,
             i.unit,
             i.memo,
+            i.storage_location as storageLocation,
             i.status,
             DATEDIFF(i.expiry_date, CURDATE()) as daysUntilExpiry
         FROM ingredient i
@@ -98,8 +105,8 @@
 
     <!-- 식재료 추가 -->
     <insert id="save" parameterType="ingredient">
-        INSERT INTO ingredient(user_id, ingredient_name, category_id, purchase_date, expiry_date, quantity, unit, memo, status)
-        VALUES (#{userId}, #{ingredientName}, #{categoryId}, #{purchaseDate}, #{expiryDate}, #{quantity}, #{unit}, #{memo}, 'active')
+        INSERT INTO ingredient(user_id, ingredient_name, category_id, purchase_date, expiry_date, quantity, unit, memo, storage_location, status)
+        VALUES (#{userId}, #{ingredientName}, #{categoryId}, #{purchaseDate}, #{expiryDate}, #{quantity}, #{unit}, #{memo}, #{storageLocation}, 'active')
     </insert>
 
     <!-- 식재료 수정 -->
@@ -111,7 +118,8 @@
             expiry_date = #{expiryDate},
             quantity = #{quantity},
             unit = #{unit},
-            memo = #{memo}
+            memo = #{memo},
+            storage_location = #{storageLocation}
         WHERE ingredient_id = #{ingredientId} AND user_id = #{userId}
     </update>
 

@@ -148,6 +148,16 @@
                     </option>
                 </select>
             </div>
+
+            <div class="search-box">
+                <span class="filter-label">🧊 보관 위치:</span>
+                <select id="storageFilter">
+                    <option value="" th:selected="${storageLocation == null or storageLocation == ''}">전체</option>
+                    <option value="냉장" th:selected="${storageLocation == '냉장'}">❄️ 냉장</option>
+                    <option value="냉동" th:selected="${storageLocation == '냉동'}">🧊 냉동</option>
+                    <option value="실온" th:selected="${storageLocation == '실온'}">🌡️ 실온</option>
+                </select>
+            </div>
         </div>
 
         <div class="filter-row">
@@ -161,6 +171,7 @@
         <tr>
             <th>식재료명</th>
             <th>카테고리</th>
+            <th>보관 위치</th>
             <th>구매일</th>
             <th>유통기한</th>
             <th>D-day</th>
@@ -169,13 +180,18 @@
             <th>상세보기</th>
         </tr>
         <tr th:if="${#lists.isEmpty(ingredientList)}">
-            <td colspan="8" style="text-align: center;">등록된 식재료가 없습니다.</td>
+            <td colspan="9" style="text-align: center;">등록된 식재료가 없습니다.</td>
         </tr>
         <tr th:each="ingredient : ${ingredientList}"
             th:classappend="${ingredient.daysUntilExpiry != null and ingredient.daysUntilExpiry < 0} ? 'expired' :
                            (${ingredient.daysUntilExpiry != null and ingredient.daysUntilExpiry <= 3} ? 'expiring-soon' : '')">
             <td th:text="${ingredient.ingredientName}"></td>
             <td th:text="${ingredient.categoryName}"></td>
+            <td>
+                <span th:if="${ingredient.storageLocation == '냉장'}">❄️ 냉장</span>
+                <span th:if="${ingredient.storageLocation == '냉동'}">🧊 냉동</span>
+                <span th:if="${ingredient.storageLocation == '실온'}">🌡️ 실온</span>
+            </td>
             <td th:text="${#temporals.format(ingredient.purchaseDate, 'yyyy-MM-dd')}"></td>
             <td th:text="${#temporals.format(ingredient.expiryDate, 'yyyy-MM-dd')}"></td>
             <td>
@@ -201,17 +217,22 @@
         function applyFilter() {
             const categoryId = document.getElementById('categoryFilter').value;
             const searchKeyword = document.getElementById('searchInput').value.trim();
+            const storageLocation = document.getElementById('storageFilter').value;
 
             let url = '/ingredient/list?categoryId=' + categoryId;
             if (searchKeyword) {
                 url += '&searchKeyword=' + encodeURIComponent(searchKeyword);
             }
+            if (storageLocation) {
+                url += '&storageLocation=' + encodeURIComponent(storageLocation);
+            }
 
             location.href = url;
         }
 
-        // 카테고리 선택 시에도 필터 적용
+        // 카테고리 또는 보관 위치 선택 시에도 필터 적용
         document.getElementById('categoryFilter').addEventListener('change', applyFilter);
+        document.getElementById('storageFilter').addEventListener('change', applyFilter);
     </script>
 </body>
 </html>

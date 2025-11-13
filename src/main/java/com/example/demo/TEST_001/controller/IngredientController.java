@@ -25,10 +25,11 @@ public class IngredientController {
     private final IngredientService ingredientService;
     private final CategoryService categoryService;
 
-    // 식재료 목록 조회 (카테고리 필터 및 검색 가능)
+    // 식재료 목록 조회 (카테고리 필터, 검색, 보관 위치 필터 가능)
     @GetMapping("/list")
     public String getList(@RequestParam(required = false, defaultValue = "0") Integer categoryId,
                           @RequestParam(required = false) String searchKeyword,
+                          @RequestParam(required = false) String storageLocation,
                           Model model, HttpSession session) {
         // 로그인 확인
         UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
@@ -37,13 +38,14 @@ public class IngredientController {
         }
 
         List<IngredientDTO> ingredientList = ingredientService.getListWithFilter(
-            loginUser.getId(), categoryId, searchKeyword);
+            loginUser.getId(), categoryId, searchKeyword, storageLocation);
         List<CategoryDTO> categories = categoryService.getAll();
 
         model.addAttribute("ingredientList", ingredientList);
         model.addAttribute("categories", categories);
         model.addAttribute("selectedCategory", categoryId);
         model.addAttribute("searchKeyword", searchKeyword != null ? searchKeyword : "");
+        model.addAttribute("storageLocation", storageLocation != null ? storageLocation : "");
 
         return "ingredientList";
     }

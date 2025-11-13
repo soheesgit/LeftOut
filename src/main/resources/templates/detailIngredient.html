@@ -126,6 +126,15 @@
             <td th:text="${ingredient.quantity != null ? ingredient.quantity + (ingredient.unit != null ? ingredient.unit : '') : '-'}"></td>
         </tr>
         <tr>
+            <th>보관 위치</th>
+            <td>
+                <span th:if="${ingredient.storageLocation == '냉장'}">❄️ 냉장</span>
+                <span th:if="${ingredient.storageLocation == '냉동'}">🧊 냉동</span>
+                <span th:if="${ingredient.storageLocation == '실온'}">🌡️ 실온</span>
+                <span th:if="${ingredient.storageLocation == null}">-</span>
+            </td>
+        </tr>
+        <tr>
             <th>메모</th>
             <td th:text="${ingredient.memo} ?: '-'"></td>
         </tr>

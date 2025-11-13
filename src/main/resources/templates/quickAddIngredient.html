@@ -341,6 +341,13 @@
                     <option value="봉지">봉지</option>
                     <option value="팩">팩</option>
                 </select>
+
+                <label for="storageInput" style="margin-top: 15px;">보관 위치:</label>
+                <select id="storageInput">
+                    <option value="냉장" selected>❄️ 냉장</option>
+                    <option value="냉동">🧊 냉동</option>
+                    <option value="실온">🌡️ 실온</option>
+                </select>
             </div>
             <div class="modal-footer">
                 <button class="btn-cancel" onclick="closeModal()">취소</button>
@@ -440,6 +447,7 @@
             document.getElementById('modalIngredientName').textContent = ingredient.ingredientName;
             document.getElementById('quantityInput').value = '';
             document.getElementById('unitInput').value = '';
+            document.getElementById('storageInput').value = '냉장';
             document.getElementById('quantityModal').classList.add('show');
             document.getElementById('quantityInput').focus();
         }
@@ -472,6 +480,7 @@
 
             const quantity = document.getElementById('quantityInput').value;
             const unit = document.getElementById('unitInput').value;
+            const storageLocation = document.getElementById('storageInput').value;
 
             if (!quantity || quantity <= 0) {
                 alert('수량을 입력해주세요!');
@@ -488,7 +497,8 @@
                 ingredientName: selectedIngredient.ingredientName,
                 categoryId: selectedIngredient.categoryId,
                 quantity: parseFloat(quantity),
-                unit: unit
+                unit: unit,
+                storageLocation: storageLocation
             };
 
             closeModal();

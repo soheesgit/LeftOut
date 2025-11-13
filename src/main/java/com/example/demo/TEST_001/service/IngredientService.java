@@ -30,13 +30,14 @@ public class IngredientService {
     }
 
     // 검색 및 필터링 식재료 목록 조회
-    public List<IngredientDTO> getListWithFilter(Long userId, Integer categoryId, String searchKeyword) {
-        // 검색어와 카테고리 모두 없으면 전체 목록
+    public List<IngredientDTO> getListWithFilter(Long userId, Integer categoryId, String searchKeyword, String storageLocation) {
+        // 검색어, 카테고리, 보관 위치 모두 없으면 전체 목록
         if ((searchKeyword == null || searchKeyword.trim().isEmpty()) &&
-            (categoryId == null || categoryId == 0)) {
+            (categoryId == null || categoryId == 0) &&
+            (storageLocation == null || storageLocation.trim().isEmpty())) {
             return getList(userId);
         }
-        return ingredientRepository.getListWithFilter(userId, categoryId, searchKeyword);
+        return ingredientRepository.getListWithFilter(userId, categoryId, searchKeyword, storageLocation);
     }
 
     // 식재료 상세 조회

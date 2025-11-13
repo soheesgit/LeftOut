@@ -28,11 +28,12 @@ public class IngredientRepository {
     }
 
     // 검색 및 필터링 식재료 목록 조회
-    public List<IngredientDTO> getListWithFilter(Long userId, Integer categoryId, String searchKeyword) {
+    public List<IngredientDTO> getListWithFilter(Long userId, Integer categoryId, String searchKeyword, String storageLocation) {
         Map<String, Object> params = new HashMap<>();
         params.put("userId", userId);
         params.put("categoryId", categoryId);
         params.put("searchKeyword", searchKeyword);
+        params.put("storageLocation", storageLocation);
         return sql.selectList("ingredient.getListWithFilter", params);
     }
 

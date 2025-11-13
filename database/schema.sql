@@ -48,12 +48,14 @@ CREATE TABLE ingredient (
     quantity DECIMAL(10,2),
     unit VARCHAR(20),
     memo TEXT,
+    storage_location VARCHAR(20) DEFAULT '냉장',
     status VARCHAR(20) DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES category(category_id),
-    CHECK (status IN ('active', 'consumed'))
+    CHECK (status IN ('active', 'consumed')),
+    CHECK (storage_location IN ('냉장', '냉동', '실온'))
 );
 
 -- 기본 카테고리 데이터 삽입
