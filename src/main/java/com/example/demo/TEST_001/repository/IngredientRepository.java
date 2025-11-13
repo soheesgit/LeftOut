@@ -27,6 +27,15 @@ public class IngredientRepository {
         return sql.selectList("ingredient.getListByCategory", params);
     }
 
+    // 검색 및 필터링 식재료 목록 조회
+    public List<IngredientDTO> getListWithFilter(Long userId, Integer categoryId, String searchKeyword) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        params.put("categoryId", categoryId);
+        params.put("searchKeyword", searchKeyword);
+        return sql.selectList("ingredient.getListWithFilter", params);
+    }
+
     // 식재료 상세 조회
     public IngredientDTO detail(Long userId, Integer id) {
         Map<String, Object> params = new HashMap<>();

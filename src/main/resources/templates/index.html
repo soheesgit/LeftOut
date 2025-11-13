@@ -11,52 +11,52 @@
     </style>
 </head>
 <body>
-    <div class="user-info">
+<div class="user-info">
         <span th:if="${session.loginUser != null}">
             <strong th:text="${session.loginUser.name}">사용자</strong>님 환영합니다!
             | <a href="/logout">로그아웃</a>
         </span>
-        <span th:if="${session.loginUser == null}">
+    <span th:if="${session.loginUser == null}">
             <a href="/login">로그인</a> | <a href="/signup">회원가입</a>
         </span>
-    </div>
+</div>
 
-    <h2>냉장고 식재료 관리 시스템</h2>
+<h2>냉장고 식재료 관리 시스템</h2>
 
-    <div style="margin-top: 20px;">
-        <h3>식재료 관리</h3>
-        <ul>
-            <li><a href="/ingredient/list">📋 내 냉장고 보기 (식재료 목록)</a></li>
-            <li><a href="/ingredient/quick-add" style="color: #4CAF50; font-weight: bold;">⚡ 빠른 추가 (클릭으로 추가)</a></li>
-            <li><a href="/ingredient/add">📝 상세 추가 (폼 입력)</a></li>
-            <li><a href="/category/manage">🗂️ 카테고리 관리</a></li>
-        </ul>
-    </div>
+<div style="margin-top: 20px;">
+    <h3>식재료 관리</h3>
+    <ul>
+        <li><a href="/ingredient/list">📋 내 냉장고 보기 (식재료 목록)</a></li>
+        <li><a href="/ingredient/quick-add" style="color: #4CAF50; font-weight: bold;">⚡ 빠른 추가 (클릭으로 추가)</a></li>
+        <li><a href="/ingredient/add">📝 상세 추가 (폼 입력)</a></li>
+        <li><a href="/category/manage">🗂️ 카테고리 관리</a></li>
+    </ul>
+</div>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            max-width: 800px;
-        }
-        h2 {
-            color: #4CAF50;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            margin: 10px 0;
-        }
-        a {
-            text-decoration: none;
-            color: #008CBA;
-            font-size: 16px;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        max-width: 800px;
+    }
+    h2 {
+        color: #4CAF50;
+    }
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    li {
+        margin: 10px 0;
+    }
+    a {
+        text-decoration: none;
+        color: #008CBA;
+        font-size: 16px;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+</style>
 </body>
 </html>

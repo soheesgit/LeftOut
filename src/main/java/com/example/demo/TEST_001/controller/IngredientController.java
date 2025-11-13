@@ -25,9 +25,10 @@ public class IngredientController {
     private final IngredientService ingredientService;
     private final CategoryService categoryService;
 
-    // 식재료 목록 조회 (카테고리 필터 가능)
+    // 식재료 목록 조회 (카테고리 필터 및 검색 가능)
     @GetMapping("/list")
     public String getList(@RequestParam(required = false, defaultValue = "0") Integer categoryId,
+                          @RequestParam(required = false) String searchKeyword,
                           Model model, HttpSession session) {
         // 로그인 확인
         UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
@@ -35,12 +36,14 @@ public class IngredientController {
             return "redirect:/login";
         }
 
-        List<IngredientDTO> ingredientList = ingredientService.getListByCategory(loginUser.getId(), categoryId);
+        List<IngredientDTO> ingredientList = ingredientService.getListWithFilter(
+            loginUser.getId(), categoryId, searchKeyword);
         List<CategoryDTO> categories = categoryService.getAll();
 
         model.addAttribute("ingredientList", ingredientList);
         model.addAttribute("categories", categories);
         model.addAttribute("selectedCategory", categoryId);
+        model.addAttribute("searchKeyword", searchKeyword != null ? searchKeyword : "");
 
         return "ingredientList";
     }

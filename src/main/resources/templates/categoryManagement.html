@@ -105,124 +105,124 @@
     </style>
 </head>
 <body>
-    <h1>카테고리 관리</h1>
+<h1>카테고리 관리</h1>
 
-    <!-- 성공 메시지 -->
-    <div th:if="${successMessage}" class="alert alert-success">
-        <span th:text="${successMessage}"></span>
-    </div>
+<!-- 성공 메시지 -->
+<div th:if="${successMessage}" class="alert alert-success">
+    <span th:text="${successMessage}"></span>
+</div>
 
-    <!-- 에러 메시지 -->
-    <div th:if="${errorMessage}" class="alert alert-error">
-        <span th:text="${errorMessage}"></span>
-    </div>
+<!-- 에러 메시지 -->
+<div th:if="${errorMessage}" class="alert alert-error">
+    <span th:text="${errorMessage}"></span>
+</div>
 
-    <div class="form-section">
-        <h3>카테고리 추가</h3>
-        <form action="/category/add" method="post">
-            <div class="form-group">
-                <label for="categoryName">카테고리명 *</label>
-                <input type="text" id="categoryName" name="categoryName" required
-                       placeholder="예: 냉동식품, 소스류 등">
-            </div>
-            <button type="submit" class="btn btn-primary">추가</button>
-        </form>
-    </div>
+<div class="form-section">
+    <h3>카테고리 추가</h3>
+    <form action="/category/add" method="post">
+        <div class="form-group">
+            <label for="categoryName">카테고리명 *</label>
+            <input type="text" id="categoryName" name="categoryName" required
+                   placeholder="예: 냉동식품, 소스류 등">
+        </div>
+        <button type="submit" class="btn btn-primary">추가</button>
+    </form>
+</div>
 
-    <h3>현재 카테고리 목록</h3>
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>카테고리명</th>
-            <th>수정</th>
-        </tr>
-        <tr th:if="${#lists.isEmpty(categories)}">
-            <td colspan="3" style="text-align: center;">등록된 카테고리가 없습니다.</td>
-        </tr>
-        <tr th:each="category : ${categories}" th:id="'row-' + ${category.categoryId}">
-            <td th:text="${category.categoryId}" th:id="'id-' + ${category.categoryId}"></td>
-            <td th:id="'name-' + ${category.categoryId}">
-                <span th:id="'name-text-' + ${category.categoryId}" th:text="${category.categoryName}"></span>
-                <form th:id="'edit-form-' + ${category.categoryId}" style="display: none;" th:action="@{/category/update}" method="post" onsubmit="return false;">
-                    <input type="hidden" name="categoryId" th:value="${category.categoryId}">
-                    <input type="text" name="categoryName" th:value="${category.categoryName}"
-                           class="edit-input" th:id="'edit-input-' + ${category.categoryId}" required>
-                </form>
-            </td>
-            <td>
-                <button class="btn btn-warning" th:id="'edit-btn-' + ${category.categoryId}"
-                        th:attr="data-id=${category.categoryId}, data-name=${category.categoryName}"
-                        onclick="editCategory(this.dataset.id)">
-                    수정
-                </button>
-                <button class="btn btn-primary" th:id="'save-btn-' + ${category.categoryId}"
-                        style="display: none;"
-                        th:attr="data-id=${category.categoryId}"
-                        onclick="saveCategory(this.dataset.id)">
-                    저장
-                </button>
-                <button class="btn btn-secondary" th:id="'cancel-btn-' + ${category.categoryId}"
-                        style="display: none;"
-                        th:attr="data-id=${category.categoryId}, data-name=${category.categoryName}"
-                        onclick="cancelEdit(this.dataset.id, this.dataset.name)">
-                    취소
-                </button>
-            </td>
-        </tr>
-    </table>
+<h3>현재 카테고리 목록</h3>
+<table>
+    <tr>
+        <th>ID</th>
+        <th>카테고리명</th>
+        <th>수정</th>
+    </tr>
+    <tr th:if="${#lists.isEmpty(categories)}">
+        <td colspan="3" style="text-align: center;">등록된 카테고리가 없습니다.</td>
+    </tr>
+    <tr th:each="category : ${categories}" th:id="'row-' + ${category.categoryId}">
+        <td th:text="${category.categoryId}" th:id="'id-' + ${category.categoryId}"></td>
+        <td th:id="'name-' + ${category.categoryId}">
+            <span th:id="'name-text-' + ${category.categoryId}" th:text="${category.categoryName}"></span>
+            <form th:id="'edit-form-' + ${category.categoryId}" style="display: none;" th:action="@{/category/update}" method="post" onsubmit="return false;">
+                <input type="hidden" name="categoryId" th:value="${category.categoryId}">
+                <input type="text" name="categoryName" th:value="${category.categoryName}"
+                       class="edit-input" th:id="'edit-input-' + ${category.categoryId}" required>
+            </form>
+        </td>
+        <td>
+            <button class="btn btn-warning" th:id="'edit-btn-' + ${category.categoryId}"
+                    th:attr="data-id=${category.categoryId}, data-name=${category.categoryName}"
+                    onclick="editCategory(this.dataset.id)">
+                수정
+            </button>
+            <button class="btn btn-primary" th:id="'save-btn-' + ${category.categoryId}"
+                    style="display: none;"
+                    th:attr="data-id=${category.categoryId}"
+                    onclick="saveCategory(this.dataset.id)">
+                저장
+            </button>
+            <button class="btn btn-secondary" th:id="'cancel-btn-' + ${category.categoryId}"
+                    style="display: none;"
+                    th:attr="data-id=${category.categoryId}, data-name=${category.categoryName}"
+                    onclick="cancelEdit(this.dataset.id, this.dataset.name)">
+                취소
+            </button>
+        </td>
+    </tr>
+</table>
 
-    <div style="margin-top: 20px;">
-        <a href="/ingredient/list" class="btn btn-secondary">식재료 목록으로</a>
-        <a href="/" class="btn btn-secondary">메인 페이지</a>
-    </div>
+<div style="margin-top: 20px;">
+    <a href="/ingredient/list" class="btn btn-secondary">식재료 목록으로</a>
+    <a href="/" class="btn btn-secondary">메인 페이지</a>
+</div>
 
-    <script>
-        function editCategory(id) {
-            // Hide the name text and show the edit form
-            document.getElementById('name-text-' + id).style.display = 'none';
-            document.getElementById('edit-form-' + id).style.display = 'block';
+<script>
+    function editCategory(id) {
+        // Hide the name text and show the edit form
+        document.getElementById('name-text-' + id).style.display = 'none';
+        document.getElementById('edit-form-' + id).style.display = 'block';
 
-            // Show save and cancel buttons, hide edit button
-            document.getElementById('edit-btn-' + id).style.display = 'none';
-            document.getElementById('save-btn-' + id).style.display = 'inline-block';
-            document.getElementById('cancel-btn-' + id).style.display = 'inline-block';
+        // Show save and cancel buttons, hide edit button
+        document.getElementById('edit-btn-' + id).style.display = 'none';
+        document.getElementById('save-btn-' + id).style.display = 'inline-block';
+        document.getElementById('cancel-btn-' + id).style.display = 'inline-block';
 
-            // Highlight the row
-            document.getElementById('row-' + id).classList.add('edit-row');
+        // Highlight the row
+        document.getElementById('row-' + id).classList.add('edit-row');
 
-            // Focus the input
-            document.getElementById('edit-input-' + id).focus();
+        // Focus the input
+        document.getElementById('edit-input-' + id).focus();
+    }
+
+    function cancelEdit(id, originalName) {
+        // Show the name text and hide the edit form
+        document.getElementById('name-text-' + id).style.display = 'inline';
+        document.getElementById('edit-form-' + id).style.display = 'none';
+
+        // Show edit button, hide save and cancel buttons
+        document.getElementById('edit-btn-' + id).style.display = 'inline-block';
+        document.getElementById('save-btn-' + id).style.display = 'none';
+        document.getElementById('cancel-btn-' + id).style.display = 'none';
+
+        // Remove row highlight
+        document.getElementById('row-' + id).classList.remove('edit-row');
+
+        // Reset the input value
+        document.getElementById('edit-input-' + id).value = originalName;
+    }
+
+    function saveCategory(id) {
+        const newName = document.getElementById('edit-input-' + id).value.trim();
+
+        if (!newName) {
+            alert('카테고리명을 입력해주세요.');
+            return;
         }
 
-        function cancelEdit(id, originalName) {
-            // Show the name text and hide the edit form
-            document.getElementById('name-text-' + id).style.display = 'inline';
-            document.getElementById('edit-form-' + id).style.display = 'none';
-
-            // Show edit button, hide save and cancel buttons
-            document.getElementById('edit-btn-' + id).style.display = 'inline-block';
-            document.getElementById('save-btn-' + id).style.display = 'none';
-            document.getElementById('cancel-btn-' + id).style.display = 'none';
-
-            // Remove row highlight
-            document.getElementById('row-' + id).classList.remove('edit-row');
-
-            // Reset the input value
-            document.getElementById('edit-input-' + id).value = originalName;
-        }
-
-        function saveCategory(id) {
-            const newName = document.getElementById('edit-input-' + id).value.trim();
-
-            if (!newName) {
-                alert('카테고리명을 입력해주세요.');
-                return;
-            }
-
-            // Submit the form
-            const form = document.getElementById('edit-form-' + id);
-            form.submit();
-        }
-    </script>
+        // Submit the form
+        const form = document.getElementById('edit-form-' + id);
+        form.submit();
+    }
+</script>
 </body>
 </html>

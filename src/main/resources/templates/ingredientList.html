@@ -13,9 +13,46 @@
         }
         .filter-section {
             margin: 20px 0;
-            padding: 15px;
+            padding: 20px;
             background-color: #f5f5f5;
+            border-radius: 8px;
+        }
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .search-box {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        .search-input {
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 2px solid #ddd;
             border-radius: 5px;
+            width: 250px;
+            transition: border-color 0.3s;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        .search-btn {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        .search-btn:hover {
+            background-color: #45a049;
         }
         table {
             width: 100%;
@@ -58,6 +95,8 @@
             text-decoration: none;
             border-radius: 5px;
             display: inline-block;
+            border: none;
+            cursor: pointer;
         }
         .btn-primary {
             background-color: #4CAF50;
@@ -73,6 +112,12 @@
         select {
             padding: 8px;
             font-size: 14px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        .filter-label {
+            font-weight: bold;
+            margin-right: 5px;
         }
     </style>
 </head>
@@ -80,19 +125,36 @@
     <h1>냉장고 식재료 관리</h1>
 
     <div class="filter-section">
-        <label for="categoryFilter">카테고리 필터:</label>
-        <select id="categoryFilter" onchange="filterByCategory()">
-            <option value="0" th:selected="${selectedCategory == 0}">전체</option>
-            <option th:each="category : ${categories}"
-                    th:value="${category.categoryId}"
-                    th:text="${category.categoryName}"
-                    th:selected="${category.categoryId == selectedCategory}">
-            </option>
-        </select>
+        <div class="filter-row">
+            <div class="search-box">
+                <span class="filter-label">🔍 검색:</span>
+                <input type="text"
+                       id="searchInput"
+                       class="search-input"
+                       placeholder="식재료명 검색 (예: 계란, 우유)"
+                       th:value="${searchKeyword}"
+                       onkeypress="if(event.key === 'Enter') applyFilter()">
+                <button class="search-btn" onclick="applyFilter()">검색</button>
+            </div>
 
-        <a href="/ingredient/add" class="btn btn-primary">식재료 추가</a>
-        <a href="/category/manage" class="btn btn-secondary">카테고리 관리</a>
-        <a href="/" class="btn btn-secondary">메인 페이지</a>
+            <div class="search-box">
+                <span class="filter-label">📂 카테고리:</span>
+                <select id="categoryFilter">
+                    <option value="0" th:selected="${selectedCategory == 0}">전체</option>
+                    <option th:each="category : ${categories}"
+                            th:value="${category.categoryId}"
+                            th:text="${category.categoryName}"
+                            th:selected="${category.categoryId == selectedCategory}">
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="filter-row">
+            <a href="/ingredient/add" class="btn btn-primary">➕ 식재료 추가</a>
+            <a href="/category/manage" class="btn btn-secondary">🗂️ 카테고리 관리</a>
+            <a href="/" class="btn btn-secondary">🏠 메인 페이지</a>
+        </div>
     </div>
 
     <table>
@@ -136,10 +198,20 @@
     </table>
 
     <script th:inline="javascript">
-        function filterByCategory() {
+        function applyFilter() {
             const categoryId = document.getElementById('categoryFilter').value;
-            location.href = `/ingredient/list?categoryId=${categoryId}`;
+            const searchKeyword = document.getElementById('searchInput').value.trim();
+
+            let url = '/ingredient/list?categoryId=' + categoryId;
+            if (searchKeyword) {
+                url += '&searchKeyword=' + encodeURIComponent(searchKeyword);
+            }
+
+            location.href = url;
         }
+
+        // 카테고리 선택 시에도 필터 적용
+        document.getElementById('categoryFilter').addEventListener('change', applyFilter);
     </script>
 </body>
 </html>

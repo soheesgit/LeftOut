@@ -29,6 +29,16 @@ public class IngredientService {
         return ingredientRepository.getListByCategory(userId, categoryId);
     }
 
+    // 검색 및 필터링 식재료 목록 조회
+    public List<IngredientDTO> getListWithFilter(Long userId, Integer categoryId, String searchKeyword) {
+        // 검색어와 카테고리 모두 없으면 전체 목록
+        if ((searchKeyword == null || searchKeyword.trim().isEmpty()) &&
+            (categoryId == null || categoryId == 0)) {
+            return getList(userId);
+        }
+        return ingredientRepository.getListWithFilter(userId, categoryId, searchKeyword);
+    }
+
     // 식재료 상세 조회
     public IngredientDTO detail(Long userId, Integer id) {
         return ingredientRepository.detail(userId, id);

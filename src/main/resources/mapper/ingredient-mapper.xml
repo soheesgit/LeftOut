@@ -47,6 +47,34 @@
         ORDER BY i.expiry_date ASC
     </select>
 
+    <!-- 검색 및 필터링 식재료 목록 조회 -->
+    <select id="getListWithFilter" parameterType="map" resultType="ingredient">
+        SELECT
+            i.ingredient_id as ingredientId,
+            i.user_id as userId,
+            i.ingredient_name as ingredientName,
+            i.category_id as categoryId,
+            c.category_name as categoryName,
+            i.purchase_date as purchaseDate,
+            i.expiry_date as expiryDate,
+            i.consume_date as consumeDate,
+            i.quantity,
+            i.unit,
+            i.memo,
+            i.status,
+            DATEDIFF(i.expiry_date, CURDATE()) as daysUntilExpiry
+        FROM ingredient i
+        LEFT JOIN category c ON i.category_id = c.category_id
+        WHERE i.status = 'active' AND i.user_id = #{userId}
+        <if test="categoryId != null and categoryId != 0">
+            AND i.category_id = #{categoryId}
+        </if>
+        <if test="searchKeyword != null and searchKeyword != ''">
+            AND i.ingredient_name LIKE CONCAT('%', #{searchKeyword}, '%')
+        </if>
+        ORDER BY i.expiry_date ASC
+    </select>
+
     <!-- 식재료 상세 조회 -->
     <select id="detail" parameterType="map" resultType="ingredient">
         SELECT
