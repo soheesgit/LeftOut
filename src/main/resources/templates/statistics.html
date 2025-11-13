@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>식재료 통계</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            color: #333;
+        }
+        .nav-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #008CBA;
+            color: white;
+        }
+        .btn:hover {
+            opacity: 0.8;
+            transform: translateY(-2px);
+        }
+        .period-toggle {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .period-toggle h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .period-btn {
+            padding: 10px 25px;
+            margin: 0 5px;
+            border: 2px solid #4CAF50;
+            background-color: white;
+            color: #4CAF50;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .period-btn:hover {
+            background-color: #f1f1f1;
+        }
+        .period-btn.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stats-card {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stats-card.full-width {
+            grid-column: 1 / -1;
+        }
+        .stats-card h2 {
+            margin-top: 0;
+            color: #333;
+            font-size: 20px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 15px;
+        }
+        .chart-container.tall {
+            height: 400px;
+        }
+        .monthly-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .summary-card {
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            color: white;
+        }
+        .summary-card.consumed {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .summary-card.discarded {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .summary-card h3 {
+            margin: 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .summary-card .value {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .summary-card .change {
+            font-size: 14px;
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            display: inline-block;
+        }
+        .summary-card .change.positive {
+            color: #90EE90;
+        }
+        .summary-card .change.negative {
+            color: #FFB6C1;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <h1>📊 식재료 통계</h1>
+
+    <!-- Navigation -->
+    <div class="nav-section">
+        <a href="/ingredient/list" class="btn btn-secondary">📋 식재료 목록</a>
+        <a href="/ingredient/add" class="btn btn-primary">➕ 식재료 추가</a>
+        <a href="/category/manage" class="btn btn-secondary">🗂️ 카테고리 관리</a>
+        <a href="/" class="btn btn-secondary">🏠 메인 페이지</a>
+    </div>
+
+    <!-- Period Toggle -->
+    <div class="period-toggle">
+        <h3>📅 조회 기간 선택</h3>
+        <button class="period-btn active" data-period="day" onclick="changePeriod('day')">일 단위</button>
+        <button class="period-btn" data-period="week" onclick="changePeriod('week')">주 단위</button>
+        <button class="period-btn" data-period="month" onclick="changePeriod('month')">월 단위</button>
+    </div>
+
+    <!-- Monthly Summary Cards -->
+    <div class="stats-card full-width">
+        <h2>🗓️ 이번 달 요약</h2>
+        <div class="monthly-summary" id="monthlySummary">
+            <div class="loading">데이터를 불러오는 중...</div>
+        </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="stats-grid">
+        <!-- Discard Stats by Period -->
+        <div class="stats-card full-width">
+            <h2>🗑️ 기간별 폐기 통계</h2>
+            <div class="chart-container tall">
+                <canvas id="discardPeriodChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Discard Stats by Category -->
+        <div class="stats-card">
+            <h2>📂 카테고리별 폐기 통계</h2>
+            <div class="chart-container">
+                <canvas id="discardCategoryChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Category Composition -->
+        <div class="stats-card">
+            <h2>🥗 현재 카테고리 구성</h2>
+            <div class="chart-container">
+                <canvas id="categoryCompositionChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Storage Location Distribution -->
+        <div class="stats-card full-width">
+            <h2>🧊 보관 위치별 카테고리 분포</h2>
+            <div class="chart-container">
+                <canvas id="storageDistributionChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        let charts = {};
+        let currentPeriod = 'day';
+        let statsData = /*[[${stats}]]*/ {};
+
+        // 색상 팔레트
+        const colors = [
+            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+            '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+        ];
+
+        // 차트 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            updateAllCharts(statsData);
+        });
+
+        function changePeriod(period) {
+            currentPeriod = period;
+
+            // 버튼 활성화 상태 변경
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-period="${period}"]`).classList.add('active');
+
+            // 데이터 갱신
+            fetchStatistics(period);
+        }
+
+        function fetchStatistics(period) {
+            fetch(`/statistics/discard-by-period?period=${period}`)
+                .then(response => response.json())
+                .then(data => {
+                    updatePeriodCharts(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching statistics:', error);
+                });
+        }
+
+        function initializeCharts() {
+            // 폐기 통계 (기간별) - 막대 + 선형 그래프
+            const ctx1 = document.getElementById('discardPeriodChart').getContext('2d');
+            charts.discardPeriod = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '폐기 횟수',
+                        data: [],
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 카테고리별 폐기 통계 - 막대 그래프
+            const ctx2 = document.getElementById('discardCategoryChart').getContext('2d');
+            charts.discardCategory = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '폐기 횟수',
+                        data: [],
+                        backgroundColor: colors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 카테고리 구성 - 도넛 차트
+            const ctx3 = document.getElementById('categoryCompositionChart').getContext('2d');
+            charts.categoryComposition = new Chart(ctx3, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value}개 (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 보관 위치별 분포 - 막대 그래프 (그룹화)
+            const ctx4 = document.getElementById('storageDistributionChart').getContext('2d');
+            charts.storageDistribution = new Chart(ctx4, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateAllCharts(data) {
+            updatePeriodCharts(data);
+            updateMonthlyStats(data.monthlyStats);
+            updateCategoryComposition(data.categoryComposition);
+            updateStorageDistribution(data.storageDistribution);
+        }
+
+        function updatePeriodCharts(data) {
+            // 폐기 기간별 차트 업데이트
+            if (data.discardByPeriod && charts.discardPeriod) {
+                const labels = data.discardByPeriod.map(item => {
+                    const date = new Date(item.date);
+                    if (currentPeriod === 'day') {
+                        return `${date.getMonth() + 1}/${date.getDate()}`;
+                    } else if (currentPeriod === 'week') {
+                        return `${date.getMonth() + 1}/${date.getDate()} 주`;
+                    } else {
+                        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    }
+                });
+                const counts = data.discardByPeriod.map(item => item.count);
+
+                charts.discardPeriod.data.labels = labels;
+                charts.discardPeriod.data.datasets[0].data = counts;
+                charts.discardPeriod.update();
+            }
+
+            // 카테고리별 폐기 차트 업데이트
+            if (data.discardByCategory && charts.discardCategory) {
+                const labels = data.discardByCategory.map(item => item.categoryName || '기타');
+                const counts = data.discardByCategory.map(item => item.count);
+
+                charts.discardCategory.data.labels = labels;
+                charts.discardCategory.data.datasets[0].data = counts;
+                charts.discardCategory.update();
+            }
+        }
+
+        function updateMonthlyStats(monthlyStats) {
+            if (!monthlyStats) return;
+
+            const current = monthlyStats.currentMonth;
+            const changes = monthlyStats.changes;
+
+            const html = `
+                <div class="summary-card consumed">
+                    <h3>소비한 식재료</h3>
+                    <div class="value">${current.consumedCount}개</div>
+                    <div class="change ${changes.consumedChange >= 0 ? 'positive' : 'negative'}">
+                        ${changes.consumedChange >= 0 ? '▲' : '▼'}
+                        ${Math.abs(changes.consumedChange)}개
+                        (${changes.consumedChangePercent >= 0 ? '+' : ''}${changes.consumedChangePercent}%)
+                        <br>전월 대비
+                    </div>
+                </div>
+                <div class="summary-card discarded">
+                    <h3>폐기한 식재료</h3>
+                    <div class="value">${current.discardedCount}개</div>
+                    <div class="change ${changes.discardedChange <= 0 ? 'positive' : 'negative'}">
+                        ${changes.discardedChange >= 0 ? '▲' : '▼'}
+                        ${Math.abs(changes.discardedChange)}개
+                        (${changes.discardedChangePercent >= 0 ? '+' : ''}${changes.discardedChangePercent}%)
+                        <br>전월 대비
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('monthlySummary').innerHTML = html;
+        }
+
+        function updateCategoryComposition(data) {
+            if (!data || data.length === 0) {
+                charts.categoryComposition.data.labels = ['데이터 없음'];
+                charts.categoryComposition.data.datasets[0].data = [1];
+                charts.categoryComposition.update();
+                return;
+            }
+
+            const labels = data.map(item => item.categoryName || '기타');
+            const counts = data.map(item => item.count);
+
+            charts.categoryComposition.data.labels = labels;
+            charts.categoryComposition.data.datasets[0].data = counts;
+            charts.categoryComposition.update();
+        }
+
+        function updateStorageDistribution(data) {
+            if (!data) return;
+
+            // 보관 위치별 데이터를 그룹화된 막대 차트로 표시
+            const locations = Object.keys(data);
+            const allCategories = new Set();
+
+            // 모든 카테고리 수집
+            locations.forEach(location => {
+                data[location].categories.forEach(cat => {
+                    allCategories.add(cat.categoryName);
+                });
+            });
+
+            const categoryArray = Array.from(allCategories);
+            const datasets = categoryArray.map((category, index) => {
+                return {
+                    label: category,
+                    data: locations.map(location => {
+                        const cat = data[location].categories.find(c => c.categoryName === category);
+                        return cat ? cat.count : 0;
+                    }),
+                    backgroundColor: colors[index % colors.length],
+                    borderWidth: 1
+                };
+            });
+
+            charts.storageDistribution.data.labels = locations.map(loc => {
+                if (loc === '냉장') return '❄️ 냉장';
+                if (loc === '냉동') return '🧊 냉동';
+                if (loc === '실온') return '🌡️ 실온';
+                return loc;
+            });
+            charts.storageDistribution.data.datasets = datasets;
+            charts.storageDistribution.update();
+        }
+        /*]]>*/
+    </script>
+</body>
+</html>

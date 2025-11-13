@@ -106,8 +106,21 @@
             background-color: #008CBA;
             color: white;
         }
+        .btn-success {
+            background-color: #5cb85c;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #d9534f;
+            color: white;
+        }
         .btn:hover {
             opacity: 0.8;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
         }
         select {
             padding: 8px;
@@ -162,6 +175,7 @@
 
         <div class="filter-row">
             <a href="/ingredient/add" class="btn btn-primary">➕ 식재료 추가</a>
+            <a href="/statistics" class="btn btn-secondary">📊 통계</a>
             <a href="/category/manage" class="btn btn-secondary">🗂️ 카테고리 관리</a>
             <a href="/" class="btn btn-secondary">🏠 메인 페이지</a>
         </div>
@@ -177,7 +191,7 @@
             <th>D-day</th>
             <th>수량</th>
             <th>메모</th>
-            <th>상세보기</th>
+            <th>작업</th>
         </tr>
         <tr th:if="${#lists.isEmpty(ingredientList)}">
             <td colspan="9" style="text-align: center;">등록된 식재료가 없습니다.</td>
@@ -207,8 +221,16 @@
             <td th:text="${ingredient.quantity != null ? ingredient.quantity + (ingredient.unit != null ? ingredient.unit : '') : '-'}"></td>
             <td th:text="${ingredient.memo}"></td>
             <td>
-                <a th:href="@{/ingredient/detail/{id}(id=${ingredient.ingredientId})}"
-                   class="btn btn-secondary">상세</a>
+                <div class="action-buttons">
+                    <a th:href="@{/ingredient/detail/{id}(id=${ingredient.ingredientId})}"
+                       class="btn btn-secondary">상세</a>
+                    <a th:href="@{/ingredient/consume/{id}(id=${ingredient.ingredientId})}"
+                       class="btn btn-success"
+                       onclick="return confirm('이 식재료를 소비 완료 처리하시겠습니까?')">✓ 다 먹음</a>
+                    <a th:href="@{/ingredient/discard/{id}(id=${ingredient.ingredientId})}"
+                       class="btn btn-danger"
+                       onclick="return confirm('이 식재료를 폐기 처리하시겠습니까?')">🗑️ 폐기</a>
+                </div>
             </td>
         </tr>
     </table>

@@ -139,6 +139,19 @@ public class IngredientController {
         return "redirect:/ingredient/list";
     }
 
+    // 식재료 '폐기' 처리
+    @GetMapping("/discard/{id}")
+    public String discard(@PathVariable Integer id, HttpSession session) {
+        // 로그인 확인
+        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
+        if (loginUser == null) {
+            return "redirect:/login";
+        }
+
+        ingredientService.markAsDiscarded(loginUser.getId(), id);
+        return "redirect:/ingredient/list";
+    }
+
     // 식재료 완전 삭제
     @GetMapping("/delete/{id}")
     public String delete(@PathVariable Integer id, HttpSession session) {
@@ -217,6 +230,7 @@ public class IngredientController {
             ingredientDTO.setCategoryId(request.getCategoryId());
             ingredientDTO.setQuantity(request.getQuantity());
             ingredientDTO.setUnit(request.getUnit());
+            ingredientDTO.setStorageLocation(request.getStorageLocation()); // 보관 위치 설정
             ingredientDTO.setPurchaseDate(LocalDate.now()); // 오늘 날짜
 
             // 유통기한은 null로 두면 Service에서 자동 계산됨

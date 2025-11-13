@@ -45,6 +45,7 @@ CREATE TABLE ingredient (
     purchase_date DATE NOT NULL,
     expiry_date DATE NOT NULL,
     consume_date DATE,
+    discard_date DATE,
     quantity DECIMAL(10,2),
     unit VARCHAR(20),
     memo TEXT,
@@ -54,7 +55,7 @@ CREATE TABLE ingredient (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES category(category_id),
-    CHECK (status IN ('active', 'consumed')),
+    CHECK (status IN ('active', 'consumed', 'discarded')),
     CHECK (storage_location IN ('냉장', '냉동', '실온'))
 );
 

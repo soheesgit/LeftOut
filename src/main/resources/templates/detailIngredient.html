@@ -45,6 +45,10 @@
             background-color: #ff9800;
             color: white;
         }
+        .btn-success {
+            background-color: #5cb85c;
+            color: white;
+        }
         .btn-danger {
             background-color: #f44336;
             color: white;
@@ -67,6 +71,10 @@
         }
         .status-consumed {
             background-color: #9e9e9e;
+            color: white;
+        }
+        .status-discarded {
+            background-color: #f44336;
             color: white;
         }
         .d-day {
@@ -142,8 +150,10 @@
             <th>상태</th>
             <td>
                 <span class="status-badge"
-                      th:classappend="${ingredient.status == 'active'} ? 'status-active' : 'status-consumed'"
-                      th:text="${ingredient.status == 'active'} ? '활성' : '소비완료'">
+                      th:classappend="${ingredient.status == 'active'} ? 'status-active' :
+                                     (${ingredient.status == 'consumed'} ? 'status-consumed' : 'status-discarded')"
+                      th:text="${ingredient.status == 'active'} ? '활성' :
+                               (${ingredient.status == 'consumed'} ? '소비완료' : '폐기됨')">
                 </span>
             </td>
         </tr>
@@ -151,12 +161,18 @@
             <th>소비일</th>
             <td th:text="${#temporals.format(ingredient.consumeDate, 'yyyy-MM-dd')}"></td>
         </tr>
+        <tr th:if="${ingredient.discardDate != null}">
+            <th>폐기일</th>
+            <td th:text="${#temporals.format(ingredient.discardDate, 'yyyy-MM-dd')}"></td>
+        </tr>
     </table>
 
     <div>
         <button class="btn btn-secondary" onclick="goList()">목록</button>
-        <button class="btn btn-primary" onclick="goUpdate()">수정</button>
-        <button class="btn btn-warning" onclick="markAsConsumed()" th:if="${ingredient.status == 'active'}">다 먹음</button>
+        <button class="btn btn-secondary" onclick="goStatistics()">📊 통계</button>
+        <button class="btn btn-primary" onclick="goUpdate()" th:if="${ingredient.status == 'active'}">수정</button>
+        <button class="btn btn-success" onclick="markAsConsumed()" th:if="${ingredient.status == 'active'}">✓ 다 먹음</button>
+        <button class="btn btn-warning" onclick="markAsDiscarded()" th:if="${ingredient.status == 'active'}">🗑️ 폐기</button>
         <button class="btn btn-danger" onclick="goDelete()">삭제</button>
     </div>
 
@@ -165,6 +181,10 @@
 
         function goList() {
             location.href = '/ingredient/list';
+        }
+
+        function goStatistics() {
+            location.href = '/statistics';
         }
 
         function goUpdate() {
@@ -179,8 +199,14 @@
             }
         }
 
+        function markAsDiscarded() {
+            if (confirm('이 식재료를 "폐기" 처리하시겠습니까?\n(메인 목록에서는 보이지 않지만 통계에 폐기 내역으로 남습니다)')) {
+                location.href = `/ingredient/discard/${ingredientId}`;
+            }
+        }
+
         function goDelete() {
-            if (confirm('정말 삭제하시겠습니까?\n삭제하면 복구할 수 없습니다.')) {
+            if (confirm('정말 삭제하시겠습니까?\n삭제하면 복구할 수 없으며 통계에도 반영되지 않습니다.')) {
                 location.href = `/ingredient/delete/${ingredientId}`;
                 alert('삭제되었습니다.');
             }

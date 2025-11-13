@@ -100,6 +100,11 @@ public class IngredientService {
         ingredientRepository.markAsConsumed(userId, id);
     }
 
+    // 식재료 '폐기' 처리
+    public void markAsDiscarded(Long userId, Integer id) {
+        ingredientRepository.markAsDiscarded(userId, id);
+    }
+
     // 식재료 완전 삭제
     public void delete(Long userId, Integer id) {
         ingredientRepository.delete(userId, id);

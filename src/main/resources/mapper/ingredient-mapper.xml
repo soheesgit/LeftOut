@@ -144,4 +144,108 @@
         WHERE category_id = #{categoryId} AND status = 'active'
     </select>
 
+    <!-- 식재료 폐기 처리 -->
+    <update id="markAsDiscarded" parameterType="map">
+        UPDATE ingredient
+        SET status = 'discarded',
+            discard_date = CURDATE()
+        WHERE ingredient_id = #{id} AND user_id = #{userId}
+    </update>
+
+    <!-- 통계: 기간별 폐기 통계 (일/주/월) -->
+    <select id="getDiscardStatsByPeriod" parameterType="map" resultType="map">
+        SELECT
+            <choose>
+                <when test="period == 'day'">
+                    DATE(discard_date) as date,
+                    COUNT(*) as count
+                </when>
+                <when test="period == 'week'">
+                    DATE(DATE_SUB(discard_date, INTERVAL WEEKDAY(discard_date) DAY)) as date,
+                    COUNT(*) as count
+                </when>
+                <when test="period == 'month'">
+                    DATE_FORMAT(discard_date, '%Y-%m-01') as date,
+                    COUNT(*) as count
+                </when>
+            </choose>
+        FROM ingredient
+        WHERE user_id = #{userId} AND status = 'discarded' AND discard_date IS NOT NULL
+        <choose>
+            <when test="period == 'day'">
+                AND discard_date >= DATE_SUB(CURDATE(), INTERVAL #{limit} DAY)
+            </when>
+            <when test="period == 'week'">
+                AND discard_date >= DATE_SUB(CURDATE(), INTERVAL #{limit} WEEK)
+            </when>
+            <when test="period == 'month'">
+                AND discard_date >= DATE_SUB(CURDATE(), INTERVAL #{limit} MONTH)
+            </when>
+        </choose>
+        GROUP BY date
+        ORDER BY date ASC
+    </select>
+
+    <!-- 통계: 카테고리별 폐기 통계 -->
+    <select id="getDiscardStatsByCategory" parameterType="map" resultType="map">
+        SELECT
+            c.category_name as categoryName,
+            COUNT(*) as count
+        FROM ingredient i
+        LEFT JOIN category c ON i.category_id = c.category_id
+        WHERE i.user_id = #{userId} AND i.status = 'discarded' AND i.discard_date IS NOT NULL
+        <choose>
+            <when test="period == 'day'">
+                AND i.discard_date >= DATE_SUB(CURDATE(), INTERVAL #{limit} DAY)
+            </when>
+            <when test="period == 'week'">
+                AND i.discard_date >= DATE_SUB(CURDATE(), INTERVAL #{limit} WEEK)
+            </when>
+            <when test="period == 'month'">
+                AND i.discard_date >= DATE_SUB(CURDATE(), INTERVAL #{limit} MONTH)
+            </when>
+        </choose>
+        GROUP BY c.category_name
+        ORDER BY count DESC
+    </select>
+
+    <!-- 통계: 월별 소비/폐기 통계 -->
+    <select id="getMonthlyConsumptionStats" parameterType="map" resultType="map">
+        SELECT
+            COALESCE(SUM(CASE WHEN status = 'consumed' THEN 1 ELSE 0 END), 0) as consumedCount,
+            COALESCE(SUM(CASE WHEN status = 'discarded' THEN 1 ELSE 0 END), 0) as discardedCount
+        FROM ingredient
+        WHERE user_id = #{userId}
+        AND (
+            (status = 'consumed' AND YEAR(consume_date) = #{year} AND MONTH(consume_date) = #{month})
+            OR
+            (status = 'discarded' AND YEAR(discard_date) = #{year} AND MONTH(discard_date) = #{month})
+        )
+    </select>
+
+    <!-- 통계: 보관 위치별 카테고리 분포 -->
+    <select id="getStorageLocationDistribution" parameterType="long" resultType="map">
+        SELECT
+            i.storage_location as storageLocation,
+            c.category_name as categoryName,
+            COUNT(*) as count
+        FROM ingredient i
+        LEFT JOIN category c ON i.category_id = c.category_id
+        WHERE i.user_id = #{userId} AND i.status = 'active'
+        GROUP BY i.storage_location, c.category_name
+        ORDER BY i.storage_location, count DESC
+    </select>
+
+    <!-- 통계: 현재 카테고리 구성 (active 식재료만) -->
+    <select id="getCategoryComposition" parameterType="long" resultType="map">
+        SELECT
+            c.category_name as categoryName,
+            COUNT(*) as count
+        FROM ingredient i
+        LEFT JOIN category c ON i.category_id = c.category_id
+        WHERE i.user_id = #{userId} AND i.status = 'active'
+        GROUP BY c.category_name
+        ORDER BY count DESC
+    </select>
+
 </mapper>
