@@ -13,3 +13,9 @@ spring:
 mybatis:
   mapper-locations: classpath:mapper/*.xml
   config-location: classpath:mybatis-config.xml
+
+# 식품안전나라 레시피 API 설정
+recipe:
+  api:
+    key: "0588ffa0bfe44ef1b340"
+    base-url: http://openapi.foodsafetykorea.go.kr/api

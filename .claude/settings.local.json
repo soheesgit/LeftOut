@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(dir:*)",
-      "Bash(mysql:*)"
+      "Bash(mysql:*)",
+      "WebFetch(domain:www.foodsafetykorea.go.kr)"
     ],
     "deny": [],
     "ask": []

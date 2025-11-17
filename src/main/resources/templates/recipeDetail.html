@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="|${recipe.rcpNm} - 레시피 상세|">레시피 상세</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+        .back-btn:hover {
+            background-color: #5a6268;
+        }
+        .recipe-header {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .recipe-image-large {
+            flex: 1;
+            min-width: 300px;
+        }
+        .recipe-image-large img {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .recipe-info {
+            flex: 1;
+            min-width: 300px;
+        }
+        .info-section {
+            margin-bottom: 20px;
+        }
+        .info-section h3 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .info-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background-color: #e7f3ff;
+            color: #0066cc;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        .nutrition-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .nutrition-item {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .nutrition-item .label {
+            font-size: 12px;
+            color: #777;
+            margin-bottom: 5px;
+        }
+        .nutrition-item .value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+        .match-section {
+            background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .match-score-large {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+        .match-bar-container {
+            width: 100%;
+            height: 30px;
+            background-color: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        .match-bar {
+            height: 100%;
+            background: linear-gradient(to right, #4CAF50, #8BC34A);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .ingredients-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #fffef7;
+            border-radius: 10px;
+            border-left: 4px solid #FFC107;
+        }
+        .ingredients-section h3 {
+            color: #F57C00;
+            margin-bottom: 15px;
+        }
+        .ingredients-list {
+            line-height: 1.8;
+            color: #555;
+            white-space: pre-wrap;
+        }
+        .cooking-steps {
+            margin-top: 30px;
+        }
+        .cooking-steps h3 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        .step {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            align-items: flex-start;
+        }
+        .step-number {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .step-content {
+            flex: 1;
+        }
+        .step-image {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .step-text {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .tip-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e3f2fd;
+            border-radius: 10px;
+            border-left: 4px solid #2196F3;
+        }
+        .tip-section h3 {
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+        .hashtag {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: #E1F5FE;
+            color: #0277BD;
+            border-radius: 15px;
+            font-size: 13px;
+            margin-right: 5px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/recipe/list" class="back-btn">← 목록으로</a>
+
+        <h1 th:text="${recipe.rcpNm}">레시피 이름</h1>
+
+        <div class="recipe-header">
+            <div class="recipe-image-large">
+                <img th:src="${recipe.attFileNoMk}"
+                     th:alt="${recipe.rcpNm}"
+                     onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
+            </div>
+
+            <div class="recipe-info">
+                <div class="info-section">
+                    <h3>기본 정보</h3>
+                    <span class="info-badge" th:text="${recipe.rcpPat2}">요리종류</span>
+                    <span class="info-badge" th:text="${recipe.rcpWay2}">조리방법</span>
+                </div>
+
+                <div class="match-section">
+                    <div class="match-score-large">
+                        매칭 점수: <span th:text="${recipe.matchScore}">0</span>점
+                    </div>
+                    <div class="match-bar-container">
+                        <div class="match-bar"
+                             th:style="|width: ${recipe.totalIngredientCount > 0 ? (recipe.matchedIngredientCount * 100.0 / recipe.totalIngredientCount) : 0}%|">
+                            <span th:text="${recipe.matchedIngredientCount}">0</span> / <span th:text="${recipe.totalIngredientCount}">0</span> 재료
+                            (<span th:text="|${recipe.totalIngredientCount > 0 ? #numbers.formatDecimal((recipe.matchedIngredientCount * 100.0 / recipe.totalIngredientCount), 1, 0) : 0}%|">0%</span>)
+                        </div>
+                    </div>
+                    <div th:if="${recipe.matchedIngredients != null && !recipe.matchedIngredients.isEmpty()}" style="color: #2E7D32; font-weight: bold;">
+                        보유 재료: <span th:text="${recipe.matchedIngredients}">-</span>
+                    </div>
+                </div>
+
+                <div class="info-section" th:if="${recipe.infoWgt != null && !recipe.infoWgt.isEmpty()}">
+                    <h3>영양 정보 (1인분 기준)</h3>
+                    <div class="nutrition-grid">
+                        <div class="nutrition-item" th:if="${recipe.infoWgt != null && !recipe.infoWgt.isEmpty()}">
+                            <div class="label">중량</div>
+                            <div class="value" th:text="${recipe.infoWgt}">-</div>
+                        </div>
+                        <div class="nutrition-item" th:if="${recipe.infoEng != null && !recipe.infoEng.isEmpty()}">
+                            <div class="label">열량</div>
+                            <div class="value" th:text="|${recipe.infoEng} kcal|">-</div>
+                        </div>
+                        <div class="nutrition-item" th:if="${recipe.infoCar != null && !recipe.infoCar.isEmpty()}">
+                            <div class="label">탄수화물</div>
+                            <div class="value" th:text="|${recipe.infoCar}g|">-</div>
+                        </div>
+                        <div class="nutrition-item" th:if="${recipe.infoPro != null && !recipe.infoPro.isEmpty()}">
+                            <div class="label">단백질</div>
+                            <div class="value" th:text="|${recipe.infoPro}g|">-</div>
+                        </div>
+                        <div class="nutrition-item" th:if="${recipe.infoFat != null && !recipe.infoFat.isEmpty()}">
+                            <div class="label">지방</div>
+                            <div class="value" th:text="|${recipe.infoFat}g|">-</div>
+                        </div>
+                        <div class="nutrition-item" th:if="${recipe.infoNa != null && !recipe.infoNa.isEmpty()}">
+                            <div class="label">나트륨</div>
+                            <div class="value" th:text="|${recipe.infoNa}mg|">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ingredients-section" th:if="${recipe.rcpPartsDtls != null && !recipe.rcpPartsDtls.isEmpty()}">
+            <h3>필요한 재료</h3>
+            <div class="ingredients-list" th:text="${recipe.rcpPartsDtls}">재료 목록</div>
+        </div>
+
+        <div class="cooking-steps">
+            <h3>조리 방법</h3>
+
+            <div class="step" th:if="${recipe.manual01 != null && !recipe.manual01.isEmpty()}">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <div class="step-text" th:text="${recipe.manual01}">조리 설명</div>
+                    <img th:if="${recipe.manualImg01 != null && !recipe.manualImg01.isEmpty()}"
+                         th:src="${recipe.manualImg01}"
+                         class="step-image"
+                         onerror="this.style.display='none'">
+                </div>
+            </div>
+
+            <div class="step" th:if="${recipe.manual02 != null && !recipe.manual02.isEmpty()}">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <div class="step-text" th:text="${recipe.manual02}">조리 설명</div>
+                    <img th:if="${recipe.manualImg02 != null && !recipe.manualImg02.isEmpty()}"
+                         th:src="${recipe.manualImg02}"
+                         class="step-image"
+                         onerror="this.style.display='none'">
+                </div>
+            </div>
+
+            <div class="step" th:if="${recipe.manual03 != null && !recipe.manual03.isEmpty()}">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <div class="step-text" th:text="${recipe.manual03}">조리 설명</div>
+                    <img th:if="${recipe.manualImg03 != null && !recipe.manualImg03.isEmpty()}"
+                         th:src="${recipe.manualImg03}"
+                         class="step-image"
+                         onerror="this.style.display='none'">
+                </div>
+            </div>
+
+            <div class="step" th:if="${recipe.manual04 != null && !recipe.manual04.isEmpty()}">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <div class="step-text" th:text="${recipe.manual04}">조리 설명</div>
+                    <img th:if="${recipe.manualImg04 != null && !recipe.manualImg04.isEmpty()}"
+                         th:src="${recipe.manualImg04}"
+                         class="step-image"
+                         onerror="this.style.display='none'">
+                </div>
+            </div>
+
+            <div class="step" th:if="${recipe.manual05 != null && !recipe.manual05.isEmpty()}">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <div class="step-text" th:text="${recipe.manual05}">조리 설명</div>
+                    <img th:if="${recipe.manualImg05 != null && !recipe.manualImg05.isEmpty()}"
+                         th:src="${recipe.manualImg05}"
+                         class="step-image"
+                         onerror="this.style.display='none'">
+                </div>
+            </div>
+
+            <div class="step" th:if="${recipe.manual06 != null && !recipe.manual06.isEmpty()}">
+                <div class="step-number">6</div>
+                <div class="step-content">
+                    <div class="step-text" th:text="${recipe.manual06}">조리 설명</div>
+                    <img th:if="${recipe.manualImg06 != null && !recipe.manualImg06.isEmpty()}"
+                         th:src="${recipe.manualImg06}"
+                         class="step-image"
+                         onerror="this.style.display='none'">
+                </div>
+            </div>
+
+            <div class="step" th:if="${recipe.manual07 != null && !recipe.manual07.isEmpty()}">
+                <div class="step-number">7</div>
+                <div class="step-content">
+                    <div class="step-text" th:text="${recipe.manual07}">조리 설명</div>
+                    <img th:if="${recipe.manualImg07 != null && !recipe.manualImg07.isEmpty()}"
+                         th:src="${recipe.manualImg07}"
+                         class="step-image"
+                         onerror="this.style.display='none'">
+                </div>
+            </div>
+
+            <div class="step" th:if="${recipe.manual08 != null && !recipe.manual08.isEmpty()}">
+                <div class="step-number">8</div>
+                <div class="step-content">
+                    <div class="step-text" th:text="${recipe.manual08}">조리 설명</div>
+                    <img th:if="${recipe.manualImg08 != null && !recipe.manualImg08.isEmpty()}"
+                         th:src="${recipe.manualImg08}"
+                         class="step-image"
+                         onerror="this.style.display='none'">
+                </div>
+            </div>
+
+            <div class="step" th:if="${recipe.manual09 != null && !recipe.manual09.isEmpty()}">
+                <div class="step-number">9</div>
+                <div class="step-content">
+                    <div class="step-text" th:text="${recipe.manual09}">조리 설명</div>
+                    <img th:if="${recipe.manualImg09 != null && !recipe.manualImg09.isEmpty()}"
+                         th:src="${recipe.manualImg09}"
+                         class="step-image"
+                         onerror="this.style.display='none'">
+                </div>
+            </div>
+
+            <div class="step" th:if="${recipe.manual10 != null && !recipe.manual10.isEmpty()}">
+                <div class="step-number">10</div>
+                <div class="step-content">
+                    <div class="step-text" th:text="${recipe.manual10}">조리 설명</div>
+                    <img th:if="${recipe.manualImg10 != null && !recipe.manualImg10.isEmpty()}"
+                         th:src="${recipe.manualImg10}"
+                         class="step-image"
+                         onerror="this.style.display='none'">
+                </div>
+            </div>
+        </div>
+
+        <div class="tip-section" th:if="${recipe.rcpNaTip != null && !recipe.rcpNaTip.isEmpty()}">
+            <h3>조리 TIP</h3>
+            <p th:text="${recipe.rcpNaTip}">조리 팁</p>
+        </div>
+
+        <div th:if="${recipe.hashTag != null && !recipe.hashTag.isEmpty()}" style="margin-top: 20px;">
+            <span class="hashtag" th:each="tag : ${#strings.arraySplit(recipe.hashTag, '#')}"
+                  th:if="${!#strings.isEmpty(tag)}"
+                  th:text="'#' + ${tag}">
+                #태그
+            </span>
+        </div>
+    </div>
+</body>
+</html>
