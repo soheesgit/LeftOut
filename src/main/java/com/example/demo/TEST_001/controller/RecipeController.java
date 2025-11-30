@@ -28,6 +28,8 @@ public class RecipeController {
     public String recipeList(
             @RequestParam(required = false) String rcpWay2,  // 조리방법 (예: 찌기, 끓이기 등)
             @RequestParam(required = false) String rcpPat2,  // 요리종류 (예: 반찬, 국, 후식 등)
+            @RequestParam(required = false) String searchRecipeName,  // 레시피명 검색어
+            @RequestParam(required = false) String searchIngredient,  // 재료명 검색어
             @RequestParam(defaultValue = "1") int page,      // 페이지 번호
             HttpSession session,
             Model model) {
@@ -48,6 +50,8 @@ public class RecipeController {
                 loginUser.getId(),
                 rcpWay2,
                 rcpPat2,
+                searchRecipeName,
+                searchIngredient,
                 startIdx,
                 endIdx
         );
@@ -57,6 +61,8 @@ public class RecipeController {
         model.addAttribute("currentPage", page);
         model.addAttribute("rcpWay2", rcpWay2);
         model.addAttribute("rcpPat2", rcpPat2);
+        model.addAttribute("searchRecipeName", searchRecipeName);
+        model.addAttribute("searchIngredient", searchIngredient);
 
         return "recipeList";
     }

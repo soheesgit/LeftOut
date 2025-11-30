@@ -2,12 +2,15 @@ package com.example.demo.TEST_001.service;
 
 import com.example.demo.TEST_001.repository.IngredientRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StatisticsService {
@@ -20,6 +23,7 @@ public class StatisticsService {
      * @param limit 조회 기간 (7일, 4주, 12개월 등)
      * @return 날짜별 폐기 횟수
      */
+    @Transactional(readOnly = true)
     public List<Map<String, Object>> getDiscardStatsByPeriod(Long userId, String period, int limit) {
         return ingredientRepository.getDiscardStatsByPeriod(userId, period, limit);
     }
@@ -130,7 +134,9 @@ public class StatisticsService {
 
                 catInfo.put("categoryName", categoryName != null ? categoryName : "기타");
                 catInfo.put("count", count);
-                catInfo.put("percentage", Math.round((double) count / totalCount * 100));
+                // 0으로 나누기 방지
+                long percentage = totalCount > 0 ? Math.round((double) count / totalCount * 100) : 0;
+                catInfo.put("percentage", percentage);
                 categoryData.add(catInfo);
             }
 

@@ -5,11 +5,14 @@ import com.example.demo.TEST_001.dto.IngredientDefaultExpiryDTO;
 import com.example.demo.TEST_001.repository.IngredientDefaultExpiryRepository;
 import com.example.demo.TEST_001.repository.IngredientRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class IngredientService {
@@ -17,11 +20,13 @@ public class IngredientService {
     private final IngredientDefaultExpiryRepository defaultExpiryRepository;
 
     // 식재료 목록 조회 (유통기한 임박순)
+    @Transactional(readOnly = true)
     public List<IngredientDTO> getList(Long userId) {
         return ingredientRepository.getList(userId);
     }
 
     // 카테고리별 식재료 목록 조회
+    @Transactional(readOnly = true)
     public List<IngredientDTO> getListByCategory(Long userId, Integer categoryId) {
         if (categoryId == null || categoryId == 0) {
             return getList(userId);
@@ -30,6 +35,7 @@ public class IngredientService {
     }
 
     // 검색 및 필터링 식재료 목록 조회
+    @Transactional(readOnly = true)
     public List<IngredientDTO> getListWithFilter(Long userId, Integer categoryId, String searchKeyword, String storageLocation) {
         // 검색어, 카테고리, 보관 위치 모두 없으면 전체 목록
         if ((searchKeyword == null || searchKeyword.trim().isEmpty()) &&
@@ -41,11 +47,13 @@ public class IngredientService {
     }
 
     // 식재료 상세 조회
+    @Transactional(readOnly = true)
     public IngredientDTO detail(Long userId, Integer id) {
         return ingredientRepository.detail(userId, id);
     }
 
     // 식재료 추가
+    @Transactional
     public void save(Long userId, IngredientDTO ingredientDTO) {
         // 입력 검증
         if (ingredientDTO == null) {
@@ -89,6 +97,7 @@ public class IngredientService {
     }
 
     // 식재료 수정
+    @Transactional
     public void update(Long userId, IngredientDTO ingredientDTO) {
         // userId 설정 (보안 검증을 위해)
         ingredientDTO.setUserId(userId);
@@ -96,26 +105,31 @@ public class IngredientService {
     }
 
     // 식재료 '다 먹음' 처리 (소비 완료)
+    @Transactional
     public void markAsConsumed(Long userId, Integer id) {
         ingredientRepository.markAsConsumed(userId, id);
     }
 
     // 식재료 '폐기' 처리
+    @Transactional
     public void markAsDiscarded(Long userId, Integer id) {
         ingredientRepository.markAsDiscarded(userId, id);
     }
 
     // 식재료 완전 삭제
+    @Transactional
     public void delete(Long userId, Integer id) {
         ingredientRepository.delete(userId, id);
     }
 
     // 식재료명으로 기본 유통기한 조회
+    @Transactional(readOnly = true)
     public IngredientDefaultExpiryDTO getDefaultExpiry(String ingredientName) {
         return defaultExpiryRepository.getByName(ingredientName);
     }
 
     // 모든 기본 유통기한 정보 조회
+    @Transactional(readOnly = true)
     public List<IngredientDefaultExpiryDTO> getAllDefaultExpiry() {
         return defaultExpiryRepository.getAll();
     }

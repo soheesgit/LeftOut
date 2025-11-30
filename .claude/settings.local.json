@@ -3,7 +3,10 @@
     "allow": [
       "Bash(dir:*)",
       "Bash(mysql:*)",
-      "WebFetch(domain:www.foodsafetykorea.go.kr)"
+      "WebFetch(domain:www.foodsafetykorea.go.kr)",
+      "Bash(cat:*)",
+      "Bash(./gradlew build:*)",
+      "Bash(./gradlew clean:*)"
     ],
     "deny": [],
     "ask": []

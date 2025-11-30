@@ -6,13 +6,18 @@ import com.example.demo.TEST_001.repository.IngredientRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RecipeService {
@@ -30,7 +35,9 @@ public class RecipeService {
     /**
      * 레시피 목록 조회 (사용자 보유 식재료 기반 매칭)
      */
-    public List<RecipeDTO> getRecipeList(Long userId, String rcpWay2, String rcpPat2, int startIdx, int endIdx) {
+    public List<RecipeDTO> getRecipeList(Long userId, String rcpWay2, String rcpPat2,
+                                         String searchRecipeName, String searchIngredient,
+                                         int startIdx, int endIdx) {
         try {
             // 1. 사용자의 활성 식재료 목록 조회
             List<IngredientDTO> userIngredients = ingredientRepository.getList(userId);
@@ -45,6 +52,23 @@ public class RecipeService {
 
             // 3. JSON 파싱
             List<RecipeDTO> recipes = parseRecipeResponse(jsonResponse);
+
+            // 3.5. 검색 필터 적용 (레시피명, 재료명)
+            if (searchRecipeName != null && !searchRecipeName.trim().isEmpty()) {
+                String searchKeyword = searchRecipeName.trim().toLowerCase();
+                recipes = recipes.stream()
+                        .filter(r -> r.getRcpNm() != null &&
+                                r.getRcpNm().toLowerCase().contains(searchKeyword))
+                        .collect(Collectors.toList());
+            }
+
+            if (searchIngredient != null && !searchIngredient.trim().isEmpty()) {
+                String searchKeyword = searchIngredient.trim().toLowerCase();
+                recipes = recipes.stream()
+                        .filter(r -> r.getRcpPartsDtls() != null &&
+                                r.getRcpPartsDtls().toLowerCase().contains(searchKeyword))
+                        .collect(Collectors.toList());
+            }
 
             // 4. 매칭 점수 계산
             for (RecipeDTO recipe : recipes) {
@@ -64,8 +88,17 @@ public class RecipeService {
 
             return recipes;
 
+        } catch (HttpClientErrorException e) {
+            log.error("API 클라이언트 오류 발생 (상태 코드: {}): {}", e.getStatusCode(), e.getMessage());
+            return new ArrayList<>();
+        } catch (HttpServerErrorException e) {
+            log.error("API 서버 오류 발생 (상태 코드: {}): {}", e.getStatusCode(), e.getMessage());
+            return new ArrayList<>();
+        } catch (ResourceAccessException e) {
+            log.error("API 연결 오류 (타임아웃 또는 네트워크 문제): {}", e.getMessage());
+            return new ArrayList<>();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("레시피 조회 중 예상치 못한 오류 발생", e);
             return new ArrayList<>();
         }
     }
@@ -98,8 +131,17 @@ public class RecipeService {
 
             return recipe;
 
+        } catch (HttpClientErrorException e) {
+            log.error("레시피 상세 조회 - API 클라이언트 오류 (상태 코드: {}): {}", e.getStatusCode(), e.getMessage());
+            return null;
+        } catch (HttpServerErrorException e) {
+            log.error("레시피 상세 조회 - API 서버 오류 (상태 코드: {}): {}", e.getStatusCode(), e.getMessage());
+            return null;
+        } catch (ResourceAccessException e) {
+            log.error("레시피 상세 조회 - API 연결 오류: {}", e.getMessage());
+            return null;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("레시피 상세 조회 중 예상치 못한 오류 발생", e);
             return null;
         }
     }

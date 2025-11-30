@@ -39,6 +39,7 @@
             gap: 15px;
             align-items: center;
             flex-wrap: wrap;
+            margin-bottom: 10px;
         }
         .filter-row label {
             font-weight: bold;
@@ -52,6 +53,17 @@
             cursor: pointer;
         }
         .filter-row select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        .filter-row input[type="text"] {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            width: 200px;
+        }
+        .filter-row input[type="text"]:focus {
             outline: none;
             border-color: #4CAF50;
         }
@@ -187,11 +199,23 @@
 <body>
     <h1>
         <span>레시피 조회</span>
-        <a href="/index" class="back-btn">← 메인으로</a>
+        <a href="/" class="back-btn">← 메인으로</a>
     </h1>
 
     <div class="filter-section">
         <form id="filterForm" method="get" action="/recipe/list">
+            <!-- 첫 번째 행: 검색어 입력 -->
+            <div class="filter-row">
+                <label for="searchRecipeName">레시피명:</label>
+                <input type="text" id="searchRecipeName" name="searchRecipeName"
+                       th:value="${searchRecipeName}" placeholder="레시피 이름으로 검색">
+
+                <label for="searchIngredient">재료명:</label>
+                <input type="text" id="searchIngredient" name="searchIngredient"
+                       th:value="${searchIngredient}" placeholder="재료 이름으로 검색">
+            </div>
+
+            <!-- 두 번째 행: 필터 선택 -->
             <div class="filter-row">
                 <label for="rcpPat2">요리종류:</label>
                 <select id="rcpPat2" name="rcpPat2">
@@ -267,13 +291,13 @@
 
     <div class="pagination" th:if="${recipes != null && !recipes.isEmpty()}">
         <a th:if="${currentPage > 1}"
-           th:href="@{/recipe/list(page=${currentPage - 1}, rcpPat2=${rcpPat2}, rcpWay2=${rcpWay2})}">
+           th:href="@{/recipe/list(page=${currentPage - 1}, rcpPat2=${rcpPat2}, rcpWay2=${rcpWay2}, searchRecipeName=${searchRecipeName}, searchIngredient=${searchIngredient})}">
             이전
         </a>
 
         <span class="current" th:text="${currentPage}">1</span>
 
-        <a th:href="@{/recipe/list(page=${currentPage + 1}, rcpPat2=${rcpPat2}, rcpWay2=${rcpWay2})}">
+        <a th:href="@{/recipe/list(page=${currentPage + 1}, rcpPat2=${rcpPat2}, rcpWay2=${rcpWay2}, searchRecipeName=${searchRecipeName}, searchIngredient=${searchIngredient})}">
             다음
         </a>
     </div>
