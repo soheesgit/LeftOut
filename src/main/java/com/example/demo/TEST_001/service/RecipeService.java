@@ -2,16 +2,16 @@ package com.example.demo.TEST_001.service;
 
 import com.example.demo.TEST_001.dto.IngredientDTO;
 import com.example.demo.TEST_001.dto.RecipeDTO;
+import com.example.demo.TEST_001.dto.UserRecipeDTO;
 import com.example.demo.TEST_001.repository.IngredientRepository;
+import com.example.demo.TEST_001.repository.UserRecipeRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
@@ -24,6 +24,9 @@ public class RecipeService {
 
     private final RestTemplate restTemplate;
     private final IngredientRepository ingredientRepository;
+    private final UserRecipeRepository userRecipeRepository;
+    private final RecipeMatchService recipeMatchService;
+    private final SqlSessionTemplate sql;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${recipe.api.key}")
@@ -33,92 +36,61 @@ public class RecipeService {
     private String baseUrl;
 
     /**
-     * 레시피 목록 조회 (사용자 보유 식재료 기반 매칭)
+     * 레시피 목록 조회 + 전체 개수 (DB 기반 - 성능 최적화 버전)
+     * 미리 계산된 매칭 점수를 사용하여 DB에서 바로 정렬 + 페이징
      */
-    public List<RecipeDTO> getRecipeList(Long userId, String rcpWay2, String rcpPat2,
-                                         String searchRecipeName, String searchIngredient,
-                                         int startIdx, int endIdx) {
+    public Map<String, Object> getRecipeListWithCount(Long userId, String rcpWay2, String rcpPat2,
+                                                       String searchRecipeName, String searchIngredient,
+                                                       int page, int size) {
+        Map<String, Object> result = new HashMap<>();
+
         try {
-            // 1. 사용자의 활성 식재료 목록 조회
-            List<IngredientDTO> userIngredients = ingredientRepository.getList(userId);
-            Set<String> userIngredientNames = userIngredients.stream()
-                    .map(IngredientDTO::getIngredientName)
-                    .map(String::trim)
-                    .collect(Collectors.toSet());
-
-            // 2. 식품안전나라 API 호출
-            String url = buildApiUrl(rcpWay2, rcpPat2, startIdx, endIdx);
-            String jsonResponse = restTemplate.getForObject(url, String.class);
-
-            // 3. JSON 파싱
-            List<RecipeDTO> recipes = parseRecipeResponse(jsonResponse);
-
-            // 3.5. 검색 필터 적용 (레시피명, 재료명)
-            if (searchRecipeName != null && !searchRecipeName.trim().isEmpty()) {
-                String searchKeyword = searchRecipeName.trim().toLowerCase();
-                recipes = recipes.stream()
-                        .filter(r -> r.getRcpNm() != null &&
-                                r.getRcpNm().toLowerCase().contains(searchKeyword))
-                        .collect(Collectors.toList());
+            // 1. 매칭 점수가 계산되어 있지 않으면 계산 (최초 1회만)
+            if (!recipeMatchService.hasMatchScores(userId)) {
+                log.info("사용자 {} 매칭 점수 최초 계산 시작", userId);
+                recipeMatchService.recalculateMatchScores(userId);
             }
 
-            if (searchIngredient != null && !searchIngredient.trim().isEmpty()) {
-                String searchKeyword = searchIngredient.trim().toLowerCase();
-                recipes = recipes.stream()
-                        .filter(r -> r.getRcpPartsDtls() != null &&
-                                r.getRcpPartsDtls().toLowerCase().contains(searchKeyword))
-                        .collect(Collectors.toList());
-            }
+            // 2. 페이징 파라미터 계산
+            int offset = (page - 1) * size;
 
-            // 4. 매칭 점수 계산
-            for (RecipeDTO recipe : recipes) {
-                calculateMatchScore(recipe, userIngredientNames);
-            }
+            // 3. DB에서 정렬 + 페이징된 결과 바로 조회
+            Map<String, Object> params = new HashMap<>();
+            params.put("userId", userId);
+            params.put("rcpWay2", rcpWay2);
+            params.put("rcpPat2", rcpPat2);
+            params.put("searchRecipeName", searchRecipeName);
+            params.put("searchIngredient", searchIngredient);
+            params.put("limit", size);
+            params.put("offset", offset);
 
-            // 5. 매칭 점수 내림차순 정렬
-            recipes.sort((r1, r2) -> {
-                // 매칭 점수 우선 비교
-                int scoreCompare = Double.compare(r2.getMatchScore(), r1.getMatchScore());
-                if (scoreCompare != 0) {
-                    return scoreCompare;
-                }
-                // 점수가 같으면 매칭된 재료 개수로 비교
-                return Integer.compare(r2.getMatchedIngredientCount(), r1.getMatchedIngredientCount());
-            });
+            List<UserRecipeDTO> recipes = sql.selectList("userRecipeMatch.findApiRecipesWithMatch", params);
 
-            return recipes;
+            // 4. 전체 개수 조회 (필터 적용)
+            int totalCount = sql.selectOne("userRecipeMatch.countApiRecipesFiltered", params);
 
-        } catch (HttpClientErrorException e) {
-            log.error("API 클라이언트 오류 발생 (상태 코드: {}): {}", e.getStatusCode(), e.getMessage());
-            return new ArrayList<>();
-        } catch (HttpServerErrorException e) {
-            log.error("API 서버 오류 발생 (상태 코드: {}): {}", e.getStatusCode(), e.getMessage());
-            return new ArrayList<>();
-        } catch (ResourceAccessException e) {
-            log.error("API 연결 오류 (타임아웃 또는 네트워크 문제): {}", e.getMessage());
-            return new ArrayList<>();
+            result.put("recipes", recipes);
+            result.put("totalCount", totalCount);
+
         } catch (Exception e) {
-            log.error("레시피 조회 중 예상치 못한 오류 발생", e);
-            return new ArrayList<>();
+            log.error("레시피 조회 중 오류 발생", e);
+            result.put("recipes", new ArrayList<>());
+            result.put("totalCount", 0);
         }
+
+        return result;
     }
 
     /**
-     * 특정 레시피 상세 조회
+     * 특정 레시피 상세 조회 (DB 기반)
      */
-    public RecipeDTO getRecipeDetail(String rcpSeq, Long userId) {
+    public UserRecipeDTO getRecipeDetail(String rcpSeq, Long userId) {
         try {
-            // API 호출
-            String url = String.format("%s/%s/COOKRCP01/json/1/1/RCP_SEQ=%s", baseUrl, apiKey, rcpSeq);
-            String jsonResponse = restTemplate.getForObject(url, String.class);
-
-            // JSON 파싱
-            List<RecipeDTO> recipes = parseRecipeResponse(jsonResponse);
-            if (recipes.isEmpty()) {
+            // DB에서 조회
+            UserRecipeDTO recipe = userRecipeRepository.findByRcpSeq(rcpSeq);
+            if (recipe == null) {
                 return null;
             }
-
-            RecipeDTO recipe = recipes.get(0);
 
             // 사용자 식재료 기반 매칭 정보 추가
             List<IngredientDTO> userIngredients = ingredientRepository.getList(userId);
@@ -127,46 +99,168 @@ public class RecipeService {
                     .map(String::trim)
                     .collect(Collectors.toSet());
 
-            calculateMatchScore(recipe, userIngredientNames);
+            calculateMatchScoreForUserRecipe(recipe, userIngredientNames);
 
             return recipe;
 
-        } catch (HttpClientErrorException e) {
-            log.error("레시피 상세 조회 - API 클라이언트 오류 (상태 코드: {}): {}", e.getStatusCode(), e.getMessage());
-            return null;
-        } catch (HttpServerErrorException e) {
-            log.error("레시피 상세 조회 - API 서버 오류 (상태 코드: {}): {}", e.getStatusCode(), e.getMessage());
-            return null;
-        } catch (ResourceAccessException e) {
-            log.error("레시피 상세 조회 - API 연결 오류: {}", e.getMessage());
-            return null;
         } catch (Exception e) {
-            log.error("레시피 상세 조회 중 예상치 못한 오류 발생", e);
+            log.error("레시피 상세 조회 중 오류 발생", e);
             return null;
         }
     }
 
     /**
-     * API URL 생성
+     * API 레시피 데이터 동기화 (DB에 저장)
      */
-    private String buildApiUrl(String rcpWay2, String rcpPat2, int startIdx, int endIdx) {
-        StringBuilder url = new StringBuilder();
-        url.append(baseUrl).append("/").append(apiKey).append("/COOKRCP01/json/")
-                .append(startIdx).append("/").append(endIdx);
+    public void syncApiRecipes() {
+        log.info("API 레시피 데이터 동기화 시작...");
 
-        List<String> params = new ArrayList<>();
-        if (rcpWay2 != null && !rcpWay2.isEmpty()) {
-            params.add("RCP_WAY2=" + rcpWay2);
+        try {
+            int existingCount = userRecipeRepository.countApiRecipes();
+            if (existingCount > 0) {
+                log.info("이미 {} 개의 API 레시피가 DB에 저장되어 있습니다. 동기화를 건너뜁니다.", existingCount);
+                return;
+            }
+
+            int batchSize = 100;
+            int startIdx = 1;
+            int totalSaved = 0;
+
+            while (true) {
+                int endIdx = startIdx + batchSize - 1;
+                String url = String.format("%s/%s/COOKRCP01/json/%d/%d", baseUrl, apiKey, startIdx, endIdx);
+
+                log.info("API 호출: {} ~ {}", startIdx, endIdx);
+                String jsonResponse = restTemplate.getForObject(url, String.class);
+
+                List<RecipeDTO> recipes = parseRecipeResponse(jsonResponse);
+                if (recipes.isEmpty()) {
+                    log.info("더 이상 레시피가 없습니다. 동기화 완료.");
+                    break;
+                }
+
+                for (RecipeDTO apiRecipe : recipes) {
+                    // 중복 체크
+                    if (userRecipeRepository.existsByRcpSeq(apiRecipe.getRcpSeq())) {
+                        continue;
+                    }
+
+                    // RecipeDTO -> UserRecipeDTO 변환 후 저장
+                    UserRecipeDTO userRecipe = convertToUserRecipeDTO(apiRecipe);
+                    userRecipeRepository.saveApiRecipe(userRecipe);
+                    totalSaved++;
+                }
+
+                log.info("{} 개 저장 완료 (총 {}개)", recipes.size(), totalSaved);
+
+                // 다음 배치
+                startIdx = endIdx + 1;
+
+                // API 호출 간격 두기 (Rate Limit 방지)
+                Thread.sleep(500);
+            }
+
+            log.info("API 레시피 동기화 완료. 총 {}개 저장됨.", totalSaved);
+
+        } catch (Exception e) {
+            log.error("API 레시피 동기화 중 오류 발생", e);
         }
-        if (rcpPat2 != null && !rcpPat2.isEmpty()) {
-            params.add("RCP_PAT2=" + rcpPat2);
+    }
+
+    /**
+     * RecipeDTO -> UserRecipeDTO 변환 (재료 미리 파싱하여 저장)
+     */
+    private UserRecipeDTO convertToUserRecipeDTO(RecipeDTO apiRecipe) {
+        UserRecipeDTO dto = new UserRecipeDTO();
+        dto.setSource("api");
+        dto.setRcpSeq(apiRecipe.getRcpSeq());
+        dto.setTitle(apiRecipe.getRcpNm());
+        dto.setRcpWay2(apiRecipe.getRcpWay2());
+        dto.setRcpPat2(apiRecipe.getRcpPat2());
+        dto.setRcpPartsDtls(apiRecipe.getRcpPartsDtls());
+        dto.setInfoWgt(apiRecipe.getInfoWgt());
+        dto.setInfoEng(apiRecipe.getInfoEng());
+        dto.setInfoCar(apiRecipe.getInfoCar());
+        dto.setInfoPro(apiRecipe.getInfoPro());
+        dto.setInfoFat(apiRecipe.getInfoFat());
+        dto.setInfoNa(apiRecipe.getInfoNa());
+        dto.setRcpNaTip(apiRecipe.getRcpNaTip());
+        dto.setHashTag(apiRecipe.getHashTag());
+        dto.setAttFileNoMain(apiRecipe.getAttFileNoMain());
+        dto.setAttFileNoMk(apiRecipe.getAttFileNoMk());
+
+        // 재료 미리 파싱하여 JSON으로 저장 (성능 최적화)
+        String rcpPartsDtls = apiRecipe.getRcpPartsDtls();
+        if (rcpPartsDtls != null && !rcpPartsDtls.isEmpty()) {
+            Set<String> ingredientSet = new HashSet<>();
+            String[] ingredients = rcpPartsDtls.split("[,\n•·]");
+            for (String ingredient : ingredients) {
+                String cleaned = ingredient.trim()
+                        .replaceAll("\\d+.*", "")
+                        .replaceAll("[()]", "")
+                        .trim();
+                if (!cleaned.isEmpty()) {
+                    ingredientSet.add(cleaned);
+                }
+            }
+            // JSON 배열로 변환
+            try {
+                dto.setParsedIngredients(objectMapper.writeValueAsString(ingredientSet));
+                dto.setIngredientCount(ingredientSet.size());
+            } catch (Exception e) {
+                dto.setParsedIngredients("[]");
+                dto.setIngredientCount(0);
+            }
+        } else {
+            dto.setParsedIngredients("[]");
+            dto.setIngredientCount(0);
         }
 
-        if (!params.isEmpty()) {
-            url.append("/").append(String.join("&", params));
-        }
+        // 조리 단계
+        dto.setManual01(apiRecipe.getManual01());
+        dto.setManual02(apiRecipe.getManual02());
+        dto.setManual03(apiRecipe.getManual03());
+        dto.setManual04(apiRecipe.getManual04());
+        dto.setManual05(apiRecipe.getManual05());
+        dto.setManual06(apiRecipe.getManual06());
+        dto.setManual07(apiRecipe.getManual07());
+        dto.setManual08(apiRecipe.getManual08());
+        dto.setManual09(apiRecipe.getManual09());
+        dto.setManual10(apiRecipe.getManual10());
+        dto.setManual11(apiRecipe.getManual11());
+        dto.setManual12(apiRecipe.getManual12());
+        dto.setManual13(apiRecipe.getManual13());
+        dto.setManual14(apiRecipe.getManual14());
+        dto.setManual15(apiRecipe.getManual15());
+        dto.setManual16(apiRecipe.getManual16());
+        dto.setManual17(apiRecipe.getManual17());
+        dto.setManual18(apiRecipe.getManual18());
+        dto.setManual19(apiRecipe.getManual19());
+        dto.setManual20(apiRecipe.getManual20());
 
-        return url.toString();
+        // 조리 단계 이미지
+        dto.setManualImg01(apiRecipe.getManualImg01());
+        dto.setManualImg02(apiRecipe.getManualImg02());
+        dto.setManualImg03(apiRecipe.getManualImg03());
+        dto.setManualImg04(apiRecipe.getManualImg04());
+        dto.setManualImg05(apiRecipe.getManualImg05());
+        dto.setManualImg06(apiRecipe.getManualImg06());
+        dto.setManualImg07(apiRecipe.getManualImg07());
+        dto.setManualImg08(apiRecipe.getManualImg08());
+        dto.setManualImg09(apiRecipe.getManualImg09());
+        dto.setManualImg10(apiRecipe.getManualImg10());
+        dto.setManualImg11(apiRecipe.getManualImg11());
+        dto.setManualImg12(apiRecipe.getManualImg12());
+        dto.setManualImg13(apiRecipe.getManualImg13());
+        dto.setManualImg14(apiRecipe.getManualImg14());
+        dto.setManualImg15(apiRecipe.getManualImg15());
+        dto.setManualImg16(apiRecipe.getManualImg16());
+        dto.setManualImg17(apiRecipe.getManualImg17());
+        dto.setManualImg18(apiRecipe.getManualImg18());
+        dto.setManualImg19(apiRecipe.getManualImg19());
+        dto.setManualImg20(apiRecipe.getManualImg20());
+
+        return dto;
     }
 
     /**
@@ -266,68 +360,64 @@ public class RecipeService {
     }
 
     /**
-     * 레시피와 사용자 식재료 매칭 점수 계산
-     * - 완전 일치: 10점
-     * - 부분 일치: 3점
+     * 레시피와 사용자 식재료 매칭 점수 계산 (UserRecipeDTO용) - 성능 최적화 버전
      */
-    private void calculateMatchScore(RecipeDTO recipe, Set<String> userIngredientNames) {
-        String rcpPartsDtls = recipe.getRcpPartsDtls();
-        if (rcpPartsDtls == null || rcpPartsDtls.isEmpty()) {
+    private void calculateMatchScoreForUserRecipe(UserRecipeDTO recipe, Set<String> userIngredientNames) {
+        Set<String> recipeIngredientSet = new HashSet<>();
+
+        // 1. 미리 파싱된 JSON이 있으면 사용 (성능 최적화)
+        String parsedIngredients = recipe.getParsedIngredients();
+        if (parsedIngredients != null && !parsedIngredients.isEmpty() && !parsedIngredients.equals("[]")) {
+            try {
+                // JSON 배열 파싱
+                JsonNode jsonArray = objectMapper.readTree(parsedIngredients);
+                if (jsonArray.isArray()) {
+                    for (JsonNode node : jsonArray) {
+                        String ingredient = node.asText().trim();
+                        if (!ingredient.isEmpty()) {
+                            recipeIngredientSet.add(ingredient);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("parsedIngredients JSON 파싱 실패, rcpPartsDtls 사용: {}", e.getMessage());
+                // JSON 파싱 실패시 기존 방식으로 폴백
+                parseRcpPartsDtls(recipe.getRcpPartsDtls(), recipeIngredientSet);
+            }
+        } else {
+            // 2. 파싱된 데이터가 없으면 기존 방식 사용
+            parseRcpPartsDtls(recipe.getRcpPartsDtls(), recipeIngredientSet);
+        }
+
+        if (recipeIngredientSet.isEmpty()) {
             recipe.setMatchScore(0);
             recipe.setMatchedIngredientCount(0);
             recipe.setTotalIngredientCount(0);
             return;
         }
 
-        // 레시피 재료 파싱 (쉼표, 줄바꿈 등으로 구분)
-        String[] recipeIngredients = rcpPartsDtls.split("[,\n•·]");
-        Set<String> recipeIngredientSet = new HashSet<>();
-        for (String ingredient : recipeIngredients) {
-            String cleaned = ingredient.trim()
-                    .replaceAll("\\d+.*", "")  // 숫자 제거
-                    .replaceAll("[()]", "")     // 괄호 제거
-                    .trim();
-            if (!cleaned.isEmpty()) {
-                recipeIngredientSet.add(cleaned);
-            }
-        }
-
         int matchedCount = 0;
         double totalScore = 0;
         List<String> matchedIngredients = new ArrayList<>();
 
-        // 각 레시피 재료에 대해 매칭 검사
+        // 각 레시피 재료에 대해 매칭 검사 (최적화: O(n) 완전일치 + 부분일치만 O(n×m))
         for (String recipeIngredient : recipeIngredientSet) {
-            boolean exactMatch = false;
-            boolean partialMatch = false;
-
-            // 1. 완전 일치 체크 (우선순위)
-            for (String userIngredient : userIngredientNames) {
-                if (recipeIngredient.equals(userIngredient)) {
-                    exactMatch = true;
-                    matchedIngredients.add(userIngredient);
-                    break;
-                }
+            // 1. 완전 일치 체크 - HashSet.contains()는 O(1)
+            if (userIngredientNames.contains(recipeIngredient)) {
+                matchedCount++;
+                totalScore += 10;
+                matchedIngredients.add(recipeIngredient);
+                continue;
             }
 
             // 2. 부분 일치 체크 (완전 일치가 없을 때만)
-            if (!exactMatch) {
-                for (String userIngredient : userIngredientNames) {
-                    if (recipeIngredient.contains(userIngredient) || userIngredient.contains(recipeIngredient)) {
-                        partialMatch = true;
-                        matchedIngredients.add(userIngredient + "(부분)");
-                        break;
-                    }
+            for (String userIngredient : userIngredientNames) {
+                if (recipeIngredient.contains(userIngredient) || userIngredient.contains(recipeIngredient)) {
+                    matchedCount++;
+                    totalScore += 3;
+                    matchedIngredients.add(userIngredient + "(부분)");
+                    break;
                 }
-            }
-
-            // 점수 계산
-            if (exactMatch) {
-                matchedCount++;
-                totalScore += 10;  // 완전 일치: 10점
-            } else if (partialMatch) {
-                matchedCount++;
-                totalScore += 3;   // 부분 일치: 3점
             }
         }
 
@@ -335,5 +425,24 @@ public class RecipeService {
         recipe.setTotalIngredientCount(recipeIngredientSet.size());
         recipe.setMatchScore(totalScore);
         recipe.setMatchedIngredients(String.join(", ", matchedIngredients));
+    }
+
+    /**
+     * rcpPartsDtls 문자열을 파싱하여 재료 Set에 추가 (폴백용)
+     */
+    private void parseRcpPartsDtls(String rcpPartsDtls, Set<String> recipeIngredientSet) {
+        if (rcpPartsDtls == null || rcpPartsDtls.isEmpty()) {
+            return;
+        }
+        String[] recipeIngredients = rcpPartsDtls.split("[,\n•·]");
+        for (String ingredient : recipeIngredients) {
+            String cleaned = ingredient.trim()
+                    .replaceAll("\\d+.*", "")
+                    .replaceAll("[()]", "")
+                    .trim();
+            if (!cleaned.isEmpty()) {
+                recipeIngredientSet.add(cleaned);
+            }
+        }
     }
 }

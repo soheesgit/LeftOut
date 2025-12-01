@@ -212,10 +212,11 @@
         WHERE id = #{recipeId}
     </update>
 
-    <!-- 전체 레시피 수 조회 -->
+    <!-- 전체 레시피 수 조회 (사용자 작성 레시피만) -->
     <select id="countAll" parameterType="string" resultType="int">
         SELECT COUNT(*)
         FROM user_recipe ur
+        JOIN users u ON ur.user_id = u.id
         <where>
             <if test="search != null and search != ''">
                 AND (ur.title LIKE CONCAT('%', #{search}, '%')
@@ -223,6 +224,127 @@
                 OR ur.ingredients LIKE CONCAT('%', #{search}, '%'))
             </if>
         </where>
+    </select>
+
+    <!-- ========================================= -->
+    <!-- API 레시피 통합용 쿼리                      -->
+    <!-- ========================================= -->
+
+    <!-- API 레시피 저장 -->
+    <insert id="saveApiRecipe" parameterType="com.example.demo.TEST_001.dto.UserRecipeDTO">
+        INSERT INTO user_recipe (
+            source, rcp_seq, title, rcp_way2, rcp_pat2, rcp_parts_dtls,
+            info_wgt, info_eng, info_car, info_pro, info_fat, info_na,
+            rcp_na_tip, hash_tag, att_file_no_main, att_file_no_mk,
+            manual01, manual02, manual03, manual04, manual05,
+            manual06, manual07, manual08, manual09, manual10,
+            manual11, manual12, manual13, manual14, manual15,
+            manual16, manual17, manual18, manual19, manual20,
+            manual_img01, manual_img02, manual_img03, manual_img04, manual_img05,
+            manual_img06, manual_img07, manual_img08, manual_img09, manual_img10,
+            manual_img11, manual_img12, manual_img13, manual_img14, manual_img15,
+            manual_img16, manual_img17, manual_img18, manual_img19, manual_img20,
+            parsed_ingredients, ingredient_count
+        ) VALUES (
+            'api', #{rcpSeq}, #{title}, #{rcpWay2}, #{rcpPat2}, #{rcpPartsDtls},
+            #{infoWgt}, #{infoEng}, #{infoCar}, #{infoPro}, #{infoFat}, #{infoNa},
+            #{rcpNaTip}, #{hashTag}, #{attFileNoMain}, #{attFileNoMk},
+            #{manual01}, #{manual02}, #{manual03}, #{manual04}, #{manual05},
+            #{manual06}, #{manual07}, #{manual08}, #{manual09}, #{manual10},
+            #{manual11}, #{manual12}, #{manual13}, #{manual14}, #{manual15},
+            #{manual16}, #{manual17}, #{manual18}, #{manual19}, #{manual20},
+            #{manualImg01}, #{manualImg02}, #{manualImg03}, #{manualImg04}, #{manualImg05},
+            #{manualImg06}, #{manualImg07}, #{manualImg08}, #{manualImg09}, #{manualImg10},
+            #{manualImg11}, #{manualImg12}, #{manualImg13}, #{manualImg14}, #{manualImg15},
+            #{manualImg16}, #{manualImg17}, #{manualImg18}, #{manualImg19}, #{manualImg20},
+            #{parsedIngredients}, #{ingredientCount}
+        )
+    </insert>
+
+    <!-- API 레시피 중복 체크 -->
+    <select id="existsByRcpSeq" parameterType="string" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM user_recipe
+        WHERE rcp_seq = #{rcpSeq}
+    </select>
+
+    <!-- API 레시피 개수 조회 -->
+    <select id="countApiRecipes" resultType="int">
+        SELECT COUNT(*)
+        FROM user_recipe
+        WHERE source = 'api'
+    </select>
+
+    <!-- API 레시피 전체 조회 (필터링/검색 포함) - 성능 최적화: 필요한 컬럼만 -->
+    <select id="findApiRecipes" parameterType="map" resultType="com.example.demo.TEST_001.dto.UserRecipeDTO">
+        SELECT
+            id, source, rcp_seq, title, rcp_way2, rcp_pat2,
+            info_eng, att_file_no_main, att_file_no_mk,
+            parsed_ingredients, ingredient_count, created_at
+        FROM user_recipe
+        WHERE source = 'api'
+        <if test="rcpWay2 != null and rcpWay2 != ''">
+            AND rcp_way2 = #{rcpWay2}
+        </if>
+        <if test="rcpPat2 != null and rcpPat2 != ''">
+            AND rcp_pat2 = #{rcpPat2}
+        </if>
+        <if test="searchRecipeName != null and searchRecipeName != ''">
+            AND title LIKE CONCAT('%', #{searchRecipeName}, '%')
+        </if>
+        <if test="searchIngredient != null and searchIngredient != ''">
+            AND rcp_parts_dtls LIKE CONCAT('%', #{searchIngredient}, '%')
+        </if>
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- API 레시피 조회 (사용자 식재료 필터링) - 매칭 가능성 있는 레시피만 조회 -->
+    <select id="findApiRecipesWithIngredients" parameterType="map" resultType="com.example.demo.TEST_001.dto.UserRecipeDTO">
+        SELECT
+            id, source, rcp_seq, title, rcp_way2, rcp_pat2,
+            info_eng, att_file_no_main, att_file_no_mk,
+            parsed_ingredients, ingredient_count, created_at
+        FROM user_recipe
+        WHERE source = 'api'
+        <if test="rcpWay2 != null and rcpWay2 != ''">
+            AND rcp_way2 = #{rcpWay2}
+        </if>
+        <if test="rcpPat2 != null and rcpPat2 != ''">
+            AND rcp_pat2 = #{rcpPat2}
+        </if>
+        <if test="searchRecipeName != null and searchRecipeName != ''">
+            AND title LIKE CONCAT('%', #{searchRecipeName}, '%')
+        </if>
+        <if test="searchIngredient != null and searchIngredient != ''">
+            AND rcp_parts_dtls LIKE CONCAT('%', #{searchIngredient}, '%')
+        </if>
+        <if test="ingredientNames != null and ingredientNames.size() > 0">
+            AND (
+                <foreach collection="ingredientNames" item="ingredient" separator=" OR ">
+                    parsed_ingredients LIKE CONCAT('%', #{ingredient}, '%')
+                </foreach>
+            )
+        </if>
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- API 레시피 상세 조회 (rcp_seq로) -->
+    <select id="findByRcpSeq" parameterType="string" resultType="com.example.demo.TEST_001.dto.UserRecipeDTO">
+        SELECT
+            id, source, rcp_seq, title, rcp_way2, rcp_pat2, rcp_parts_dtls,
+            info_wgt, info_eng, info_car, info_pro, info_fat, info_na,
+            rcp_na_tip, hash_tag, att_file_no_main, att_file_no_mk,
+            manual01, manual02, manual03, manual04, manual05,
+            manual06, manual07, manual08, manual09, manual10,
+            manual11, manual12, manual13, manual14, manual15,
+            manual16, manual17, manual18, manual19, manual20,
+            manual_img01, manual_img02, manual_img03, manual_img04, manual_img05,
+            manual_img06, manual_img07, manual_img08, manual_img09, manual_img10,
+            manual_img11, manual_img12, manual_img13, manual_img14, manual_img15,
+            manual_img16, manual_img17, manual_img18, manual_img19, manual_img20,
+            view_count, like_count, comment_count, created_at
+        FROM user_recipe
+        WHERE rcp_seq = #{rcpSeq}
     </select>
 
 </mapper>

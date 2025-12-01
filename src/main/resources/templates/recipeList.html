@@ -248,12 +248,12 @@
     <div th:if="${recipes != null && !recipes.isEmpty()}" class="recipe-grid">
         <div th:each="recipe : ${recipes}" class="recipe-card" th:data-recipe-seq="${recipe.rcpSeq}">
             <img th:src="${recipe.attFileNoMain}"
-                 th:alt="${recipe.rcpNm}"
+                 th:alt="${recipe.title}"
                  class="recipe-image"
                  onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
 
             <div class="recipe-content">
-                <div class="recipe-title" th:text="${recipe.rcpNm}">레시피 이름</div>
+                <div class="recipe-title" th:text="${recipe.title}">레시피 이름</div>
 
                 <div class="recipe-meta">
                     <span class="info-badge" th:text="${recipe.rcpPat2}">요리종류</span>
@@ -265,11 +265,6 @@
                 </div>
 
                 <div class="match-info">
-                    <div class="match-score">
-                        매칭 점수: <span th:text="${recipe.matchScore}">0</span>점
-                        (<span th:text="${recipe.matchedIngredientCount}">0</span>/<span th:text="${recipe.totalIngredientCount}">0</span> 재료)
-                    </div>
-
                     <div class="match-bar-container">
                         <div class="match-bar"
                              th:style="|width: ${recipe.totalIngredientCount > 0 ? (recipe.matchedIngredientCount * 100.0 / recipe.totalIngredientCount) : 0}%|">
@@ -295,9 +290,11 @@
             이전
         </a>
 
-        <span class="current" th:text="${currentPage}">1</span>
+        <span class="current" th:text="|${currentPage} / ${totalPages}|">1 / 1</span>
+        <span class="total-count" th:text="|총 ${totalCount}개|">총 0개</span>
 
-        <a th:href="@{/recipe/list(page=${currentPage + 1}, rcpPat2=${rcpPat2}, rcpWay2=${rcpWay2}, searchRecipeName=${searchRecipeName}, searchIngredient=${searchIngredient})}">
+        <a th:if="${currentPage < totalPages}"
+           th:href="@{/recipe/list(page=${currentPage + 1}, rcpPat2=${rcpPat2}, rcpWay2=${rcpWay2}, searchRecipeName=${searchRecipeName}, searchIngredient=${searchIngredient})}">
             다음
         </a>
     </div>

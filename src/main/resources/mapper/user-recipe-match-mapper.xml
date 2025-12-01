@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="userRecipeMatch">
+
+    <!-- 매칭 점수 저장/업데이트 (UPSERT) -->
+    <insert id="saveOrUpdate" parameterType="map">
+        INSERT INTO user_recipe_match (user_id, recipe_id, matched_count, total_count, match_percent, matched_ingredients)
+        VALUES (#{userId}, #{recipeId}, #{matchedCount}, #{totalCount}, #{matchPercent}, #{matchedIngredients})
+        ON DUPLICATE KEY UPDATE
+            matched_count = VALUES(matched_count),
+            total_count = VALUES(total_count),
+            match_percent = VALUES(match_percent),
+            matched_ingredients = VALUES(matched_ingredients),
+            updated_at = CURRENT_TIMESTAMP
+    </insert>
+
+    <!-- 배치 저장 (성능 최적화) -->
+    <insert id="batchSave" parameterType="list">
+        INSERT INTO user_recipe_match (user_id, recipe_id, matched_count, total_count, match_percent, matched_ingredients)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.userId}, #{item.recipeId}, #{item.matchedCount}, #{item.totalCount}, #{item.matchPercent}, #{item.matchedIngredients})
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+            matched_count = VALUES(matched_count),
+            total_count = VALUES(total_count),
+            match_percent = VALUES(match_percent),
+            matched_ingredients = VALUES(matched_ingredients),
+            updated_at = CURRENT_TIMESTAMP
+    </insert>
+
+    <!-- 사용자의 모든 매칭 점수 삭제 -->
+    <delete id="deleteByUserId" parameterType="long">
+        DELETE FROM user_recipe_match WHERE user_id = #{userId}
+    </delete>
+
+    <!-- 사용자의 매칭 점수 개수 조회 -->
+    <select id="countByUserId" parameterType="long" resultType="int">
+        SELECT COUNT(*) FROM user_recipe_match WHERE user_id = #{userId}
+    </select>
+
+    <!-- API 레시피 목록 조회 (매칭 점수 포함, 페이징) -->
+    <select id="findApiRecipesWithMatch" parameterType="map" resultType="com.example.demo.TEST_001.dto.UserRecipeDTO">
+        SELECT
+            ur.id, ur.source, ur.rcp_seq, ur.title, ur.rcp_way2, ur.rcp_pat2,
+            ur.info_eng, ur.att_file_no_main, ur.att_file_no_mk,
+            ur.parsed_ingredients, ur.ingredient_count, ur.created_at,
+            COALESCE(urm.matched_count, 0) AS matchedIngredientCount,
+            COALESCE(urm.total_count, ur.ingredient_count, 0) AS totalIngredientCount,
+            COALESCE(urm.match_percent, 0) AS matchScore,
+            urm.matched_ingredients AS matchedIngredients
+        FROM user_recipe ur
+        LEFT JOIN user_recipe_match urm ON ur.id = urm.recipe_id AND urm.user_id = #{userId}
+        WHERE ur.source = 'api'
+        <if test="rcpWay2 != null and rcpWay2 != ''">
+            AND ur.rcp_way2 = #{rcpWay2}
+        </if>
+        <if test="rcpPat2 != null and rcpPat2 != ''">
+            AND ur.rcp_pat2 = #{rcpPat2}
+        </if>
+        <if test="searchRecipeName != null and searchRecipeName != ''">
+            AND ur.title LIKE CONCAT('%', #{searchRecipeName}, '%')
+        </if>
+        <if test="searchIngredient != null and searchIngredient != ''">
+            AND ur.rcp_parts_dtls LIKE CONCAT('%', #{searchIngredient}, '%')
+        </if>
+        ORDER BY COALESCE(urm.match_percent, 0) DESC, urm.matched_count DESC, ur.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- API 레시피 개수 조회 (필터 적용) -->
+    <select id="countApiRecipesFiltered" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM user_recipe ur
+        WHERE ur.source = 'api'
+        <if test="rcpWay2 != null and rcpWay2 != ''">
+            AND ur.rcp_way2 = #{rcpWay2}
+        </if>
+        <if test="rcpPat2 != null and rcpPat2 != ''">
+            AND ur.rcp_pat2 = #{rcpPat2}
+        </if>
+        <if test="searchRecipeName != null and searchRecipeName != ''">
+            AND ur.title LIKE CONCAT('%', #{searchRecipeName}, '%')
+        </if>
+        <if test="searchIngredient != null and searchIngredient != ''">
+            AND ur.rcp_parts_dtls LIKE CONCAT('%', #{searchIngredient}, '%')
+        </if>
+    </select>
+
+    <!-- 모든 API 레시피 ID + parsedIngredients 조회 (매칭 계산용) -->
+    <select id="findAllApiRecipeIds" resultType="map">
+        SELECT id, parsed_ingredients AS parsedIngredients, ingredient_count AS ingredientCount
+        FROM user_recipe
+        WHERE source = 'api'
+    </select>
+
+</mapper>

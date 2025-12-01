@@ -18,6 +18,7 @@ import java.util.List;
 public class IngredientService {
     private final IngredientRepository ingredientRepository;
     private final IngredientDefaultExpiryRepository defaultExpiryRepository;
+    private final RecipeMatchService recipeMatchService;
 
     // 식재료 목록 조회 (유통기한 임박순)
     @Transactional(readOnly = true)
@@ -94,6 +95,9 @@ public class IngredientService {
         }
 
         ingredientRepository.save(ingredientDTO);
+
+        // 매칭 점수 비동기 재계산
+        recipeMatchService.recalculateMatchScoresAsync(userId);
     }
 
     // 식재료 수정
@@ -108,18 +112,24 @@ public class IngredientService {
     @Transactional
     public void markAsConsumed(Long userId, Integer id) {
         ingredientRepository.markAsConsumed(userId, id);
+        // 매칭 점수 비동기 재계산
+        recipeMatchService.recalculateMatchScoresAsync(userId);
     }
 
     // 식재료 '폐기' 처리
     @Transactional
     public void markAsDiscarded(Long userId, Integer id) {
         ingredientRepository.markAsDiscarded(userId, id);
+        // 매칭 점수 비동기 재계산
+        recipeMatchService.recalculateMatchScoresAsync(userId);
     }
 
     // 식재료 완전 삭제
     @Transactional
     public void delete(Long userId, Integer id) {
         ingredientRepository.delete(userId, id);
+        // 매칭 점수 비동기 재계산
+        recipeMatchService.recalculateMatchScoresAsync(userId);
     }
 
     // 식재료명으로 기본 유통기한 조회

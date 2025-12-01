@@ -80,4 +80,52 @@ public class UserRecipeRepository {
     public int countAll(String search) {
         return sql.selectOne("userRecipe.countAll", search);
     }
+
+    // ========================================
+    // API 레시피 통합용 메서드
+    // ========================================
+
+    // API 레시피 저장
+    public void saveApiRecipe(UserRecipeDTO recipeDTO) {
+        sql.insert("userRecipe.saveApiRecipe", recipeDTO);
+    }
+
+    // API 레시피 중복 체크
+    public boolean existsByRcpSeq(String rcpSeq) {
+        return sql.selectOne("userRecipe.existsByRcpSeq", rcpSeq);
+    }
+
+    // API 레시피 개수 조회
+    public int countApiRecipes() {
+        return sql.selectOne("userRecipe.countApiRecipes");
+    }
+
+    // API 레시피 전체 조회 (필터링/검색 포함)
+    public List<UserRecipeDTO> findApiRecipes(String rcpWay2, String rcpPat2,
+                                               String searchRecipeName, String searchIngredient) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("rcpWay2", rcpWay2);
+        params.put("rcpPat2", rcpPat2);
+        params.put("searchRecipeName", searchRecipeName);
+        params.put("searchIngredient", searchIngredient);
+        return sql.selectList("userRecipe.findApiRecipes", params);
+    }
+
+    // API 레시피 조회 (사용자 식재료 필터링 포함) - 성능 최적화
+    public List<UserRecipeDTO> findApiRecipesWithIngredients(String rcpWay2, String rcpPat2,
+                                                              String searchRecipeName, String searchIngredient,
+                                                              List<String> ingredientNames) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("rcpWay2", rcpWay2);
+        params.put("rcpPat2", rcpPat2);
+        params.put("searchRecipeName", searchRecipeName);
+        params.put("searchIngredient", searchIngredient);
+        params.put("ingredientNames", ingredientNames);
+        return sql.selectList("userRecipe.findApiRecipesWithIngredients", params);
+    }
+
+    // API 레시피 상세 조회 (rcp_seq로)
+    public UserRecipeDTO findByRcpSeq(String rcpSeq) {
+        return sql.selectOne("userRecipe.findByRcpSeq", rcpSeq);
+    }
 }

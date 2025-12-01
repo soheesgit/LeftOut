@@ -1,7 +1,7 @@
 package com.example.demo.TEST_001.controller;
 
-import com.example.demo.TEST_001.dto.RecipeDTO;
 import com.example.demo.TEST_001.dto.UserDTO;
+import com.example.demo.TEST_001.dto.UserRecipeDTO;
 import com.example.demo.TEST_001.service.RecipeService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/recipe")
@@ -42,23 +43,28 @@ public class RecipeController {
 
         // 페이징 설정 (한 페이지당 20개)
         int pageSize = 20;
-        int startIdx = (page - 1) * pageSize + 1;
-        int endIdx = page * pageSize;
 
-        // 레시피 목록 조회 (사용자 식재료 기반 매칭)
-        List<RecipeDTO> recipes = recipeService.getRecipeList(
+        // 레시피 목록 + 전체 개수 한번에 조회 (성능 최적화)
+        Map<String, Object> result = recipeService.getRecipeListWithCount(
                 loginUser.getId(),
                 rcpWay2,
                 rcpPat2,
                 searchRecipeName,
                 searchIngredient,
-                startIdx,
-                endIdx
+                page,
+                pageSize
         );
+
+        @SuppressWarnings("unchecked")
+        List<UserRecipeDTO> recipes = (List<UserRecipeDTO>) result.get("recipes");
+        int totalCount = (int) result.get("totalCount");
+        int totalPages = (int) Math.ceil((double) totalCount / pageSize);
 
         // 모델에 데이터 추가
         model.addAttribute("recipes", recipes);
         model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("totalCount", totalCount);
         model.addAttribute("rcpWay2", rcpWay2);
         model.addAttribute("rcpPat2", rcpPat2);
         model.addAttribute("searchRecipeName", searchRecipeName);
@@ -82,8 +88,8 @@ public class RecipeController {
             return "redirect:/login";
         }
 
-        // 레시피 상세 정보 조회
-        RecipeDTO recipe = recipeService.getRecipeDetail(rcpSeq, loginUser.getId());
+        // 레시피 상세 정보 조회 (DB 기반)
+        UserRecipeDTO recipe = recipeService.getRecipeDetail(rcpSeq, loginUser.getId());
 
         if (recipe == null) {
             model.addAttribute("errorMessage", "레시피를 찾을 수 없습니다.");

@@ -12,11 +12,11 @@ DROP TABLE IF EXISTS user_recipe;
 -- ========================================
 CREATE TABLE user_recipe (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    user_id BIGINT NOT NULL,
+    user_id BIGINT,                          -- API 레시피는 NULL
     title VARCHAR(255) NOT NULL,
     description TEXT,
-    ingredients TEXT NOT NULL,              -- JSON 형식으로 재료 목록 저장
-    cooking_steps TEXT NOT NULL,            -- JSON 형식으로 조리 단계 저장 (단계별 설명 + 이미지 경로)
+    ingredients TEXT,                        -- JSON 형식으로 재료 목록 저장 (사용자 레시피용)
+    cooking_steps TEXT,                      -- JSON 형식으로 조리 단계 저장 (사용자 레시피용)
     preparation_time INT,                   -- 준비 시간 (분)
     cooking_time INT,                       -- 조리 시간 (분)
     servings INT,                           -- 몇 인분
@@ -27,10 +27,45 @@ CREATE TABLE user_recipe (
     comment_count INT DEFAULT 0,            -- 댓글 수 (캐시)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    -- API 레시피 통합용 필드
+    source VARCHAR(20) DEFAULT 'user',      -- 'user' 또는 'api'
+    rcp_seq VARCHAR(50),                    -- API 레시피 고유번호
+    rcp_way2 VARCHAR(50),                   -- 조리방법 (굽기, 찌기 등)
+    rcp_pat2 VARCHAR(50),                   -- 요리종류 (반찬, 국 등)
+    rcp_parts_dtls TEXT,                    -- 재료정보 (API 레시피용)
+    info_wgt VARCHAR(50),                   -- 중량
+    info_eng VARCHAR(50),                   -- 열량
+    info_car VARCHAR(50),                   -- 탄수화물
+    info_pro VARCHAR(50),                   -- 단백질
+    info_fat VARCHAR(50),                   -- 지방
+    info_na VARCHAR(50),                    -- 나트륨
+    rcp_na_tip TEXT,                        -- 저감 조리법 TIP
+    hash_tag VARCHAR(255),                  -- 해시태그
+    att_file_no_main VARCHAR(500),          -- 이미지경로(소)
+    att_file_no_mk VARCHAR(500),            -- 이미지경로(대)
+    manual01 TEXT, manual02 TEXT, manual03 TEXT, manual04 TEXT, manual05 TEXT,
+    manual06 TEXT, manual07 TEXT, manual08 TEXT, manual09 TEXT, manual10 TEXT,
+    manual11 TEXT, manual12 TEXT, manual13 TEXT, manual14 TEXT, manual15 TEXT,
+    manual16 TEXT, manual17 TEXT, manual18 TEXT, manual19 TEXT, manual20 TEXT,
+    manual_img01 VARCHAR(500), manual_img02 VARCHAR(500), manual_img03 VARCHAR(500),
+    manual_img04 VARCHAR(500), manual_img05 VARCHAR(500), manual_img06 VARCHAR(500),
+    manual_img07 VARCHAR(500), manual_img08 VARCHAR(500), manual_img09 VARCHAR(500),
+    manual_img10 VARCHAR(500), manual_img11 VARCHAR(500), manual_img12 VARCHAR(500),
+    manual_img13 VARCHAR(500), manual_img14 VARCHAR(500), manual_img15 VARCHAR(500),
+    manual_img16 VARCHAR(500), manual_img17 VARCHAR(500), manual_img18 VARCHAR(500),
+    manual_img19 VARCHAR(500), manual_img20 VARCHAR(500),
+
+    -- 성능 최적화용 (미리 파싱된 재료)
+    parsed_ingredients TEXT,                 -- JSON 배열: ["소금", "설탕", ...]
+    ingredient_count INT DEFAULT 0,          -- 재료 개수
+
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX idx_user_id (user_id),
     INDEX idx_created_at (created_at DESC),
-    INDEX idx_like_count (like_count DESC)
+    INDEX idx_like_count (like_count DESC),
+    INDEX idx_source (source),
+    UNIQUE INDEX idx_rcp_seq (rcp_seq)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ========================================

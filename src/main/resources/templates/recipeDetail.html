@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title th:text="|${recipe.rcpNm} - 레시피 상세|">레시피 상세</title>
+    <title th:text="|${recipe.title} - 레시피 상세|">레시피 상세</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -212,12 +212,12 @@
     <div class="container">
         <a href="/recipe/list" class="back-btn">← 목록으로</a>
 
-        <h1 th:text="${recipe.rcpNm}">레시피 이름</h1>
+        <h1 th:text="${recipe.title}">레시피 이름</h1>
 
         <div class="recipe-header">
             <div class="recipe-image-large">
                 <img th:src="${recipe.attFileNoMk}"
-                     th:alt="${recipe.rcpNm}"
+                     th:alt="${recipe.title}"
                      onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
             </div>
 
@@ -229,14 +229,10 @@
                 </div>
 
                 <div class="match-section">
-                    <div class="match-score-large">
-                        매칭 점수: <span th:text="${recipe.matchScore}">0</span>점
-                    </div>
                     <div class="match-bar-container">
                         <div class="match-bar"
                              th:style="|width: ${recipe.totalIngredientCount > 0 ? (recipe.matchedIngredientCount * 100.0 / recipe.totalIngredientCount) : 0}%|">
-                            <span th:text="${recipe.matchedIngredientCount}">0</span> / <span th:text="${recipe.totalIngredientCount}">0</span> 재료
-                            (<span th:text="|${recipe.totalIngredientCount > 0 ? #numbers.formatDecimal((recipe.matchedIngredientCount * 100.0 / recipe.totalIngredientCount), 1, 0) : 0}%|">0%</span>)
+                            <span th:text="|${recipe.totalIngredientCount > 0 ? #numbers.formatDecimal((recipe.matchedIngredientCount * 100.0 / recipe.totalIngredientCount), 1, 0) : 0}%|">0%</span>
                         </div>
                     </div>
                     <div th:if="${recipe.matchedIngredients != null && !recipe.matchedIngredients.isEmpty()}" style="color: #2E7D32; font-weight: bold;">
