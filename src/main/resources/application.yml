@@ -1,14 +1,13 @@
-#?????? ?? -> ???? 8080 ???? ????, ???? ?????? ??.
 server:
   port: 8080
 
 spring:
+  profiles:
+    active: prod # 실행 시 application-prod.yml을 자동으로 읽어오게 설정
   datasource:
-    # driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/leftout?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    # url: jdbc:mysql://localhost:{port??}/{DB??}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: user_01
-    password: 1234
+    password: "" # 비밀번호는 비워둠 (prod 파일에서 가져옴)
   servlet:
     multipart:
       enabled: true
@@ -22,7 +21,7 @@ mybatis:
 # 식품안전나라 레시피 API 설정
 recipe:
   api:
-    key: "0588ffa0bfe44ef1b340"
+    key: "" # 키값은 비워둠 (prod 파일에서 가져옴)
     base-url: http://openapi.foodsafetykorea.go.kr/api
 
 # 파일 업로드 설정
