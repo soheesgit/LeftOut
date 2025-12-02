@@ -23,5 +23,3 @@ CREATE TABLE user_recipe_match (
     FOREIGN KEY (recipe_id) REFERENCES user_recipe(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 확인
-SELECT 'user_recipe_match 테이블 생성 완료!' AS Message;

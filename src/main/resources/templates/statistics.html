@@ -358,15 +358,6 @@
             </div>
         </div>
 
-        <!-- 카테고리별 효율성 (새로운 차트) -->
-        <div class="stats-card" id="categoryEfficiencyCard">
-            <h2>🎯 카테고리별 효율성</h2>
-            <div class="chart-container">
-                <canvas id="categoryEfficiencyChart"></canvas>
-            </div>
-            <div id="categoryEfficiencyInfo" class="efficiency-info"></div>
-        </div>
-
         <!-- 보관 위치별 폐기율 (새로운 차트) -->
         <div class="stats-card" id="storageEfficiencyCard">
             <h2>🧊 보관 위치별 폐기율</h2>
@@ -469,7 +460,6 @@
                 storageDistributionCard: true,
                 // 새로운 차트 가시성
                 discardRateCard: false,
-                categoryEfficiencyCard: false,
                 storageEfficiencyCard: false,
                 dayOfWeekCard: true,
                 topDiscardedCard: false
@@ -482,7 +472,6 @@
                 storageDistributionCard: false,
                 // 새로운 차트 가시성
                 discardRateCard: false,
-                categoryEfficiencyCard: true,
                 storageEfficiencyCard: true,
                 dayOfWeekCard: true,
                 topDiscardedCard: false
@@ -495,7 +484,6 @@
                 storageDistributionCard: false,
                 // 새로운 차트 가시성
                 discardRateCard: true,
-                categoryEfficiencyCard: true,
                 storageEfficiencyCard: true,
                 dayOfWeekCard: false,
                 topDiscardedCard: true
@@ -513,7 +501,6 @@
             document.getElementById('storageDistributionCard').style.display = visibility.storageDistributionCard ? 'block' : 'none';
             // 새로운 차트 가시성
             document.getElementById('discardRateCard').style.display = visibility.discardRateCard ? 'block' : 'none';
-            document.getElementById('categoryEfficiencyCard').style.display = visibility.categoryEfficiencyCard ? 'block' : 'none';
             document.getElementById('storageEfficiencyCard').style.display = visibility.storageEfficiencyCard ? 'block' : 'none';
             document.getElementById('dayOfWeekCard').style.display = visibility.dayOfWeekCard ? 'block' : 'none';
             document.getElementById('topDiscardedCard').style.display = visibility.topDiscardedCard ? 'block' : 'none';
@@ -750,49 +737,6 @@
                 }
             });
 
-            // 카테고리별 효율성 - 가로 막대 차트
-            const ctx6 = document.getElementById('categoryEfficiencyChart').getContext('2d');
-            charts.categoryEfficiency = new Chart(ctx6, {
-                type: 'bar',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: '폐기율 (%)',
-                        data: [],
-                        backgroundColor: [],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y',
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `폐기율: ${context.parsed.x}%`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: {
-                                callback: function(value) {
-                                    return value + '%';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
             // 보관 위치별 폐기율 - 막대 차트
             const ctx7 = document.getElementById('storageEfficiencyChart').getContext('2d');
             charts.storageEfficiency = new Chart(ctx7, {
@@ -876,7 +820,6 @@
             updateStorageDistribution(data.storageDistribution);
             // 새로운 차트 업데이트
             updateDiscardRateChart(data.monthlyDiscardRate);
-            updateCategoryEfficiencyChart(data.categoryEfficiency);
             updateStorageEfficiencyChart(data.storageEfficiency);
             updateDayOfWeekChart(data.discardPatternByDayOfWeek);
             updateTopDiscardedTable(data.topDiscardedIngredients);
@@ -1010,39 +953,6 @@
             charts.discardRate.update();
         }
 
-        // 카테고리별 효율성 차트 업데이트
-        function updateCategoryEfficiencyChart(data) {
-            if (!data || data.length === 0 || !charts.categoryEfficiency) return;
-
-            const labels = data.map(item => item.categoryName || '기타');
-            const rates = data.map(item => item.discardRate);
-
-            // 폐기율에 따른 색상 설정 (높을수록 빨간색)
-            const bgColors = rates.map(rate => {
-                if (rate >= 50) return 'rgba(244, 67, 54, 0.7)';  // 빨강 - 위험
-                if (rate >= 30) return 'rgba(255, 152, 0, 0.7)';  // 주황 - 주의
-                return 'rgba(76, 175, 80, 0.7)';  // 녹색 - 양호
-            });
-
-            charts.categoryEfficiency.data.labels = labels;
-            charts.categoryEfficiency.data.datasets[0].data = rates;
-            charts.categoryEfficiency.data.datasets[0].backgroundColor = bgColors;
-            charts.categoryEfficiency.update();
-
-            // 효율성 정보 업데이트
-            const infoEl = document.getElementById('categoryEfficiencyInfo');
-            if (data.length > 0) {
-                const worstCategory = data[0];
-                if (worstCategory.discardRate >= 30) {
-                    infoEl.className = 'efficiency-info warning';
-                    infoEl.innerHTML = `💡 <b>${worstCategory.categoryName}</b> 카테고리의 폐기율이 ${worstCategory.discardRate}%로 높습니다. 구매량 조절을 고려해보세요.`;
-                } else {
-                    infoEl.className = 'efficiency-info good';
-                    infoEl.innerHTML = `✅ 전체적으로 식재료 관리가 잘 되고 있습니다.`;
-                }
-            }
-        }
-
         // 보관 위치별 폐기율 차트 업데이트
         function updateStorageEfficiencyChart(data) {
             if (!data || data.length === 0 || !charts.storageEfficiency) return;
@@ -1098,7 +1008,7 @@
 
             if (maxCount > 0) {
                 infoEl.className = 'efficiency-info warning';
-                infoEl.innerHTML = `💡 <b>${dayNames[maxDayIndex]}요일</b>에 폐기가 집중됩니다 (${maxCount}회). 주 초에 식재료 점검을 해보세요.`;
+                infoEl.innerHTML = `💡 <b>${dayNames[maxDayIndex]}요일</b>에 폐기가 집중됩니다 (${maxCount}회).`;
             } else {
                 infoEl.className = 'efficiency-info good';
                 infoEl.innerHTML = `✅ 최근 12주간 폐기된 식재료가 없습니다.`;

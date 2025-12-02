@@ -117,23 +117,22 @@ INSERT INTO ingredient (user_id, ingredient_name, category_id, purchase_date, ex
 -- ========================================
 -- 데이터 삽입 완료 메시지
 -- ========================================
-SELECT 'Test data insertion completed!' AS Message;
-
--- 삽입된 데이터 확인 쿼리
-SELECT
-    u.username,
-    i.status,
-    COUNT(*) as count
-FROM ingredient i
-JOIN users u ON i.user_id = u.id
-GROUP BY u.username, i.status
-ORDER BY u.username, i.status;
-
-SELECT
-    c.category_name,
-    i.status,
-    COUNT(*) as count
-FROM ingredient i
-JOIN category c ON i.category_id = c.category_id
-GROUP BY c.category_name, i.status
-ORDER BY c.category_name, i.status;
+--
+-- -- 삽입된 데이터 확인 쿼리
+-- SELECT
+--     u.username,
+--     i.status,
+--     COUNT(*) as count
+-- FROM ingredient i
+-- JOIN users u ON i.user_id = u.id
+-- GROUP BY u.username, i.status
+-- ORDER BY u.username, i.status;
+--
+-- SELECT
+--     c.category_name,
+--     i.status,
+--     COUNT(*) as count
+-- FROM ingredient i
+-- JOIN category c ON i.category_id = c.category_id
+-- GROUP BY c.category_name, i.status
+-- ORDER BY c.category_name, i.status;

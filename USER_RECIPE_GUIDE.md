@@ -34,7 +34,7 @@ MySQL Workbench에서 다음 파일을 순서대로 실행하세요:
 
 ```sql
 -- 1. 사용자 레시피 테이블 생성
-database/user_recipe_schema.sql
+database/3_user_recipe_schema.sql
 ```
 
 이 스크립트는 다음 테이블을 생성합니다:
@@ -198,7 +198,7 @@ src/main/resources/templates/
 
 ```
 database/
-└── user_recipe_schema.sql               # 레시피 테이블 스키마 및 샘플 데이터
+└── 3_user_recipe_schema.sql               # 레시피 테이블 스키마 및 샘플 데이터
 ```
 
 ---

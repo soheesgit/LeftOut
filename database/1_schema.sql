@@ -7,6 +7,19 @@ DROP TABLE IF EXISTS ingredient_default_expiry;
 DROP TABLE IF EXISTS category;
 DROP TABLE IF EXISTS users;
 
+DROP DATABASE IF EXISTS leftout;
+CREATE DATABASE leftout;
+USE leftout;
+
+
+-- user_01 권한 주기
+CREATE USER 'user_01'@'localhost' IDENTIFIED BY '1234';
+ALTER USER 'user_01'@'localhost' IDENTIFIED BY '1234';
+
+GRANT ALL PRIVILEGES ON leftout.* TO 'user_01'@'localhost';
+
+FLUSH PRIVILEGES;
+
 -- 사용자 관리 시스템
 
 -- 0. 사용자 테이블

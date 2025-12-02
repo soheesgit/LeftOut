@@ -99,6 +99,7 @@ CREATE TABLE recipe_like (
     INDEX idx_user_id (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
 -- ========================================
 -- 테스트 데이터 삽입
 -- ========================================
@@ -141,43 +142,43 @@ INSERT INTO recipe_like (recipe_id, user_id) VALUES
 (2, 2),
 (3, 2);
 
+SET SQL_SAFE_UPDATES = 0;
 -- 캐시 데이터 업데이트 (좋아요 수, 댓글 수)
 UPDATE user_recipe ur
 SET like_count = (SELECT COUNT(*) FROM recipe_like WHERE recipe_id = ur.id),
     comment_count = (SELECT COUNT(*) FROM recipe_comment WHERE recipe_id = ur.id);
-
+SET SQL_SAFE_UPDATES = 1;
 -- ========================================
 -- 확인 쿼리
 -- ========================================
-SELECT '사용자 레시피 스키마 생성 및 테스트 데이터 삽입 완료!' AS Message;
-
--- 데이터 확인
-SELECT
-    ur.id,
-    ur.title,
-    u.username AS author,
-    ur.like_count,
-    ur.comment_count,
-    ur.created_at
-FROM user_recipe ur
-JOIN users u ON ur.user_id = u.id
-ORDER BY ur.created_at DESC;
-
-SELECT
-    rc.id,
-    ur.title AS recipe_title,
-    u.username AS commenter,
-    rc.content,
-    rc.created_at
-FROM recipe_comment rc
-JOIN user_recipe ur ON rc.recipe_id = ur.id
-JOIN users u ON rc.user_id = u.id
-ORDER BY rc.created_at DESC;
-
-SELECT
-    rl.id,
-    ur.title AS recipe_title,
-    u.username AS liked_by
-FROM recipe_like rl
-JOIN user_recipe ur ON rl.recipe_id = ur.id
-JOIN users u ON rl.user_id = u.id;
+--
+-- -- 데이터 확인
+-- SELECT
+--     ur.id,
+--     ur.title,
+--     u.username AS author,
+--     ur.like_count,
+--     ur.comment_count,
+--     ur.created_at
+-- FROM user_recipe ur
+-- JOIN users u ON ur.user_id = u.id
+-- ORDER BY ur.created_at DESC;
+--
+-- SELECT
+--     rc.id,
+--     ur.title AS recipe_title,
+--     u.username AS commenter,
+--     rc.content,
+--     rc.created_at
+-- FROM recipe_comment rc
+-- JOIN user_recipe ur ON rc.recipe_id = ur.id
+-- JOIN users u ON rc.user_id = u.id
+-- ORDER BY rc.created_at DESC;
+--
+-- SELECT
+--     rl.id,
+--     ur.title AS recipe_title,
+--     u.username AS liked_by
+-- FROM recipe_like rl
+-- JOIN user_recipe ur ON rl.recipe_id = ur.id
+-- JOIN users u ON rl.user_id = u.id;
