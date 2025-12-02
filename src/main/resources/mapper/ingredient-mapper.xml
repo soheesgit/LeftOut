@@ -248,4 +248,73 @@
         ORDER BY count DESC
     </select>
 
+    <!-- 통계: 월별 폐기율 추이 -->
+    <select id="getMonthlyDiscardRate" parameterType="long" resultType="map">
+        SELECT
+            DATE_FORMAT(COALESCE(consume_date, discard_date), '%Y-%m') as month,
+            COUNT(CASE WHEN status = 'consumed' THEN 1 END) as consumedCount,
+            COUNT(CASE WHEN status = 'discarded' THEN 1 END) as discardedCount
+        FROM ingredient
+        WHERE user_id = #{userId}
+          AND status IN ('consumed', 'discarded')
+          AND COALESCE(consume_date, discard_date) >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+        GROUP BY month
+        ORDER BY month ASC
+    </select>
+
+    <!-- 통계: 카테고리별 효율성 (폐기율) -->
+    <select id="getCategoryEfficiency" parameterType="long" resultType="map">
+        SELECT
+            COALESCE(c.category_name, '기타') as categoryName,
+            COUNT(CASE WHEN i.status = 'consumed' THEN 1 END) as consumedCount,
+            COUNT(CASE WHEN i.status = 'discarded' THEN 1 END) as discardedCount
+        FROM ingredient i
+        LEFT JOIN category c ON i.category_id = c.category_id
+        WHERE i.user_id = #{userId}
+          AND i.status IN ('consumed', 'discarded')
+        GROUP BY c.category_name
+        ORDER BY discardedCount DESC
+    </select>
+
+    <!-- 통계: 보관 위치별 폐기율 -->
+    <select id="getStorageEfficiency" parameterType="long" resultType="map">
+        SELECT
+            storage_location as storageLocation,
+            COUNT(CASE WHEN status = 'consumed' THEN 1 END) as consumedCount,
+            COUNT(CASE WHEN status = 'discarded' THEN 1 END) as discardedCount
+        FROM ingredient
+        WHERE user_id = #{userId}
+          AND status IN ('consumed', 'discarded')
+        GROUP BY storage_location
+    </select>
+
+    <!-- 통계: 요일별 폐기 패턴 -->
+    <select id="getDiscardPatternByDayOfWeek" parameterType="long" resultType="map">
+        SELECT
+            DAYOFWEEK(discard_date) as dayOfWeek,
+            COUNT(*) as count
+        FROM ingredient
+        WHERE user_id = #{userId}
+          AND status = 'discarded'
+          AND discard_date >= DATE_SUB(CURDATE(), INTERVAL 12 WEEK)
+        GROUP BY dayOfWeek
+        ORDER BY dayOfWeek
+    </select>
+
+    <!-- 통계: 자주 폐기되는 식재료 TOP N -->
+    <select id="getTopDiscardedIngredients" parameterType="map" resultType="map">
+        SELECT
+            i.ingredient_name as ingredientName,
+            COALESCE(c.category_name, '기타') as categoryName,
+            COUNT(*) as discardCount
+        FROM ingredient i
+        LEFT JOIN category c ON i.category_id = c.category_id
+        WHERE i.user_id = #{userId}
+          AND i.status = 'discarded'
+          AND i.discard_date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+        GROUP BY i.ingredient_name, c.category_name
+        ORDER BY discardCount DESC
+        LIMIT #{limit}
+    </select>
+
 </mapper>

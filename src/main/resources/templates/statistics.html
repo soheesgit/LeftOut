@@ -154,6 +154,116 @@
             padding: 40px;
             color: #999;
         }
+
+        /* Context Badge 스타일 */
+        .context-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .context-badge .period-icon {
+            margin-right: 8px;
+        }
+
+        /* 로딩 오버레이 스타일 */
+        .stats-card.is-loading {
+            position: relative;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .stats-card.is-loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            transform: translate(-50%, -50%);
+        }
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* 카드 전환 애니메이션 */
+        .stats-card {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .stats-card.hidden {
+            display: none;
+        }
+
+        /* TOP 5 테이블 스타일 */
+        .top-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .top-table th, .top-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .top-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+        .top-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        .top-table .rank {
+            width: 50px;
+            text-align: center;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .top-table .rank-1 { color: #FFD700; }
+        .top-table .rank-2 { color: #C0C0C0; }
+        .top-table .rank-3 { color: #CD7F32; }
+        .top-table .category-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .top-table .count {
+            font-weight: bold;
+            color: #f44336;
+        }
+        .no-data {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+        }
+
+        /* 효율성 차트 컨테이너 */
+        .efficiency-info {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #fff3e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .efficiency-info.good {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .efficiency-info.warning {
+            background-color: #fff3e0;
+            color: #e65100;
+        }
     </style>
 </head>
 <body>
@@ -175,9 +285,15 @@
         <button class="period-btn" data-period="month" onclick="changePeriod('month')">월 단위</button>
     </div>
 
+    <!-- Context Badge -->
+    <div class="context-badge" id="contextBadge">
+        <span class="period-icon">📊</span>
+        <span id="contextText">최근 7일간 데이터를 보고 있습니다</span>
+    </div>
+
     <!-- Monthly Summary Cards -->
-    <div class="stats-card full-width">
-        <h2>🗓️ 이번 달 요약</h2>
+    <div class="stats-card full-width" id="summaryCard">
+        <h2 id="summaryTitle">🗓️ 이번 달 요약</h2>
         <div class="monthly-summary" id="monthlySummary">
             <div class="loading">데이터를 불러오는 중...</div>
         </div>
@@ -186,35 +302,78 @@
     <!-- Charts Grid -->
     <div class="stats-grid">
         <!-- Discard Stats by Period -->
-        <div class="stats-card full-width">
-            <h2>🗑️ 기간별 폐기 통계</h2>
+        <div class="stats-card full-width" id="discardPeriodCard">
+            <h2 id="discardPeriodTitle">🗑️ 일별 폐기 통계</h2>
             <div class="chart-container tall">
                 <canvas id="discardPeriodChart"></canvas>
             </div>
         </div>
 
         <!-- Discard Stats by Category -->
-        <div class="stats-card">
-            <h2>📂 카테고리별 폐기 통계</h2>
+        <div class="stats-card" id="discardCategoryCard">
+            <h2 id="discardCategoryTitle">📂 카테고리별 폐기 통계</h2>
             <div class="chart-container">
                 <canvas id="discardCategoryChart"></canvas>
             </div>
         </div>
 
+        <!-- 자주 폐기되는 식재료 TOP 5 (월 단위에서 카테고리별 폐기 통계 옆에 표시) -->
+        <div class="stats-card" id="topDiscardedCard">
+            <h2>⚠️ 자주 폐기되는 식재료 TOP 5</h2>
+            <div id="topDiscardedTable">
+                <div class="loading">데이터를 불러오는 중...</div>
+            </div>
+        </div>
+
         <!-- Category Composition -->
-        <div class="stats-card">
-            <h2>🥗 현재 카테고리 구성</h2>
+        <div class="stats-card" id="categoryCompositionCard">
+            <h2 id="categoryCompositionTitle">🥗 현재 카테고리 구성</h2>
             <div class="chart-container">
                 <canvas id="categoryCompositionChart"></canvas>
             </div>
         </div>
 
+        <!-- 요일별 폐기 패턴 (일 단위에서 현재 카테고리 구성 옆에 표시) -->
+        <div class="stats-card" id="dayOfWeekCard">
+            <h2>📅 요일별 폐기 패턴</h2>
+            <div class="chart-container">
+                <canvas id="dayOfWeekChart"></canvas>
+            </div>
+            <div id="dayOfWeekInfo" class="efficiency-info"></div>
+        </div>
+
         <!-- Storage Location Distribution -->
-        <div class="stats-card full-width">
-            <h2>🧊 보관 위치별 카테고리 분포</h2>
+        <div class="stats-card full-width" id="storageDistributionCard">
+            <h2 id="storageDistributionTitle">🧊 보관 위치별 카테고리 분포</h2>
             <div class="chart-container">
                 <canvas id="storageDistributionChart"></canvas>
             </div>
+        </div>
+
+        <!-- 월별 폐기율 추이 (새로운 차트) -->
+        <div class="stats-card full-width" id="discardRateCard">
+            <h2>📈 월별 폐기율 추이</h2>
+            <div class="chart-container tall">
+                <canvas id="discardRateChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 카테고리별 효율성 (새로운 차트) -->
+        <div class="stats-card" id="categoryEfficiencyCard">
+            <h2>🎯 카테고리별 효율성</h2>
+            <div class="chart-container">
+                <canvas id="categoryEfficiencyChart"></canvas>
+            </div>
+            <div id="categoryEfficiencyInfo" class="efficiency-info"></div>
+        </div>
+
+        <!-- 보관 위치별 폐기율 (새로운 차트) -->
+        <div class="stats-card" id="storageEfficiencyCard">
+            <h2>🧊 보관 위치별 폐기율</h2>
+            <div class="chart-container">
+                <canvas id="storageEfficiencyChart"></canvas>
+            </div>
+            <div id="storageEfficiencyInfo" class="efficiency-info"></div>
         </div>
     </div>
 
@@ -230,10 +389,43 @@
             '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
         ];
 
+        // 기간별 라벨 설정
+        const periodLabels = {
+            day: {
+                title: '최근 7일',
+                summaryTitle: '최근 7일 요약',
+                discardTitle: '일별 폐기 통계',
+                categoryTitle: '카테고리별 폐기 통계',
+                compositionTitle: '현재 카테고리 구성',
+                storageTitle: '보관 위치별 카테고리 분포'
+            },
+            week: {
+                title: '최근 12주',
+                summaryTitle: '최근 12주 요약',
+                discardTitle: '주별 폐기 통계',
+                categoryTitle: '카테고리별 폐기 통계',
+                compositionTitle: '현재 카테고리 구성',
+                storageTitle: '보관 위치별 카테고리 분포'
+            },
+            month: {
+                title: '최근 12개월',
+                summaryTitle: '이번 달 요약',
+                discardTitle: '월별 폐기 통계',
+                categoryTitle: '카테고리별 폐기 통계',
+                compositionTitle: '현재 카테고리 구성',
+                storageTitle: '보관 위치별 카테고리 분포'
+            }
+        };
+
         // 차트 초기화
         document.addEventListener('DOMContentLoaded', function() {
             initializeCharts();
             updateAllCharts(statsData);
+
+            // 초기 상태 설정 (일 단위)
+            updateCardTitles('day');
+            updateCardVisibility('day');
+            updateContextBadge('day');
         });
 
         function changePeriod(period) {
@@ -245,18 +437,134 @@
             });
             document.querySelector(`[data-period="${period}"]`).classList.add('active');
 
+            // 제목 업데이트
+            updateCardTitles(period);
+
+            // 컴포넌트 가시성 업데이트
+            updateCardVisibility(period);
+
+            // Context Badge 업데이트
+            updateContextBadge(period);
+
             // 데이터 갱신
             fetchStatistics(period);
         }
 
+        function updateCardTitles(period) {
+            const labels = periodLabels[period];
+            document.getElementById('summaryTitle').textContent = '🗓️ ' + labels.summaryTitle;
+            document.getElementById('discardPeriodTitle').textContent = '🗑️ ' + labels.discardTitle;
+            document.getElementById('discardCategoryTitle').textContent = '📂 ' + labels.categoryTitle;
+            document.getElementById('categoryCompositionTitle').textContent = '🥗 ' + labels.compositionTitle;
+            document.getElementById('storageDistributionTitle').textContent = '🧊 ' + labels.storageTitle;
+        }
+
+        // 컴포넌트 가시성 규칙
+        const cardVisibility = {
+            day: {
+                summaryCard: false,
+                discardPeriodCard: true,
+                discardCategoryCard: false,
+                categoryCompositionCard: true,
+                storageDistributionCard: true,
+                // 새로운 차트 가시성
+                discardRateCard: false,
+                categoryEfficiencyCard: false,
+                storageEfficiencyCard: false,
+                dayOfWeekCard: true,
+                topDiscardedCard: false
+            },
+            week: {
+                summaryCard: false,
+                discardPeriodCard: true,
+                discardCategoryCard: true,
+                categoryCompositionCard: false,
+                storageDistributionCard: false,
+                // 새로운 차트 가시성
+                discardRateCard: false,
+                categoryEfficiencyCard: true,
+                storageEfficiencyCard: true,
+                dayOfWeekCard: true,
+                topDiscardedCard: false
+            },
+            month: {
+                summaryCard: true,
+                discardPeriodCard: true,
+                discardCategoryCard: true,
+                categoryCompositionCard: false,
+                storageDistributionCard: false,
+                // 새로운 차트 가시성
+                discardRateCard: true,
+                categoryEfficiencyCard: true,
+                storageEfficiencyCard: true,
+                dayOfWeekCard: false,
+                topDiscardedCard: true
+            }
+        };
+
+        function updateCardVisibility(period) {
+            const visibility = cardVisibility[period];
+
+            // 각 카드의 표시/숨김 설정
+            document.getElementById('summaryCard').style.display = visibility.summaryCard ? 'block' : 'none';
+            document.getElementById('discardPeriodCard').style.display = visibility.discardPeriodCard ? 'block' : 'none';
+            document.getElementById('discardCategoryCard').style.display = visibility.discardCategoryCard ? 'block' : 'none';
+            document.getElementById('categoryCompositionCard').style.display = visibility.categoryCompositionCard ? 'block' : 'none';
+            document.getElementById('storageDistributionCard').style.display = visibility.storageDistributionCard ? 'block' : 'none';
+            // 새로운 차트 가시성
+            document.getElementById('discardRateCard').style.display = visibility.discardRateCard ? 'block' : 'none';
+            document.getElementById('categoryEfficiencyCard').style.display = visibility.categoryEfficiencyCard ? 'block' : 'none';
+            document.getElementById('storageEfficiencyCard').style.display = visibility.storageEfficiencyCard ? 'block' : 'none';
+            document.getElementById('dayOfWeekCard').style.display = visibility.dayOfWeekCard ? 'block' : 'none';
+            document.getElementById('topDiscardedCard').style.display = visibility.topDiscardedCard ? 'block' : 'none';
+        }
+
+        // Context Badge 업데이트
+        function updateContextBadge(period) {
+            const contextText = document.getElementById('contextText');
+            const now = new Date();
+
+            if (period === 'day') {
+                const endDate = new Date();
+                const startDate = new Date();
+                startDate.setDate(startDate.getDate() - 6);
+                const startStr = `${startDate.getMonth() + 1}/${startDate.getDate()}`;
+                const endStr = `${endDate.getMonth() + 1}/${endDate.getDate()}`;
+                contextText.textContent = `최근 7일간 데이터를 보고 있습니다 (${startStr} ~ ${endStr})`;
+            } else if (period === 'week') {
+                const endMonth = now.getMonth() + 1;
+                const startMonth = endMonth - 2 > 0 ? endMonth - 2 : endMonth - 2 + 12;
+                contextText.textContent = `최근 12주간 데이터를 보고 있습니다 (약 ${startMonth}월 ~ ${endMonth}월)`;
+            } else {
+                contextText.textContent = `최근 12개월간 데이터를 보고 있습니다 (${now.getFullYear()}년)`;
+            }
+        }
+
+        // 로딩 상태 관리
+        function setLoadingState(isLoading) {
+            const cards = document.querySelectorAll('.stats-card');
+            cards.forEach(card => {
+                if (isLoading) {
+                    card.classList.add('is-loading');
+                } else {
+                    card.classList.remove('is-loading');
+                }
+            });
+        }
+
         function fetchStatistics(period) {
-            fetch(`/statistics/discard-by-period?period=${period}`)
+            setLoadingState(true);
+
+            fetch(`/statistics/data?period=${period}`)
                 .then(response => response.json())
                 .then(data => {
-                    updatePeriodCharts(data);
+                    updateAllCharts(data);
                 })
                 .catch(error => {
                     console.error('Error fetching statistics:', error);
+                })
+                .finally(() => {
+                    setLoadingState(false);
                 });
         }
 
@@ -394,6 +702,171 @@
                     }
                 }
             });
+
+            // 월별 폐기율 추이 - 라인 차트
+            const ctx5 = document.getElementById('discardRateChart').getContext('2d');
+            charts.discardRate = new Chart(ctx5, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '폐기율 (%)',
+                        data: [],
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 5,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `폐기율: ${context.parsed.y}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 카테고리별 효율성 - 가로 막대 차트
+            const ctx6 = document.getElementById('categoryEfficiencyChart').getContext('2d');
+            charts.categoryEfficiency = new Chart(ctx6, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '폐기율 (%)',
+                        data: [],
+                        backgroundColor: [],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `폐기율: ${context.parsed.x}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 보관 위치별 폐기율 - 막대 차트
+            const ctx7 = document.getElementById('storageEfficiencyChart').getContext('2d');
+            charts.storageEfficiency = new Chart(ctx7, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '폐기율 (%)',
+                        data: [],
+                        backgroundColor: ['#36A2EB', '#4BC0C0', '#FF9F40'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `폐기율: ${context.parsed.y}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 요일별 폐기 패턴 - 막대 차트
+            const ctx8 = document.getElementById('dayOfWeekChart').getContext('2d');
+            charts.dayOfWeek = new Chart(ctx8, {
+                type: 'bar',
+                data: {
+                    labels: ['월', '화', '수', '목', '금', '토', '일'],
+                    datasets: [{
+                        label: '폐기 횟수',
+                        data: [],
+                        backgroundColor: 'rgba(153, 102, 255, 0.5)',
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         function updateAllCharts(data) {
@@ -401,6 +874,12 @@
             updateMonthlyStats(data.monthlyStats);
             updateCategoryComposition(data.categoryComposition);
             updateStorageDistribution(data.storageDistribution);
+            // 새로운 차트 업데이트
+            updateDiscardRateChart(data.monthlyDiscardRate);
+            updateCategoryEfficiencyChart(data.categoryEfficiency);
+            updateStorageEfficiencyChart(data.storageEfficiency);
+            updateDayOfWeekChart(data.discardPatternByDayOfWeek);
+            updateTopDiscardedTable(data.topDiscardedIngredients);
         }
 
         function updatePeriodCharts(data) {
@@ -517,6 +996,155 @@
             });
             charts.storageDistribution.data.datasets = datasets;
             charts.storageDistribution.update();
+        }
+
+        // 월별 폐기율 추이 차트 업데이트
+        function updateDiscardRateChart(data) {
+            if (!data || data.length === 0 || !charts.discardRate) return;
+
+            const labels = data.map(item => item.month);
+            const rates = data.map(item => item.discardRate);
+
+            charts.discardRate.data.labels = labels;
+            charts.discardRate.data.datasets[0].data = rates;
+            charts.discardRate.update();
+        }
+
+        // 카테고리별 효율성 차트 업데이트
+        function updateCategoryEfficiencyChart(data) {
+            if (!data || data.length === 0 || !charts.categoryEfficiency) return;
+
+            const labels = data.map(item => item.categoryName || '기타');
+            const rates = data.map(item => item.discardRate);
+
+            // 폐기율에 따른 색상 설정 (높을수록 빨간색)
+            const bgColors = rates.map(rate => {
+                if (rate >= 50) return 'rgba(244, 67, 54, 0.7)';  // 빨강 - 위험
+                if (rate >= 30) return 'rgba(255, 152, 0, 0.7)';  // 주황 - 주의
+                return 'rgba(76, 175, 80, 0.7)';  // 녹색 - 양호
+            });
+
+            charts.categoryEfficiency.data.labels = labels;
+            charts.categoryEfficiency.data.datasets[0].data = rates;
+            charts.categoryEfficiency.data.datasets[0].backgroundColor = bgColors;
+            charts.categoryEfficiency.update();
+
+            // 효율성 정보 업데이트
+            const infoEl = document.getElementById('categoryEfficiencyInfo');
+            if (data.length > 0) {
+                const worstCategory = data[0];
+                if (worstCategory.discardRate >= 30) {
+                    infoEl.className = 'efficiency-info warning';
+                    infoEl.innerHTML = `💡 <b>${worstCategory.categoryName}</b> 카테고리의 폐기율이 ${worstCategory.discardRate}%로 높습니다. 구매량 조절을 고려해보세요.`;
+                } else {
+                    infoEl.className = 'efficiency-info good';
+                    infoEl.innerHTML = `✅ 전체적으로 식재료 관리가 잘 되고 있습니다.`;
+                }
+            }
+        }
+
+        // 보관 위치별 폐기율 차트 업데이트
+        function updateStorageEfficiencyChart(data) {
+            if (!data || data.length === 0 || !charts.storageEfficiency) return;
+
+            const locationOrder = ['냉장', '냉동', '실온'];
+            const orderedData = locationOrder.map(loc => {
+                const found = data.find(item => item.storageLocation === loc);
+                return found || { storageLocation: loc, discardRate: 0 };
+            });
+
+            const labels = orderedData.map(item => {
+                if (item.storageLocation === '냉장') return '❄️ 냉장';
+                if (item.storageLocation === '냉동') return '🧊 냉동';
+                if (item.storageLocation === '실온') return '🌡️ 실온';
+                return item.storageLocation;
+            });
+            const rates = orderedData.map(item => item.discardRate);
+
+            charts.storageEfficiency.data.labels = labels;
+            charts.storageEfficiency.data.datasets[0].data = rates;
+            charts.storageEfficiency.update();
+
+            // 효율성 정보 업데이트
+            const infoEl = document.getElementById('storageEfficiencyInfo');
+            const bestStorage = orderedData.reduce((min, curr) =>
+                curr.discardRate < min.discardRate ? curr : min, orderedData[0]);
+            const worstStorage = orderedData.reduce((max, curr) =>
+                curr.discardRate > max.discardRate ? curr : max, orderedData[0]);
+
+            if (worstStorage.discardRate > bestStorage.discardRate + 10) {
+                infoEl.className = 'efficiency-info warning';
+                infoEl.innerHTML = `💡 <b>${worstStorage.storageLocation}</b> 보관 식재료의 폐기율이 높습니다. <b>${bestStorage.storageLocation}</b> 보관이 더 효율적입니다.`;
+            } else {
+                infoEl.className = 'efficiency-info good';
+                infoEl.innerHTML = `✅ 보관 위치별 폐기율이 비교적 균등합니다.`;
+            }
+        }
+
+        // 요일별 폐기 패턴 차트 업데이트
+        function updateDayOfWeekChart(data) {
+            if (!data || data.length === 0 || !charts.dayOfWeek) return;
+
+            const counts = data.map(item => item.count);
+
+            charts.dayOfWeek.data.datasets[0].data = counts;
+            charts.dayOfWeek.update();
+
+            // 패턴 정보 업데이트
+            const infoEl = document.getElementById('dayOfWeekInfo');
+            const maxCount = Math.max(...counts);
+            const maxDayIndex = counts.indexOf(maxCount);
+            const dayNames = ['월', '화', '수', '목', '금', '토', '일'];
+
+            if (maxCount > 0) {
+                infoEl.className = 'efficiency-info warning';
+                infoEl.innerHTML = `💡 <b>${dayNames[maxDayIndex]}요일</b>에 폐기가 집중됩니다 (${maxCount}회). 주 초에 식재료 점검을 해보세요.`;
+            } else {
+                infoEl.className = 'efficiency-info good';
+                infoEl.innerHTML = `✅ 최근 12주간 폐기된 식재료가 없습니다.`;
+            }
+        }
+
+        // TOP 5 폐기 식재료 테이블 업데이트
+        function updateTopDiscardedTable(data) {
+            const container = document.getElementById('topDiscardedTable');
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div class="no-data">최근 12개월간 폐기된 식재료가 없습니다.</div>';
+                return;
+            }
+
+            let html = `
+                <table class="top-table">
+                    <thead>
+                        <tr>
+                            <th class="rank">순위</th>
+                            <th>식재료명</th>
+                            <th>카테고리</th>
+                            <th>폐기 횟수</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.forEach(item => {
+                const rankClass = item.rank <= 3 ? `rank-${item.rank}` : '';
+                html += `
+                    <tr>
+                        <td class="rank ${rankClass}">${item.rank}</td>
+                        <td>${item.ingredientName}</td>
+                        <td><span class="category-badge">${item.categoryName}</span></td>
+                        <td class="count">${item.discardCount}회</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
         }
         /*]]>*/
     </script>

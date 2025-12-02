@@ -6,7 +6,8 @@
       "WebFetch(domain:www.foodsafetykorea.go.kr)",
       "Bash(cat:*)",
       "Bash(./gradlew build:*)",
-      "Bash(./gradlew clean:*)"
+      "Bash(./gradlew clean:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

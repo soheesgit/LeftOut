@@ -120,4 +120,32 @@ public class IngredientRepository {
     public List<Map<String, Object>> getCategoryComposition(Long userId) {
         return sql.selectList("ingredient.getCategoryComposition", userId);
     }
+
+    // 통계: 월별 폐기율 추이
+    public List<Map<String, Object>> getMonthlyDiscardRate(Long userId) {
+        return sql.selectList("ingredient.getMonthlyDiscardRate", userId);
+    }
+
+    // 통계: 카테고리별 효율성 (폐기율)
+    public List<Map<String, Object>> getCategoryEfficiency(Long userId) {
+        return sql.selectList("ingredient.getCategoryEfficiency", userId);
+    }
+
+    // 통계: 보관 위치별 폐기율
+    public List<Map<String, Object>> getStorageEfficiency(Long userId) {
+        return sql.selectList("ingredient.getStorageEfficiency", userId);
+    }
+
+    // 통계: 요일별 폐기 패턴
+    public List<Map<String, Object>> getDiscardPatternByDayOfWeek(Long userId) {
+        return sql.selectList("ingredient.getDiscardPatternByDayOfWeek", userId);
+    }
+
+    // 통계: 자주 폐기되는 식재료 TOP N
+    public List<Map<String, Object>> getTopDiscardedIngredients(Long userId, int limit) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        params.put("limit", limit);
+        return sql.selectList("ingredient.getTopDiscardedIngredients", params);
+    }
 }

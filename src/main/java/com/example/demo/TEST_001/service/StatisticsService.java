@@ -199,6 +199,155 @@ public class StatisticsService {
         dashboard.put("storageDistribution", getStorageLocationDistribution(userId));
         dashboard.put("categoryComposition", getCategoryComposition(userId));
 
+        // 새로운 통계 기능 추가
+        dashboard.put("monthlyDiscardRate", getMonthlyDiscardRate(userId));
+        dashboard.put("categoryEfficiency", getCategoryEfficiency(userId));
+        dashboard.put("storageEfficiency", getStorageEfficiency(userId));
+        dashboard.put("discardPatternByDayOfWeek", getDiscardPatternByDayOfWeek(userId));
+        dashboard.put("topDiscardedIngredients", getTopDiscardedIngredients(userId, 5));
+
         return dashboard;
+    }
+
+    /**
+     * 월별 폐기율 추이 조회
+     * @param userId 사용자 ID
+     * @return 월별 소비/폐기 횟수 및 폐기율
+     */
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getMonthlyDiscardRate(Long userId) {
+        List<Map<String, Object>> rawData = ingredientRepository.getMonthlyDiscardRate(userId);
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map<String, Object> item : rawData) {
+            Map<String, Object> monthData = new HashMap<>(item);
+            long consumed = ((Number) item.get("consumedCount")).longValue();
+            long discarded = ((Number) item.get("discardedCount")).longValue();
+            long total = consumed + discarded;
+
+            // 폐기율 계산
+            double discardRate = total > 0 ? Math.round((discarded * 1000.0 / total)) / 10.0 : 0;
+            monthData.put("discardRate", discardRate);
+            monthData.put("total", total);
+            result.add(monthData);
+        }
+
+        return result;
+    }
+
+    /**
+     * 카테고리별 효율성 (폐기율) 조회
+     * @param userId 사용자 ID
+     * @return 카테고리별 소비/폐기 횟수 및 폐기율
+     */
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getCategoryEfficiency(Long userId) {
+        List<Map<String, Object>> rawData = ingredientRepository.getCategoryEfficiency(userId);
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map<String, Object> item : rawData) {
+            Map<String, Object> catData = new HashMap<>(item);
+            long consumed = ((Number) item.get("consumedCount")).longValue();
+            long discarded = ((Number) item.get("discardedCount")).longValue();
+            long total = consumed + discarded;
+
+            // 폐기율 계산
+            double discardRate = total > 0 ? Math.round((discarded * 1000.0 / total)) / 10.0 : 0;
+            catData.put("discardRate", discardRate);
+            catData.put("total", total);
+            result.add(catData);
+        }
+
+        // 폐기율 기준 내림차순 정렬
+        result.sort((a, b) -> Double.compare(
+            ((Number) b.get("discardRate")).doubleValue(),
+            ((Number) a.get("discardRate")).doubleValue()
+        ));
+
+        return result;
+    }
+
+    /**
+     * 보관 위치별 폐기율 조회
+     * @param userId 사용자 ID
+     * @return 보관 위치별 소비/폐기 횟수 및 폐기율
+     */
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getStorageEfficiency(Long userId) {
+        List<Map<String, Object>> rawData = ingredientRepository.getStorageEfficiency(userId);
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map<String, Object> item : rawData) {
+            Map<String, Object> storageData = new HashMap<>(item);
+            long consumed = ((Number) item.get("consumedCount")).longValue();
+            long discarded = ((Number) item.get("discardedCount")).longValue();
+            long total = consumed + discarded;
+
+            // 폐기율 계산
+            double discardRate = total > 0 ? Math.round((discarded * 1000.0 / total)) / 10.0 : 0;
+            storageData.put("discardRate", discardRate);
+            storageData.put("total", total);
+            result.add(storageData);
+        }
+
+        return result;
+    }
+
+    /**
+     * 요일별 폐기 패턴 조회
+     * @param userId 사용자 ID
+     * @return 요일별 폐기 횟수 (월요일~일요일 순서)
+     */
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getDiscardPatternByDayOfWeek(Long userId) {
+        List<Map<String, Object>> rawData = ingredientRepository.getDiscardPatternByDayOfWeek(userId);
+
+        // MySQL DAYOFWEEK: 1=일, 2=월, 3=화, 4=수, 5=목, 6=금, 7=토
+        String[] dayNames = {"일", "월", "화", "수", "목", "금", "토"};
+
+        // 월요일부터 일요일까지 순서로 재정렬 (2,3,4,5,6,7,1)
+        int[] order = {2, 3, 4, 5, 6, 7, 1};
+
+        // 기존 데이터를 dayOfWeek 기준으로 맵핑
+        Map<Integer, Long> dayCountMap = new HashMap<>();
+        for (Map<String, Object> item : rawData) {
+            int dayOfWeek = ((Number) item.get("dayOfWeek")).intValue();
+            long count = ((Number) item.get("count")).longValue();
+            dayCountMap.put(dayOfWeek, count);
+        }
+
+        // 월~일 순서로 결과 생성
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (int dow : order) {
+            Map<String, Object> dayData = new HashMap<>();
+            dayData.put("dayOfWeek", dow);
+            dayData.put("dayName", dayNames[dow - 1]);
+            dayData.put("count", dayCountMap.getOrDefault(dow, 0L));
+            result.add(dayData);
+        }
+
+        return result;
+    }
+
+    /**
+     * 자주 폐기되는 식재료 TOP N 조회
+     * @param userId 사용자 ID
+     * @param limit 조회 개수
+     * @return 자주 폐기되는 식재료 목록
+     */
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getTopDiscardedIngredients(Long userId, int limit) {
+        List<Map<String, Object>> rawData = ingredientRepository.getTopDiscardedIngredients(userId, limit);
+
+        // 순위 추가
+        List<Map<String, Object>> result = new ArrayList<>();
+        int rank = 1;
+        for (Map<String, Object> item : rawData) {
+            Map<String, Object> ingredientData = new HashMap<>(item);
+            ingredientData.put("rank", rank++);
+            result.add(ingredientData);
+        }
+
+        return result;
     }
 }
