@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘 뭐 먹지? - 냉털이</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .back-link:hover {
+            opacity: 1;
+        }
+        .recipe-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: slideUp 0.5s ease;
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .recipe-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .recipe-image.placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+        }
+        .recipe-content {
+            padding: 25px;
+        }
+        .recipe-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+        .recipe-tags {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tag {
+            padding: 6px 12px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+        .tag.method {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .tag.category {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        .recipe-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        .info-item {
+            text-align: center;
+        }
+        .info-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            text-align: center;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        .btn-refresh {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+            color: white;
+            margin-top: 20px;
+            width: 100%;
+        }
+        .btn-refresh:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+        }
+        .btn-refresh:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 60px;
+            color: white;
+        }
+        .loading.show {
+            display: block;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .error-message {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .error-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        .error-text {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .dice-animation {
+            font-size: 40px;
+            display: inline-block;
+            animation: shake 0.5s ease-in-out;
+        }
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-15deg); }
+            75% { transform: rotate(15deg); }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a href="/" class="back-link">← 홈으로 돌아가기</a>
+
+    <div class="header">
+        <h1><span class="dice-animation" id="diceIcon">🎲</span> 오늘 뭐 먹지?</h1>
+        <p>결정 장애 해결사! 랜덤으로 레시피를 추천해드려요</p>
+    </div>
+
+    <!-- 로딩 상태 -->
+    <div class="loading" id="loadingState">
+        <div class="loading-spinner"></div>
+        <p>맛있는 레시피를 찾고 있어요...</p>
+    </div>
+
+    <!-- 에러 상태 -->
+    <div th:if="${error}" class="error-message" id="errorState">
+        <div class="error-icon">😢</div>
+        <p class="error-text" th:text="${error}">에러 메시지</p>
+        <a href="/" class="btn btn-primary">홈으로 돌아가기</a>
+    </div>
+
+    <!-- 레시피 카드 -->
+    <div th:if="${recipe}" class="recipe-card" id="recipeCard">
+        <!-- 이미지 -->
+        <div th:if="${recipe.attFileNoMain != null and recipe.attFileNoMain != ''}">
+            <img th:src="${recipe.attFileNoMain}" alt="레시피 이미지" class="recipe-image" id="recipeImage"
+                 onerror="this.style.display='none'; document.getElementById('placeholderImage').style.display='flex';">
+        </div>
+        <div th:if="${recipe.attFileNoMain == null or recipe.attFileNoMain == ''}"
+             class="recipe-image placeholder" id="placeholderImage">
+            🍳
+        </div>
+        <div th:if="${recipe.attFileNoMain != null and recipe.attFileNoMain != ''}"
+             class="recipe-image placeholder" id="placeholderImage" style="display:none;">
+            🍳
+        </div>
+
+        <div class="recipe-content">
+            <h2 class="recipe-title" id="recipeTitle" th:text="${recipe.title}">레시피 제목</h2>
+
+            <div class="recipe-tags">
+                <span class="tag method" id="recipeMethod" th:if="${recipe.rcpWay2}" th:text="${recipe.rcpWay2}">조리방법</span>
+                <span class="tag category" id="recipeCategory" th:if="${recipe.rcpPat2}" th:text="${recipe.rcpPat2}">카테고리</span>
+            </div>
+
+            <div class="recipe-info" th:if="${recipe.infoEng != null}">
+                <div class="info-item">
+                    <div class="info-label">칼로리</div>
+                    <div class="info-value" id="recipeCalories">
+                        <span th:text="${recipe.infoEng}">0</span> kcal
+                    </div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">재료 수</div>
+                    <div class="info-value" id="recipeIngredientCount">
+                        <span th:text="${recipe.ingredientCount != null ? recipe.ingredientCount : '-'}">-</span>개
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <a th:href="@{/recipe/detail/{seq}(seq=${recipe.rcpSeq})}" class="btn btn-primary" id="viewDetailBtn">
+                    레시피 보기
+                </a>
+                <a href="/" class="btn btn-secondary">홈으로</a>
+            </div>
+
+            <button class="btn btn-refresh" onclick="refreshRecipe()" id="refreshBtn">
+                🎲 다른 레시피 추천받기
+            </button>
+        </div>
+    </div>
+
+    <!-- 레시피가 없을 때 새로고침 버튼 -->
+    <div th:if="${recipe == null and error == null}" class="error-message">
+        <div class="error-icon">🍽️</div>
+        <p class="error-text">추천할 레시피를 불러오고 있습니다...</p>
+        <button class="btn btn-primary" onclick="refreshRecipe()">레시피 추천받기</button>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    function refreshRecipe() {
+        const card = document.getElementById('recipeCard');
+        const loading = document.getElementById('loadingState');
+        const errorState = document.getElementById('errorState');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const diceIcon = document.getElementById('diceIcon');
+
+        // 주사위 애니메이션
+        diceIcon.style.animation = 'none';
+        setTimeout(() => {
+            diceIcon.style.animation = 'shake 0.5s ease-in-out';
+        }, 10);
+
+        // 버튼 비활성화
+        if (refreshBtn) {
+            refreshBtn.disabled = true;
+            refreshBtn.textContent = '추천 중...';
+        }
+
+        // 로딩 표시
+        if (card) card.style.display = 'none';
+        if (errorState) errorState.style.display = 'none';
+        loading.classList.add('show');
+
+        fetch('/recipe/random/refresh')
+            .then(response => response.json())
+            .then(data => {
+                loading.classList.remove('show');
+
+                if (data.success && data.recipe) {
+                    updateRecipeCard(data.recipe);
+                    if (card) card.style.display = 'block';
+                } else {
+                    // 에러 표시
+                    showError(data.error || '레시피를 불러올 수 없습니다.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loading.classList.remove('show');
+                showError('네트워크 오류가 발생했습니다.');
+            })
+            .finally(() => {
+                // 버튼 다시 활성화
+                if (refreshBtn) {
+                    refreshBtn.disabled = false;
+                    refreshBtn.textContent = '🎲 다른 레시피 추천받기';
+                }
+            });
+    }
+
+    function updateRecipeCard(recipe) {
+        // 제목 업데이트
+        document.getElementById('recipeTitle').textContent = recipe.title || '레시피';
+
+        // 이미지 업데이트
+        const recipeImage = document.getElementById('recipeImage');
+        const placeholderImage = document.getElementById('placeholderImage');
+
+        if (recipe.attFileNoMain) {
+            if (recipeImage) {
+                recipeImage.src = recipe.attFileNoMain;
+                recipeImage.style.display = 'block';
+            }
+            if (placeholderImage) placeholderImage.style.display = 'none';
+        } else {
+            if (recipeImage) recipeImage.style.display = 'none';
+            if (placeholderImage) placeholderImage.style.display = 'flex';
+        }
+
+        // 태그 업데이트
+        const methodTag = document.getElementById('recipeMethod');
+        const categoryTag = document.getElementById('recipeCategory');
+
+        if (methodTag) {
+            if (recipe.rcpWay2) {
+                methodTag.textContent = recipe.rcpWay2;
+                methodTag.style.display = 'inline-block';
+            } else {
+                methodTag.style.display = 'none';
+            }
+        }
+
+        if (categoryTag) {
+            if (recipe.rcpPat2) {
+                categoryTag.textContent = recipe.rcpPat2;
+                categoryTag.style.display = 'inline-block';
+            } else {
+                categoryTag.style.display = 'none';
+            }
+        }
+
+        // 칼로리 업데이트
+        const caloriesEl = document.getElementById('recipeCalories');
+        if (caloriesEl && recipe.infoEng) {
+            caloriesEl.innerHTML = recipe.infoEng + ' kcal';
+        }
+
+        // 재료 수 업데이트
+        const ingredientCountEl = document.getElementById('recipeIngredientCount');
+        if (ingredientCountEl) {
+            ingredientCountEl.innerHTML = (recipe.ingredientCount || '-') + '개';
+        }
+
+        // 상세보기 링크 업데이트
+        const viewDetailBtn = document.getElementById('viewDetailBtn');
+        if (viewDetailBtn && recipe.rcpSeq) {
+            viewDetailBtn.href = '/recipe/detail/' + recipe.rcpSeq;
+        }
+
+        // 애니메이션 재실행
+        const card = document.getElementById('recipeCard');
+        if (card) {
+            card.style.animation = 'none';
+            setTimeout(() => {
+                card.style.animation = 'slideUp 0.5s ease';
+            }, 10);
+        }
+    }
+
+    function showError(message) {
+        let errorState = document.getElementById('errorState');
+
+        if (!errorState) {
+            errorState = document.createElement('div');
+            errorState.id = 'errorState';
+            errorState.className = 'error-message';
+            document.querySelector('.container').appendChild(errorState);
+        }
+
+        errorState.innerHTML = `
+            <div class="error-icon">😢</div>
+            <p class="error-text">${message}</p>
+            <button class="btn btn-primary" onclick="refreshRecipe()">다시 시도</button>
+        `;
+        errorState.style.display = 'block';
+    }
+</script>
+</body>
+</html>

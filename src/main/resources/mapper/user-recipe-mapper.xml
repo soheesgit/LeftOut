@@ -347,4 +347,63 @@
         WHERE rcp_seq = #{rcpSeq}
     </select>
 
+    <!-- ========================================= -->
+    <!-- 랜덤 레시피 추천 쿼리                        -->
+    <!-- ========================================= -->
+
+    <!-- API 레시피에서 랜덤 추천 (MySQL RAND() 사용) -->
+    <select id="findRandomApiRecipe" parameterType="int" resultType="com.example.demo.TEST_001.dto.UserRecipeDTO">
+        SELECT
+            id, source, rcp_seq, title, rcp_way2, rcp_pat2, rcp_parts_dtls,
+            info_eng, att_file_no_main, att_file_no_mk,
+            parsed_ingredients, ingredient_count, created_at
+        FROM user_recipe
+        WHERE source = 'api'
+        ORDER BY RAND()
+        LIMIT #{count}
+    </select>
+
+    <!-- 사용자 레시피에서 랜덤 추천 -->
+    <select id="findRandomUserRecipe" parameterType="int" resultType="com.example.demo.TEST_001.dto.UserRecipeDTO">
+        SELECT
+            ur.id,
+            ur.user_id,
+            ur.title,
+            ur.description,
+            ur.preparation_time,
+            ur.cooking_time,
+            ur.servings,
+            ur.difficulty_level,
+            ur.main_image_path,
+            ur.view_count,
+            ur.like_count,
+            ur.comment_count,
+            ur.created_at,
+            u.name AS authorName,
+            u.username AS authorUsername
+        FROM user_recipe ur
+        JOIN users u ON ur.user_id = u.id
+        WHERE ur.source IS NULL OR ur.source = 'user'
+        ORDER BY RAND()
+        LIMIT #{count}
+    </select>
+
+    <!-- 전체 레시피(API + 사용자)에서 랜덤 추천 -->
+    <select id="findRandomRecipe" parameterType="int" resultType="com.example.demo.TEST_001.dto.UserRecipeDTO">
+        SELECT
+            id, title, description,
+            COALESCE(att_file_no_main, main_image_path) AS main_image_path,
+            source, rcp_seq, rcp_way2, rcp_pat2,
+            preparation_time, cooking_time, servings, difficulty_level,
+            view_count, like_count, comment_count, created_at
+        FROM user_recipe
+        ORDER BY RAND()
+        LIMIT #{count}
+    </select>
+
+    <!-- 전체 레시피 수 조회 (랜덤 추천용) -->
+    <select id="countTotalRecipes" resultType="int">
+        SELECT COUNT(*) FROM user_recipe
+    </select>
+
 </mapper>

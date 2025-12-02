@@ -348,4 +348,75 @@ public class UserRecipeController {
             return "redirect:/recipe/user-recipe/" + recipeId + "?error=unauthorized";
         }
     }
+
+    // ==================== 랜덤 레시피 추천 ====================
+
+    /**
+     * "오늘 뭐 먹지?" 랜덤 레시피 추천 페이지
+     */
+    @GetMapping("/random")
+    public String randomRecipe(Model model) {
+        try {
+            // 레시피가 있는지 확인
+            if (!userRecipeService.canRecommendRandom()) {
+                model.addAttribute("error", "추천할 수 있는 레시피가 없습니다. 레시피를 먼저 등록해주세요!");
+                model.addAttribute("recipes", new ArrayList<>());
+                return "randomRecipe";
+            }
+
+            // API 레시피에서 랜덤 1개 추천
+            List<UserRecipeDTO> recipes = userRecipeService.getRandomApiRecipes(1);
+
+            if (recipes.isEmpty()) {
+                model.addAttribute("error", "추천할 수 있는 레시피가 없습니다.");
+                model.addAttribute("recipes", new ArrayList<>());
+            } else {
+                model.addAttribute("recipe", recipes.get(0));
+                model.addAttribute("recipes", recipes);
+            }
+
+            return "randomRecipe";
+
+        } catch (Exception e) {
+            model.addAttribute("error", "레시피 추천 중 오류가 발생했습니다: " + e.getMessage());
+            model.addAttribute("recipes", new ArrayList<>());
+            return "randomRecipe";
+        }
+    }
+
+    /**
+     * 랜덤 레시피 다시 추천 (AJAX용)
+     */
+    @GetMapping("/random/refresh")
+    @ResponseBody
+    public Map<String, Object> refreshRandomRecipe() {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 레시피가 있는지 확인
+            if (!userRecipeService.canRecommendRandom()) {
+                response.put("success", false);
+                response.put("error", "추천할 수 있는 레시피가 없습니다.");
+                return response;
+            }
+
+            // API 레시피에서 랜덤 1개 추천
+            List<UserRecipeDTO> recipes = userRecipeService.getRandomApiRecipes(1);
+
+            if (recipes.isEmpty()) {
+                response.put("success", false);
+                response.put("error", "추천할 수 있는 레시피가 없습니다.");
+            } else {
+                UserRecipeDTO recipe = recipes.get(0);
+                response.put("success", true);
+                response.put("recipe", recipe);
+            }
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "레시피 추천 중 오류가 발생했습니다.");
+        }
+
+        return response;
+    }
 }

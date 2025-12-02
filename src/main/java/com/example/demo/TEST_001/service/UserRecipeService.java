@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -195,5 +196,114 @@ public class UserRecipeService {
         } catch (JsonProcessingException e) {
             throw new RuntimeException("JSON 파싱 오류", e);
         }
+    }
+
+    // ========================================
+    // 랜덤 레시피 추천 메서드
+    // ========================================
+
+    /**
+     * API 레시피에서 랜덤으로 추천
+     * @param count 추천받을 레시피 수
+     * @return 랜덤 레시피 목록 (레시피가 없으면 빈 리스트)
+     */
+    public List<UserRecipeDTO> getRandomApiRecipes(int count) {
+        try {
+            if (count <= 0) {
+                log.warn("랜덤 추천 요청 개수가 0 이하입니다: {}", count);
+                return Collections.emptyList();
+            }
+
+            List<UserRecipeDTO> recipes = userRecipeRepository.findRandomApiRecipe(count);
+
+            if (recipes == null) {
+                log.warn("랜덤 API 레시피 조회 결과가 null입니다.");
+                return Collections.emptyList();
+            }
+
+            log.info("API 레시피 랜덤 추천 완료: {}개 요청, {}개 반환", count, recipes.size());
+            return recipes;
+
+        } catch (Exception e) {
+            log.error("API 레시피 랜덤 추천 중 오류 발생", e);
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * 사용자 레시피에서 랜덤으로 추천
+     * @param count 추천받을 레시피 수
+     * @return 랜덤 레시피 목록 (레시피가 없으면 빈 리스트)
+     */
+    public List<UserRecipeDTO> getRandomUserRecipes(int count) {
+        try {
+            if (count <= 0) {
+                log.warn("랜덤 추천 요청 개수가 0 이하입니다: {}", count);
+                return Collections.emptyList();
+            }
+
+            List<UserRecipeDTO> recipes = userRecipeRepository.findRandomUserRecipe(count);
+
+            if (recipes == null) {
+                log.warn("랜덤 사용자 레시피 조회 결과가 null입니다.");
+                return Collections.emptyList();
+            }
+
+            log.info("사용자 레시피 랜덤 추천 완료: {}개 요청, {}개 반환", count, recipes.size());
+            return recipes;
+
+        } catch (Exception e) {
+            log.error("사용자 레시피 랜덤 추천 중 오류 발생", e);
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * 전체 레시피(API + 사용자)에서 랜덤으로 추천
+     * @param count 추천받을 레시피 수
+     * @return 랜덤 레시피 목록 (레시피가 없으면 빈 리스트)
+     */
+    public List<UserRecipeDTO> getRandomRecipes(int count) {
+        try {
+            if (count <= 0) {
+                log.warn("랜덤 추천 요청 개수가 0 이하입니다: {}", count);
+                return Collections.emptyList();
+            }
+
+            List<UserRecipeDTO> recipes = userRecipeRepository.findRandomRecipe(count);
+
+            if (recipes == null) {
+                log.warn("랜덤 전체 레시피 조회 결과가 null입니다.");
+                return Collections.emptyList();
+            }
+
+            log.info("전체 레시피 랜덤 추천 완료: {}개 요청, {}개 반환", count, recipes.size());
+            return recipes;
+
+        } catch (Exception e) {
+            log.error("전체 레시피 랜덤 추천 중 오류 발생", e);
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * 전체 레시피 수 조회 (랜덤 추천 가능 여부 확인용)
+     * @return 전체 레시피 수
+     */
+    public int getTotalRecipeCount() {
+        try {
+            return userRecipeRepository.countTotalRecipes();
+        } catch (Exception e) {
+            log.error("전체 레시피 수 조회 중 오류 발생", e);
+            return 0;
+        }
+    }
+
+    /**
+     * 랜덤 레시피 추천 가능 여부 확인
+     * @return true: 추천 가능 (레시피가 1개 이상), false: 추천 불가
+     */
+    public boolean canRecommendRandom() {
+        return getTotalRecipeCount() > 0;
     }
 }

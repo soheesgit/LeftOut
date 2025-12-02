@@ -128,4 +128,29 @@ public class UserRecipeRepository {
     public UserRecipeDTO findByRcpSeq(String rcpSeq) {
         return sql.selectOne("userRecipe.findByRcpSeq", rcpSeq);
     }
+
+    // ========================================
+    // 랜덤 레시피 추천용 메서드
+    // ========================================
+
+    // API 레시피에서 랜덤 추천
+    public List<UserRecipeDTO> findRandomApiRecipe(int count) {
+        return sql.selectList("userRecipe.findRandomApiRecipe", count);
+    }
+
+    // 사용자 레시피에서 랜덤 추천
+    public List<UserRecipeDTO> findRandomUserRecipe(int count) {
+        return sql.selectList("userRecipe.findRandomUserRecipe", count);
+    }
+
+    // 전체 레시피에서 랜덤 추천
+    public List<UserRecipeDTO> findRandomRecipe(int count) {
+        return sql.selectList("userRecipe.findRandomRecipe", count);
+    }
+
+    // 전체 레시피 수 조회
+    public int countTotalRecipes() {
+        Integer count = sql.selectOne("userRecipe.countTotalRecipes");
+        return count != null ? count : 0;
+    }
 }

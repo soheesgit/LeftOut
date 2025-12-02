@@ -108,6 +108,50 @@
         .menu-list a.highlight-red:hover {
             background: linear-gradient(135deg, #EF5350, #FF6B6B);
         }
+        .random-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .random-section h3 {
+            color: white;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        .random-section p {
+            color: rgba(255,255,255,0.85);
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .random-btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: white;
+            color: #667eea;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .random-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .random-btn .dice {
+            display: inline-block;
+            animation: shake 2s ease-in-out infinite;
+        }
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            10% { transform: rotate(-10deg); }
+            20% { transform: rotate(10deg); }
+            30% { transform: rotate(0deg); }
+        }
         .footer {
             text-align: center;
             margin-top: 30px;
@@ -143,6 +187,15 @@
             <li><a href="/statistics">📊 통계</a></li>
             <li><a href="/category/manage">🗂️ 카테고리 관리</a></li>
         </ul>
+    </div>
+
+    <!-- 오늘 뭐 먹지? 랜덤 추천 -->
+    <div class="random-section">
+        <h3><span class="dice">🎲</span> 오늘 뭐 먹지?</h3>
+        <p>결정 장애 해결! 랜덤으로 레시피를 추천받아보세요</p>
+        <a href="/recipe/random" class="random-btn">
+            <span class="dice">🎲</span> 랜덤 추천받기
+        </a>
     </div>
 
     <div class="menu-section">
