@@ -406,4 +406,22 @@
         SELECT COUNT(*) FROM user_recipe
     </select>
 
+    <!-- 식재료 매칭 퍼센트 기반 가중치 랜덤 추천 -->
+    <!-- 매칭 퍼센트가 높을수록 추천 확률이 높아짐 -->
+    <select id="findWeightedRandomApiRecipe" parameterType="map" resultType="com.example.demo.TEST_001.dto.UserRecipeDTO">
+        SELECT
+            ur.id, ur.source, ur.rcp_seq, ur.title, ur.rcp_way2, ur.rcp_pat2, ur.rcp_parts_dtls,
+            ur.info_eng, ur.att_file_no_main, ur.att_file_no_mk,
+            ur.parsed_ingredients, ur.ingredient_count, ur.created_at,
+            COALESCE(urm.match_percent, 0) AS matchScore,
+            COALESCE(urm.matched_count, 0) AS matchedIngredientCount,
+            COALESCE(urm.total_count, ur.ingredient_count) AS totalIngredientCount,
+            urm.matched_ingredients AS matchedIngredients
+        FROM user_recipe ur
+        LEFT JOIN user_recipe_match urm ON ur.id = urm.recipe_id AND urm.user_id = #{userId}
+        WHERE ur.source = 'api'
+        ORDER BY -LOG(1 - RAND()) / (COALESCE(urm.match_percent, 0) + 10)
+        LIMIT #{count}
+    </select>
+
 </mapper>

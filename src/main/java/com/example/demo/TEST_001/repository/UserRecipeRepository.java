@@ -153,4 +153,12 @@ public class UserRecipeRepository {
         Integer count = sql.selectOne("userRecipe.countTotalRecipes");
         return count != null ? count : 0;
     }
+
+    // 식재료 매칭 퍼센트 기반 가중치 랜덤 추천
+    public List<UserRecipeDTO> findWeightedRandomApiRecipe(Long userId, int count) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        params.put("count", count);
+        return sql.selectList("userRecipe.findWeightedRandomApiRecipe", params);
+    }
 }

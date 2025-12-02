@@ -353,9 +353,10 @@ public class UserRecipeController {
 
     /**
      * "오늘 뭐 먹지?" 랜덤 레시피 추천 페이지
+     * 로그인한 사용자는 보유 식재료 매칭 퍼센트에 따라 가중치 랜덤 추천
      */
     @GetMapping("/random")
-    public String randomRecipe(Model model) {
+    public String randomRecipe(HttpSession session, Model model) {
         try {
             // 레시피가 있는지 확인
             if (!userRecipeService.canRecommendRandom()) {
@@ -364,8 +365,16 @@ public class UserRecipeController {
                 return "randomRecipe";
             }
 
-            // API 레시피에서 랜덤 1개 추천
-            List<UserRecipeDTO> recipes = userRecipeService.getRandomApiRecipes(1);
+            List<UserRecipeDTO> recipes;
+            UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
+
+            if (loginUser != null) {
+                // 로그인한 사용자: 식재료 매칭 퍼센트 기반 가중치 랜덤 추천
+                recipes = userRecipeService.getWeightedRandomApiRecipes(loginUser.getId(), 1);
+            } else {
+                // 비로그인 사용자: 기존 순수 랜덤 추천
+                recipes = userRecipeService.getRandomApiRecipes(1);
+            }
 
             if (recipes.isEmpty()) {
                 model.addAttribute("error", "추천할 수 있는 레시피가 없습니다.");
@@ -386,10 +395,11 @@ public class UserRecipeController {
 
     /**
      * 랜덤 레시피 다시 추천 (AJAX용)
+     * 로그인한 사용자는 보유 식재료 매칭 퍼센트에 따라 가중치 랜덤 추천
      */
     @GetMapping("/random/refresh")
     @ResponseBody
-    public Map<String, Object> refreshRandomRecipe() {
+    public Map<String, Object> refreshRandomRecipe(HttpSession session) {
         Map<String, Object> response = new HashMap<>();
 
         try {
@@ -400,8 +410,16 @@ public class UserRecipeController {
                 return response;
             }
 
-            // API 레시피에서 랜덤 1개 추천
-            List<UserRecipeDTO> recipes = userRecipeService.getRandomApiRecipes(1);
+            List<UserRecipeDTO> recipes;
+            UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
+
+            if (loginUser != null) {
+                // 로그인한 사용자: 식재료 매칭 퍼센트 기반 가중치 랜덤 추천
+                recipes = userRecipeService.getWeightedRandomApiRecipes(loginUser.getId(), 1);
+            } else {
+                // 비로그인 사용자: 기존 순수 랜덤 추천
+                recipes = userRecipeService.getRandomApiRecipes(1);
+            }
 
             if (recipes.isEmpty()) {
                 response.put("success", false);

@@ -306,4 +306,34 @@ public class UserRecipeService {
     public boolean canRecommendRandom() {
         return getTotalRecipeCount() > 0;
     }
+
+    /**
+     * 식재료 매칭 퍼센트 기반 가중치 랜덤 추천
+     * 사용자가 보유한 식재료와 매칭되는 퍼센트가 높을수록 추천 확률이 높아짐
+     * @param userId 사용자 ID
+     * @param count 추천받을 레시피 수
+     * @return 가중치 기반 랜덤 레시피 목록
+     */
+    public List<UserRecipeDTO> getWeightedRandomApiRecipes(Long userId, int count) {
+        try {
+            if (count <= 0) {
+                log.warn("랜덤 추천 요청 개수가 0 이하입니다: {}", count);
+                return Collections.emptyList();
+            }
+
+            List<UserRecipeDTO> recipes = userRecipeRepository.findWeightedRandomApiRecipe(userId, count);
+
+            if (recipes == null) {
+                log.warn("가중치 랜덤 API 레시피 조회 결과가 null입니다.");
+                return Collections.emptyList();
+            }
+
+            log.info("가중치 기반 랜덤 추천 완료 - userId: {}, 요청: {}개, 반환: {}개", userId, count, recipes.size());
+            return recipes;
+
+        } catch (Exception e) {
+            log.error("가중치 기반 랜덤 추천 중 오류 발생", e);
+            return Collections.emptyList();
+        }
+    }
 }
