@@ -63,6 +63,16 @@
 <body>
     <h1>식재료 추가</h1>
 
+    <div style="margin-bottom: 15px;">
+        <a href="/ingredient/ai-recognition" style="color: #2196F3; text-decoration: none; font-weight: bold;">
+            AI로 사진 인식하여 추가하기
+        </a>
+        |
+        <a href="/ingredient/quick-add" style="color: #4CAF50; text-decoration: none;">빠른 추가</a>
+        |
+        <a href="/ingredient/list" style="color: #666; text-decoration: none;">목록으로</a>
+    </div>
+
     <form action="/ingredient/add" method="post" name="addForm">
         <div class="form-group">
             <label for="ingredientName">식재료명 *</label>
@@ -199,6 +209,16 @@
         function goList() {
             location.href = '/ingredient/list';
         }
+
+        // URL 파라미터에서 식재료명 가져오기 (AI 인식 결과)
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const ingredientName = urlParams.get('name');
+            if (ingredientName) {
+                document.getElementById('ingredientName').value = ingredientName;
+                checkDefaultExpiry();
+            }
+        });
     </script>
 </body>
 </html>

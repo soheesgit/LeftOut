@@ -3,9 +3,9 @@
 -- ========================================
 
 -- 기존 테이블 삭제 (외래키 제약조건 고려)
-DROP TABLE IF EXISTS recipe_like;
-DROP TABLE IF EXISTS recipe_comment;
-DROP TABLE IF EXISTS user_recipe;
+-- DROP TABLE IF EXISTS recipe_like;
+-- DROP TABLE IF EXISTS recipe_comment;
+-- DROP TABLE IF EXISTS user_recipe;
 
 -- ========================================
 -- 1. 사용자 레시피 테이블

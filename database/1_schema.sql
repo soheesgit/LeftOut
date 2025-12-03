@@ -1,24 +1,24 @@
--- 기존 book 테이블 삭제
-DROP TABLE IF EXISTS book;
-
--- 테이블 삭제 순서 (외래키 제약조건 고려)
-DROP TABLE IF EXISTS ingredient;
-DROP TABLE IF EXISTS ingredient_default_expiry;
-DROP TABLE IF EXISTS category;
-DROP TABLE IF EXISTS users;
-
-DROP DATABASE IF EXISTS leftout;
-CREATE DATABASE leftout;
-USE leftout;
+-- -- 기존 book 테이블 삭제
+-- DROP TABLE IF EXISTS book;
+--
+-- -- 테이블 삭제 순서 (외래키 제약조건 고려)
+-- DROP TABLE IF EXISTS ingredient;
+-- DROP TABLE IF EXISTS ingredient_default_expiry;
+-- DROP TABLE IF EXISTS category;
+-- DROP TABLE IF EXISTS users;
+--
+-- DROP DATABASE IF EXISTS leftout;
+-- CREATE DATABASE leftout;
+-- USE leftout;
 
 
 -- user_01 권한 주기
-CREATE USER 'user_01'@'localhost' IDENTIFIED BY '1234';
-ALTER USER 'user_01'@'localhost' IDENTIFIED BY '1234';
-
-GRANT ALL PRIVILEGES ON leftout.* TO 'user_01'@'localhost';
-
-FLUSH PRIVILEGES;
+-- CREATE USER 'user_01'@'localhost' IDENTIFIED BY '1234';
+-- ALTER USER 'user_01'@'localhost' IDENTIFIED BY '1234';
+--
+-- GRANT ALL PRIVILEGES ON leftout.* TO 'user_01'@'localhost';
+--
+-- FLUSH PRIVILEGES;
 
 -- 사용자 관리 시스템
 
@@ -121,4 +121,75 @@ INSERT INTO ingredient_default_expiry (ingredient_name, default_expiry_days, cat
 ('고추장', 180, 5),
 ('식용유', 365, 5),
 ('소금', 1000, 5),
-('설탕', 365, 5);
+('설탕', 365, 5),
+
+-- ========== AI 이미지 인식용 식재료 (ImageNet-1k) ==========
+
+-- 과일류 (category_id: 4)
+('오렌지', 14, 4),
+('레몬', 21, 4),
+('무화과', 5, 4),
+('파인애플', 5, 4),
+('석류', 14, 4),
+('슈가애플', 5, 4),
+('잭프루트', 7, 4),
+
+-- 채소류 (category_id: 1)
+('콜리플라워', 7, 1),
+('오이', 7, 1),
+('주키니호박', 7, 1),
+('아티초크', 7, 1),
+('피망', 7, 1),
+('버섯', 5, 1),
+('주름버섯', 5, 1),
+('잎새버섯', 7, 1),
+('그물버섯', 5, 1),
+('목이버섯', 14, 1),
+('싸리버섯', 5, 1),
+('스파게티호박', 14, 1),
+('버터넛호박', 30, 1),
+('도토리호박', 30, 1),
+('옥수수', 5, 1),
+
+-- 빵/곡류 (category_id: 6 - 기타)
+('베이글', 5, 6),
+('프레첼', 7, 6),
+('치즈버거', 1, 6),
+('핫도그', 1, 6),
+('피자', 3, 6),
+('부리토', 2, 6),
+('미트로프', 3, 6),
+('바게트', 3, 6),
+('과카몰리', 3, 6),
+('콩소메', 3, 6),
+('팟파이', 3, 6),
+('카르보나라', 2, 6),
+
+-- 디저트류 (category_id: 6 - 기타)
+('아이스크림', 30, 6),
+('아이스바', 180, 6),
+('초콜릿소스', 180, 6),
+('트라이플', 3, 6),
+
+-- 음료 (category_id: 6 - 기타)
+('에스프레소', 1, 6),
+('에그노그', 5, 6),
+('레드와인', 365, 6),
+
+-- 해산물 (category_id: 6 - 기타, 신선도 중요)
+('랍스터', 2, 6),
+('가재', 2, 6),
+('킹크랩', 2, 6),
+('소라', 3, 6),
+('해삼', 3, 6),
+('성게', 2, 6),
+('복어', 2, 6),
+('철갑상어', 2, 6),
+('장어', 2, 6),
+('은연어', 2, 6),
+
+-- 가금류 (category_id: 2 - 육류)
+('닭', 2, 2),
+('칠면조', 3, 2),
+('거위', 3, 2),
+('오리', 3, 2);

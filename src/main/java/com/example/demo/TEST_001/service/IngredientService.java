@@ -64,13 +64,15 @@ public class IngredientService {
             throw new IllegalArgumentException("식재료 이름은 필수입니다.");
         }
 
-        // 수량 검증 (선택사항이므로 null은 허용하되, 값이 있으면 0보다 커야 함)
+        // 수량이 0 또는 음수인 경우 null로 처리 (수량 미입력으로 간주)
         if (ingredientDTO.getQuantity() != null && ingredientDTO.getQuantity() <= 0) {
-            throw new IllegalArgumentException("수량은 0보다 커야 합니다.");
+            ingredientDTO.setQuantity(null);
+            ingredientDTO.setUnit(null);  // 수량이 없으면 단위도 불필요
         }
 
         // 단위 검증 (수량이 있으면 단위도 필수)
-        if (ingredientDTO.getQuantity() != null && (ingredientDTO.getUnit() == null || ingredientDTO.getUnit().trim().isEmpty())) {
+        if (ingredientDTO.getQuantity() != null && ingredientDTO.getQuantity() > 0
+                && (ingredientDTO.getUnit() == null || ingredientDTO.getUnit().trim().isEmpty())) {
             throw new IllegalArgumentException("수량을 입력한 경우 단위도 선택해야 합니다.");
         }
 
