@@ -26,9 +26,8 @@ mybatis:
 
 recipe:
   api:
-    # 스크린샷에 'API_KEY'라고 되어 있어서 그 이름을 그대로 씁니다.
     key: ${API_KEY}
-    base-url: http://openapi.foodsafetykorea.go.kr/api
+    base-url: ${API_URL:https://openapi.foodsafetykorea.go.kr/api}
 
 file:
   upload:
@@ -37,6 +36,6 @@ file:
 
 huggingface:
   api:
-    key: ${HF_API_KEY:demo}
+    key: ${HF_API_KEY}
     base-url: https://router.huggingface.co/hf-inference/models
     model: google/vit-base-patch16-224
