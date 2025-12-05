@@ -156,9 +156,16 @@
     </div>
 
     <div th:if="${recipes.isEmpty()}" class="empty-state">
-        <h2>아직 작성한 레시피가 없습니다</h2>
-        <p>첫 번째 레시피를 작성해보세요!</p>
-        <a href="/recipe/create" class="btn btn-primary">레시피 작성하기</a>
+        <th:block th:if="${pageTitle == '좋아요한 레시피'}">
+            <h2>좋아요한 레시피가 없습니다</h2>
+            <p>마음에 드는 레시피에 좋아요를 눌러보세요!</p>
+            <a href="/recipe/list" class="btn btn-primary">레시피 둘러보기</a>
+        </th:block>
+        <th:block th:unless="${pageTitle == '좋아요한 레시피'}">
+            <h2>아직 작성한 레시피가 없습니다</h2>
+            <p>첫 번째 레시피를 작성해보세요!</p>
+            <a href="/recipe/create" class="btn btn-primary">레시피 작성하기</a>
+        </th:block>
     </div>
 
     <div class="recipe-grid" th:unless="${recipes.isEmpty()}">
