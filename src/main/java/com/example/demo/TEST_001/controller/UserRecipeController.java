@@ -1,15 +1,14 @@
 package com.example.demo.TEST_001.controller;
 
 import com.example.demo.TEST_001.dto.IngredientItemDTO;
-import com.example.demo.TEST_001.dto.RecipeCommentDTO;
 import com.example.demo.TEST_001.dto.RecipeStepDTO;
 import com.example.demo.TEST_001.dto.UserDTO;
 import com.example.demo.TEST_001.dto.UserRecipeDTO;
-import com.example.demo.TEST_001.service.RecipeCommentService;
-import com.example.demo.TEST_001.service.RecipeLikeService;
 import com.example.demo.TEST_001.service.UserRecipeService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +24,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class UserRecipeController {
     private final UserRecipeService userRecipeService;
-    private final RecipeCommentService commentService;
-    private final RecipeLikeService likeService;
 
     // ==================== 레시피 목록 ====================
 
@@ -43,22 +40,10 @@ public class UserRecipeController {
         return "myRecipes";
     }
 
-    // 전체 레시피 목록
+    // 전체 레시피 목록 -> 통합 목록으로 리다이렉트
     @GetMapping("/all-recipes")
-    public String allRecipes(@RequestParam(required = false) String search,
-                             @RequestParam(defaultValue = "0") int page,
-                             @RequestParam(defaultValue = "12") int size,
-                             Model model) {
-        List<UserRecipeDTO> recipes = userRecipeService.getAllRecipes(search, page, size);
-        int totalCount = userRecipeService.getTotalCount(search);
-        int totalPages = (int) Math.ceil((double) totalCount / size);
-
-        model.addAttribute("recipes", recipes);
-        model.addAttribute("search", search);
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", totalPages);
-        model.addAttribute("pageTitle", "모든 레시피");
-        return "allRecipes";
+    public String allRecipes() {
+        return "redirect:/recipe/list?source=user";
     }
 
     // 좋아요한 레시피 목록
@@ -148,24 +133,39 @@ public class UserRecipeController {
         }
     }
 
+    // ==================== 레시피 이미지 서빙 ====================
+
+    /**
+     * DB에 저장된 레시피 이미지를 서빙하는 API
+     * @param id 레시피 ID
+     * @return 이미지 바이너리 데이터
+     */
+    @GetMapping("/image/{id}")
+    @ResponseBody
+    public ResponseEntity<byte[]> getRecipeImage(@PathVariable Long id) {
+        try {
+            UserRecipeDTO recipe = userRecipeService.getRecipeWithoutViewIncrement(id);
+
+            if (recipe.getMainImageData() != null && recipe.getMainImageType() != null) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(recipe.getMainImageType()))
+                        .body(recipe.getMainImageData());
+            }
+
+            // 이미지가 없으면 404 반환
+            return ResponseEntity.notFound().build();
+
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     // ==================== 레시피 상세보기 ====================
 
+    // 사용자 레시피 상세 -> 통합 상세로 리다이렉트
     @GetMapping("/user-recipe/{id}")
-    public String recipeDetail(@PathVariable Long id, HttpSession session, Model model) {
-        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
-        Long currentUserId = loginUser != null ? loginUser.getId() : null;
-
-        // 레시피 조회
-        UserRecipeDTO recipe = userRecipeService.getRecipe(id, currentUserId);
-
-        // 댓글 조회
-        List<RecipeCommentDTO> comments = commentService.getCommentsByRecipeId(id);
-
-        model.addAttribute("recipe", recipe);
-        model.addAttribute("comments", comments);
-        model.addAttribute("loginUser", loginUser);
-
-        return "userRecipeDetail";
+    public String recipeDetail(@PathVariable Long id) {
+        return "redirect:/recipe/detail/" + id;
     }
 
     // ==================== 레시피 수정 ====================
@@ -268,84 +268,6 @@ public class UserRecipeController {
             return "redirect:/recipe/my-recipes";
         } catch (SecurityException e) {
             return "redirect:/recipe/user-recipe/" + id + "?error=unauthorized";
-        }
-    }
-
-    // ==================== 좋아요 ====================
-
-    @PostMapping("/{recipeId}/like")
-    @ResponseBody
-    public Map<String, Object> toggleLike(@PathVariable Long recipeId, HttpSession session) {
-        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
-        Map<String, Object> response = new HashMap<>();
-
-        if (loginUser == null) {
-            response.put("error", "로그인이 필요합니다.");
-            return response;
-        }
-
-        boolean isLiked = likeService.toggleLike(recipeId, loginUser.getId());
-        int likeCount = likeService.getLikeCount(recipeId);
-
-        response.put("isLiked", isLiked);
-        response.put("likeCount", likeCount);
-        return response;
-    }
-
-    // ==================== 댓글 ====================
-
-    // 댓글 작성
-    @PostMapping("/{recipeId}/comment")
-    public String addComment(@PathVariable Long recipeId,
-                            @RequestParam String content,
-                            HttpSession session) {
-        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
-        if (loginUser == null) {
-            return "redirect:/login";
-        }
-
-        RecipeCommentDTO commentDTO = new RecipeCommentDTO();
-        commentDTO.setRecipeId(recipeId);
-        commentDTO.setUserId(loginUser.getId());
-        commentDTO.setContent(content);
-
-        commentService.createComment(commentDTO);
-
-        return "redirect:/recipe/user-recipe/" + recipeId;
-    }
-
-    // 댓글 수정
-    @PostMapping("/comment/{commentId}/edit")
-    public String editComment(@PathVariable Long commentId,
-                             @RequestParam String content,
-                             @RequestParam Long recipeId,
-                             HttpSession session) {
-        try {
-            UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
-            if (loginUser == null) {
-                return "redirect:/login";
-            }
-            commentService.updateComment(commentId, content, loginUser.getId());
-            return "redirect:/recipe/user-recipe/" + recipeId;
-        } catch (SecurityException e) {
-            return "redirect:/recipe/user-recipe/" + recipeId + "?error=unauthorized";
-        }
-    }
-
-    // 댓글 삭제
-    @PostMapping("/comment/{commentId}/delete")
-    public String deleteComment(@PathVariable Long commentId,
-                               @RequestParam Long recipeId,
-                               HttpSession session) {
-        try {
-            UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
-            if (loginUser == null) {
-                return "redirect:/login";
-            }
-            commentService.deleteComment(commentId, loginUser.getId());
-            return "redirect:/recipe/user-recipe/" + recipeId;
-        } catch (SecurityException e) {
-            return "redirect:/recipe/user-recipe/" + recipeId + "?error=unauthorized";
         }
     }
 

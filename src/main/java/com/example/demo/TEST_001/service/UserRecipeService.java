@@ -28,10 +28,11 @@ public class UserRecipeService {
     // 레시피 생성
     @Transactional
     public UserRecipeDTO createRecipe(UserRecipeDTO recipeDTO, MultipartFile mainImage) throws IOException {
-        // 대표 이미지 업로드
+        // 대표 이미지를 DB에 직접 저장
         if (mainImage != null && !mainImage.isEmpty()) {
-            String imagePath = fileUploadService.uploadFile(mainImage);
-            recipeDTO.setMainImagePath(imagePath);
+            recipeDTO.setMainImageData(mainImage.getBytes());
+            recipeDTO.setMainImageType(mainImage.getContentType());
+            log.info("이미지 저장: {} bytes, type: {}", mainImage.getSize(), mainImage.getContentType());
         }
 
         // 재료 리스트 JSON 변환
@@ -121,13 +122,11 @@ public class UserRecipeService {
             throw new SecurityException("레시피를 수정할 권한이 없습니다.");
         }
 
-        // 새 이미지가 있으면 기존 이미지 삭제 후 새 이미지 업로드
+        // 새 이미지가 있으면 DB에 직접 저장 (기존 이미지는 DB에서 자동으로 덮어씀)
         if (newMainImage != null && !newMainImage.isEmpty()) {
-            if (existingRecipe.getMainImagePath() != null) {
-                fileUploadService.deleteFile(existingRecipe.getMainImagePath());
-            }
-            String imagePath = fileUploadService.uploadFile(newMainImage);
-            recipeDTO.setMainImagePath(imagePath);
+            recipeDTO.setMainImageData(newMainImage.getBytes());
+            recipeDTO.setMainImageType(newMainImage.getContentType());
+            log.info("이미지 수정: {} bytes, type: {}", newMainImage.getSize(), newMainImage.getContentType());
         }
 
         // 재료 리스트 JSON 변환
@@ -160,11 +159,7 @@ public class UserRecipeService {
             throw new SecurityException("레시피를 삭제할 권한이 없습니다.");
         }
 
-        // 이미지 파일 삭제
-        if (existingRecipe.getMainImagePath() != null) {
-            fileUploadService.deleteFile(existingRecipe.getMainImagePath());
-        }
-
+        // 이미지는 DB에 저장되므로 레시피 삭제 시 자동 삭제됨
         userRecipeRepository.deleteById(id);
     }
 

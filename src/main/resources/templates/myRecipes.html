@@ -163,12 +163,12 @@
 
     <div class="recipe-grid" th:unless="${recipes.isEmpty()}">
         <div class="recipe-card" th:each="recipe : ${recipes}"
-             th:onclick="|location.href='/recipe/user-recipe/' + ${recipe.id}|">
+             th:onclick="|location.href='/recipe/detail/' + ${recipe.id}|">
             <div class="recipe-image">
-                <img th:if="${recipe.mainImagePath != null}"
-                     th:src="${recipe.mainImagePath}"
+                <img th:if="${recipe.mainImageType != null}"
+                     th:src="@{'/recipe/image/' + ${recipe.id}}"
                      alt="레시피 이미지">
-                <span th:if="${recipe.mainImagePath == null}">이미지 없음</span>
+                <span th:if="${recipe.mainImageType == null}">이미지 없음</span>
             </div>
             <div class="recipe-content">
                 <h2 class="recipe-title" th:text="${recipe.title}">레시피 제목</h2>

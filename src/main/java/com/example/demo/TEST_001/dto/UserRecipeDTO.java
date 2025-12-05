@@ -21,7 +21,9 @@ public class UserRecipeDTO {
     private Integer cookingTime;             // 조리 시간 (분)
     private Integer servings;                // 몇 인분
     private String difficultyLevel;          // 난이도: easy, medium, hard
-    private String mainImagePath;            // 대표 이미지 경로
+    private String mainImagePath;            // 대표 이미지 경로 (레거시)
+    private byte[] mainImageData;            // 대표 이미지 바이너리 데이터
+    private String mainImageType;            // 이미지 MIME 타입 (image/jpeg 등)
     private Integer viewCount;               // 조회수
     private Integer likeCount;               // 좋아요 수
     private Integer commentCount;            // 댓글 수

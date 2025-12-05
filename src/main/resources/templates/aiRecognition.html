@@ -277,44 +277,6 @@
             background-color: #2196F3;
         }
 
-        /* 추천 식재료 */
-        .suggestion-area {
-            margin-top: 25px;
-            padding: 20px;
-            background-color: #e3f2fd;
-            border-radius: 10px;
-        }
-
-        .suggestion-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #1976D2;
-        }
-
-        .suggestion-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .suggestion-chip {
-            padding: 10px 20px;
-            background-color: #2196F3;
-            color: white;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 15px;
-            font-weight: 500;
-        }
-
-        .suggestion-chip:hover {
-            background-color: #1976D2;
-            transform: scale(1.05);
-            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
-        }
-
         /* 결과 하단 버튼 */
         .result-buttons {
             margin-top: 25px;
@@ -425,14 +387,6 @@
                 <span>인식 결과</span>
             </div>
             <div id="predictions"></div>
-
-            <!-- 추천 식재료 -->
-            <div id="suggestionArea" class="suggestion-area" style="display: none;">
-                <div class="suggestion-title">
-                    이 카테고리의 추천 식재료
-                </div>
-                <div id="suggestionChips" class="suggestion-chips"></div>
-            </div>
 
             <div class="result-buttons">
                 <button class="btn btn-primary" onclick="goToQuickAdd()">
@@ -581,40 +535,8 @@
                 predictionsDiv.appendChild(item);
             });
 
-            // 추천 식재료 로드
-            if (result.topLabel) {
-                loadSuggestions(result.topLabel);
-            }
-
             previewArea.style.display = 'block';
             resultArea.style.display = 'block';
-        }
-
-        async function loadSuggestions(label) {
-            try {
-                const response = await fetch(`/ingredient/ai-suggestions/${encodeURIComponent(label)}`);
-                const data = await response.json();
-
-                const suggestionArea = document.getElementById('suggestionArea');
-                const chipsDiv = document.getElementById('suggestionChips');
-
-                if (data.suggestions && data.suggestions.length > 0) {
-                    chipsDiv.innerHTML = '';
-                    data.suggestions.forEach(item => {
-                        const chip = document.createElement('div');
-                        chip.className = 'suggestion-chip';
-                        chip.textContent = item;
-                        chip.onclick = () => goToAddWithIngredient(item);
-                        chipsDiv.appendChild(chip);
-                    });
-                    suggestionArea.style.display = 'block';
-                } else {
-                    suggestionArea.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('추천 식재료 로드 실패:', error);
-                document.getElementById('suggestionArea').style.display = 'none';
-            }
         }
 
         function showError(message) {

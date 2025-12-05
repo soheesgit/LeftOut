@@ -4,6 +4,7 @@ import com.example.demo.TEST_001.dto.IngredientDTO;
 import com.example.demo.TEST_001.dto.RecipeDTO;
 import com.example.demo.TEST_001.dto.UserRecipeDTO;
 import com.example.demo.TEST_001.repository.IngredientRepository;
+import com.example.demo.TEST_001.repository.UserRecipeMatchRepository;
 import com.example.demo.TEST_001.repository.UserRecipeRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,6 +26,7 @@ public class RecipeService {
     private final RestTemplate restTemplate;
     private final IngredientRepository ingredientRepository;
     private final UserRecipeRepository userRecipeRepository;
+    private final UserRecipeMatchRepository userRecipeMatchRepository;
     private final RecipeMatchService recipeMatchService;
     private final SqlSessionTemplate sql;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -443,6 +445,74 @@ public class RecipeService {
             if (!cleaned.isEmpty()) {
                 recipeIngredientSet.add(cleaned);
             }
+        }
+    }
+
+    // ========================================
+    // 통합 레시피 조회 (API + 사용자)
+    // ========================================
+
+    /**
+     * 통합 레시피 목록 조회 (API + 사용자, 매칭 점수 포함)
+     */
+    public Map<String, Object> getIntegratedRecipeListWithCount(
+            Long userId, String source, String rcpWay2, String rcpPat2,
+            String searchRecipeName, String searchIngredient, String searchAuthor,
+            int page, int size) {
+
+        Map<String, Object> result = new HashMap<>();
+
+        try {
+            // 1. 매칭 점수가 계산되어 있지 않으면 계산 (최초 1회만)
+            if (userId != null && !recipeMatchService.hasMatchScores(userId)) {
+                log.info("사용자 {} 매칭 점수 최초 계산 시작", userId);
+                recipeMatchService.recalculateMatchScores(userId);
+            }
+
+            // 2. 페이징 파라미터 계산
+            int offset = (page - 1) * size;
+
+            // 3. DB에서 정렬 + 페이징된 결과 바로 조회
+            List<UserRecipeDTO> recipes = userRecipeMatchRepository.findIntegratedRecipesWithMatch(
+                    userId, source, rcpWay2, rcpPat2,
+                    searchRecipeName, searchIngredient, searchAuthor,
+                    size, offset);
+
+            // 4. 전체 개수 조회 (필터 적용)
+            int totalCount = userRecipeMatchRepository.countIntegratedRecipesFiltered(
+                    source, rcpWay2, rcpPat2,
+                    searchRecipeName, searchIngredient, searchAuthor);
+
+            result.put("recipes", recipes);
+            result.put("totalCount", totalCount);
+
+        } catch (Exception e) {
+            log.error("통합 레시피 조회 중 오류 발생", e);
+            result.put("recipes", new ArrayList<>());
+            result.put("totalCount", 0);
+        }
+
+        return result;
+    }
+
+    /**
+     * 통합 레시피 상세 조회 (ID 기반)
+     */
+    public UserRecipeDTO getIntegratedRecipeDetail(Long id, Long userId) {
+        try {
+            UserRecipeDTO recipe = userRecipeRepository.findByIdIntegrated(id, userId);
+            if (recipe == null) {
+                return null;
+            }
+
+            // 조회수 증가
+            userRecipeRepository.incrementViewCount(id);
+
+            return recipe;
+
+        } catch (Exception e) {
+            log.error("통합 레시피 상세 조회 중 오류 발생", e);
+            return null;
         }
     }
 }

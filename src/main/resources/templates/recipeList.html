@@ -45,27 +45,18 @@
             font-weight: bold;
             color: #555;
         }
-        .filter-row select {
+        .filter-row select, .filter-row input[type="text"] {
             padding: 8px 12px;
             border: 2px solid #ddd;
             border-radius: 5px;
             font-size: 14px;
-            cursor: pointer;
         }
-        .filter-row select:focus {
+        .filter-row select:focus, .filter-row input[type="text"]:focus {
             outline: none;
             border-color: #4CAF50;
         }
         .filter-row input[type="text"] {
-            padding: 8px 12px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-            width: 200px;
-        }
-        .filter-row input[type="text"]:focus {
-            outline: none;
-            border-color: #4CAF50;
+            width: 150px;
         }
         .filter-btn {
             padding: 8px 20px;
@@ -93,6 +84,7 @@
             overflow: hidden;
             transition: transform 0.3s, box-shadow 0.3s;
             cursor: pointer;
+            position: relative;
         }
         .recipe-card:hover {
             transform: translateY(-5px);
@@ -124,19 +116,12 @@
             background-color: #f8f9fa;
             border-radius: 5px;
         }
-        .match-score {
-            font-size: 14px;
-            font-weight: bold;
-            color: #4CAF50;
-            margin-bottom: 5px;
-        }
         .match-bar-container {
             width: 100%;
             height: 20px;
             background-color: #e0e0e0;
             border-radius: 10px;
             overflow: hidden;
-            position: relative;
         }
         .match-bar {
             height: 100%;
@@ -194,6 +179,50 @@
             margin-right: 5px;
             margin-bottom: 5px;
         }
+
+        /* 소스 뱃지 (API/사용자 구분) */
+        .source-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            z-index: 10;
+        }
+        .source-badge.api {
+            background-color: #007bff;
+            color: white;
+        }
+        .source-badge.user {
+            background-color: #28a745;
+            color: white;
+        }
+
+        /* 작성자 정보 */
+        .recipe-author {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        .recipe-author strong {
+            color: #555;
+        }
+
+        /* 좋아요/댓글/조회수 */
+        .recipe-stats {
+            display: flex;
+            gap: 12px;
+            font-size: 13px;
+            color: #666;
+            margin-top: 8px;
+        }
+        .recipe-stats span {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
     </style>
 </head>
 <body>
@@ -204,15 +233,26 @@
 
     <div class="filter-section">
         <form id="filterForm" method="get" action="/recipe/list">
-            <!-- 첫 번째 행: 검색어 입력 -->
+            <!-- 첫 번째 행: 소스 필터 + 검색어 입력 -->
             <div class="filter-row">
+                <label for="source">구분:</label>
+                <select id="source" name="source">
+                    <option value="all" th:selected="${source == 'all' or source == null}">전체</option>
+                    <option value="api" th:selected="${source == 'api'}">API 레시피</option>
+                    <option value="user" th:selected="${source == 'user'}">사용자 레시피</option>
+                </select>
+
                 <label for="searchRecipeName">레시피명:</label>
                 <input type="text" id="searchRecipeName" name="searchRecipeName"
-                       th:value="${searchRecipeName}" placeholder="레시피 이름으로 검색">
+                       th:value="${searchRecipeName}" placeholder="레시피 이름">
 
                 <label for="searchIngredient">재료명:</label>
                 <input type="text" id="searchIngredient" name="searchIngredient"
-                       th:value="${searchIngredient}" placeholder="재료 이름으로 검색">
+                       th:value="${searchIngredient}" placeholder="재료 이름">
+
+                <label for="searchAuthor">작성자:</label>
+                <input type="text" id="searchAuthor" name="searchAuthor"
+                       th:value="${searchAuthor}" placeholder="작성자 이름">
             </div>
 
             <!-- 두 번째 행: 필터 선택 -->
@@ -246,8 +286,20 @@
     </div>
 
     <div th:if="${recipes != null && !recipes.isEmpty()}" class="recipe-grid">
-        <div th:each="recipe : ${recipes}" class="recipe-card" th:data-recipe-seq="${recipe.rcpSeq}">
-            <img th:src="${recipe.attFileNoMain}"
+        <div th:each="recipe : ${recipes}" class="recipe-card" th:data-recipe-id="${recipe.id}">
+            <!-- 소스 뱃지 (API/사용자) -->
+            <span th:if="${recipe.source == 'api'}" class="source-badge api">API</span>
+            <span th:if="${recipe.source != 'api'}" class="source-badge user">사용자</span>
+
+            <!-- API 레시피: 외부 이미지 URL 사용 -->
+            <img th:if="${recipe.source == 'api'}"
+                 th:src="${recipe.attFileNoMain}"
+                 th:alt="${recipe.title}"
+                 class="recipe-image"
+                 onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+            <!-- 사용자 레시피: DB 이미지 사용 -->
+            <img th:if="${recipe.source != 'api'}"
+                 th:src="@{'/recipe/image/' + ${recipe.id}}"
                  th:alt="${recipe.title}"
                  class="recipe-image"
                  onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
@@ -255,13 +307,25 @@
             <div class="recipe-content">
                 <div class="recipe-title" th:text="${recipe.title}">레시피 이름</div>
 
+                <!-- 작성자 (사용자 레시피인 경우만) -->
+                <div th:if="${recipe.authorName != null}" class="recipe-author">
+                    작성자: <strong th:text="${recipe.authorName}">-</strong>
+                </div>
+
                 <div class="recipe-meta">
-                    <span class="info-badge" th:text="${recipe.rcpPat2}">요리종류</span>
-                    <span class="info-badge" th:text="${recipe.rcpWay2}">조리방법</span>
+                    <span th:if="${recipe.rcpPat2 != null}" class="info-badge" th:text="${recipe.rcpPat2}">요리종류</span>
+                    <span th:if="${recipe.rcpWay2 != null}" class="info-badge" th:text="${recipe.rcpWay2}">조리방법</span>
                 </div>
 
                 <div th:if="${recipe.infoEng != null && !recipe.infoEng.isEmpty()}" class="recipe-meta">
                     열량: <span th:text="${recipe.infoEng}">-</span> kcal
+                </div>
+
+                <!-- 좋아요/댓글/조회수 -->
+                <div class="recipe-stats">
+                    <span>❤ <span th:text="${recipe.likeCount != null ? recipe.likeCount : 0}">0</span></span>
+                    <span>💬 <span th:text="${recipe.commentCount != null ? recipe.commentCount : 0}">0</span></span>
+                    <span>👁 <span th:text="${recipe.viewCount != null ? recipe.viewCount : 0}">0</span></span>
                 </div>
 
                 <div class="match-info">
@@ -286,7 +350,7 @@
 
     <div class="pagination" th:if="${recipes != null && !recipes.isEmpty()}">
         <a th:if="${currentPage > 1}"
-           th:href="@{/recipe/list(page=${currentPage - 1}, rcpPat2=${rcpPat2}, rcpWay2=${rcpWay2}, searchRecipeName=${searchRecipeName}, searchIngredient=${searchIngredient})}">
+           th:href="@{/recipe/list(page=${currentPage - 1}, source=${source}, rcpPat2=${rcpPat2}, rcpWay2=${rcpWay2}, searchRecipeName=${searchRecipeName}, searchIngredient=${searchIngredient}, searchAuthor=${searchAuthor})}">
             이전
         </a>
 
@@ -294,23 +358,23 @@
         <span class="total-count" th:text="|총 ${totalCount}개|">총 0개</span>
 
         <a th:if="${currentPage < totalPages}"
-           th:href="@{/recipe/list(page=${currentPage + 1}, rcpPat2=${rcpPat2}, rcpWay2=${rcpWay2}, searchRecipeName=${searchRecipeName}, searchIngredient=${searchIngredient})}">
+           th:href="@{/recipe/list(page=${currentPage + 1}, source=${source}, rcpPat2=${rcpPat2}, rcpWay2=${rcpWay2}, searchRecipeName=${searchRecipeName}, searchIngredient=${searchIngredient}, searchAuthor=${searchAuthor})}">
             다음
         </a>
     </div>
 
     <script>
-        // 카드 클릭 이벤트 (페이지 이동 + 애니메이션)
+        // 카드 클릭 이벤트 (ID 기반으로 상세 페이지 이동)
         document.querySelectorAll('.recipe-card').forEach(card => {
             card.addEventListener('click', function(e) {
-                const recipeSeq = this.dataset.recipeSeq;
+                const recipeId = this.dataset.recipeId;
 
                 // 카드 클릭 효과
                 this.style.transform = 'scale(0.98)';
 
-                // 페이지 이동
+                // ID 기반으로 통합 상세 페이지 이동
                 setTimeout(() => {
-                    location.href = '/recipe/detail/' + recipeSeq;
+                    location.href = '/recipe/detail/' + recipeId;
                 }, 100);
             });
         });

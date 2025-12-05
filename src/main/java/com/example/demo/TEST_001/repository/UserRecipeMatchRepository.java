@@ -42,4 +42,46 @@ public class UserRecipeMatchRepository {
         Integer count = sql.selectOne("userRecipeMatch.countByUserId", userId);
         return count != null ? count : 0;
     }
+
+    // ========================================
+    // 통합 레시피 조회 (API + 사용자)
+    // ========================================
+
+    // 모든 레시피 ID 조회 (매칭 계산용 - API + 사용자)
+    public List<Map<String, Object>> findAllRecipeIds() {
+        return sql.selectList("userRecipeMatch.findAllRecipeIds");
+    }
+
+    // 통합 레시피 목록 조회 (매칭 점수 포함)
+    public List<com.example.demo.TEST_001.dto.UserRecipeDTO> findIntegratedRecipesWithMatch(
+            Long userId, String source, String rcpWay2, String rcpPat2,
+            String searchRecipeName, String searchIngredient, String searchAuthor,
+            int limit, int offset) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        params.put("source", source);
+        params.put("rcpWay2", rcpWay2);
+        params.put("rcpPat2", rcpPat2);
+        params.put("searchRecipeName", searchRecipeName);
+        params.put("searchIngredient", searchIngredient);
+        params.put("searchAuthor", searchAuthor);
+        params.put("limit", limit);
+        params.put("offset", offset);
+        return sql.selectList("userRecipeMatch.findIntegratedRecipesWithMatch", params);
+    }
+
+    // 통합 레시피 개수 조회
+    public int countIntegratedRecipesFiltered(String source, String rcpWay2, String rcpPat2,
+                                               String searchRecipeName, String searchIngredient,
+                                               String searchAuthor) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("source", source);
+        params.put("rcpWay2", rcpWay2);
+        params.put("rcpPat2", rcpPat2);
+        params.put("searchRecipeName", searchRecipeName);
+        params.put("searchIngredient", searchIngredient);
+        params.put("searchAuthor", searchAuthor);
+        Integer count = sql.selectOne("userRecipeMatch.countIntegratedRecipesFiltered", params);
+        return count != null ? count : 0;
+    }
 }

@@ -36,10 +36,11 @@ public class RecipeMatchService {
 
     /**
      * 사용자의 모든 레시피 매칭 점수 재계산 (동기)
+     * API 레시피 + 사용자 레시피 모두 포함
      */
     @Transactional
     public void recalculateMatchScores(Long userId) {
-        log.info("사용자 {} 매칭 점수 재계산 시작", userId);
+        log.info("사용자 {} 매칭 점수 재계산 시작 (API + 사용자 레시피)", userId);
         long startTime = System.currentTimeMillis();
 
         try {
@@ -59,8 +60,8 @@ public class RecipeMatchService {
                 return;
             }
 
-            // 3. 모든 API 레시피 조회
-            List<Map<String, Object>> recipes = sql.selectList("userRecipeMatch.findAllApiRecipeIds");
+            // 3. 모든 레시피 조회 (API + 사용자 레시피)
+            List<Map<String, Object>> recipes = matchRepository.findAllRecipeIds();
 
             // 4. 배치 저장용 리스트
             List<Map<String, Object>> matchList = new ArrayList<>();
@@ -68,10 +69,19 @@ public class RecipeMatchService {
 
             for (Map<String, Object> recipe : recipes) {
                 Long recipeId = ((Number) recipe.get("id")).longValue();
-                String parsedIngredients = (String) recipe.get("parsedIngredients");
+                String source = (String) recipe.get("source");
 
-                // 매칭 계산
-                Map<String, Object> matchResult = calculateMatch(parsedIngredients, userIngredientNames);
+                Map<String, Object> matchResult;
+
+                if ("api".equals(source)) {
+                    // API 레시피: parsed_ingredients 사용
+                    String parsedIngredients = (String) recipe.get("parsedIngredients");
+                    matchResult = calculateMatch(parsedIngredients, userIngredientNames);
+                } else {
+                    // 사용자 레시피: ingredients JSON 사용
+                    String ingredientsJson = (String) recipe.get("ingredients");
+                    matchResult = calculateMatchForUserRecipe(ingredientsJson, userIngredientNames);
+                }
 
                 int matchedCount = (int) matchResult.get("matchedCount");
                 int totalCount = (int) matchResult.get("totalCount");
@@ -180,5 +190,71 @@ public class RecipeMatchService {
      */
     public boolean hasMatchScores(Long userId) {
         return matchRepository.countByUserId(userId) > 0;
+    }
+
+    /**
+     * 사용자 레시피용 매칭 계산
+     * ingredients JSON: [{"name":"김치","amount":"200g"}, ...]
+     */
+    private Map<String, Object> calculateMatchForUserRecipe(String ingredientsJson, Set<String> userIngredientNames) {
+        Map<String, Object> result = new HashMap<>();
+        Set<String> recipeIngredientSet = new HashSet<>();
+
+        // JSON 파싱 (사용자 레시피 형식)
+        if (ingredientsJson != null && !ingredientsJson.isEmpty() && !ingredientsJson.equals("[]")) {
+            try {
+                JsonNode jsonArray = objectMapper.readTree(ingredientsJson);
+                if (jsonArray.isArray()) {
+                    for (JsonNode node : jsonArray) {
+                        // 사용자 레시피 형식: {"name": "재료명", "amount": "양"}
+                        String name = node.path("name").asText().trim();
+                        if (!name.isEmpty()) {
+                            recipeIngredientSet.add(name);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("사용자 레시피 ingredients JSON 파싱 실패: {}", e.getMessage());
+            }
+        }
+
+        int totalCount = recipeIngredientSet.size();
+        if (totalCount == 0) {
+            result.put("matchedCount", 0);
+            result.put("totalCount", 0);
+            result.put("matchPercent", 0.0);
+            result.put("matchedIngredients", "");
+            return result;
+        }
+
+        int matchedCount = 0;
+        List<String> matchedIngredients = new ArrayList<>();
+
+        for (String recipeIngredient : recipeIngredientSet) {
+            // 완전 일치
+            if (userIngredientNames.contains(recipeIngredient)) {
+                matchedCount++;
+                matchedIngredients.add(recipeIngredient);
+                continue;
+            }
+
+            // 부분 일치
+            for (String userIngredient : userIngredientNames) {
+                if (recipeIngredient.contains(userIngredient) || userIngredient.contains(recipeIngredient)) {
+                    matchedCount++;
+                    matchedIngredients.add(userIngredient + "(부분)");
+                    break;
+                }
+            }
+        }
+
+        double matchPercent = totalCount > 0 ? (matchedCount * 100.0 / totalCount) : 0;
+
+        result.put("matchedCount", matchedCount);
+        result.put("totalCount", totalCount);
+        result.put("matchPercent", Math.round(matchPercent * 100.0) / 100.0);
+        result.put("matchedIngredients", String.join(", ", matchedIngredients));
+
+        return result;
     }
 }

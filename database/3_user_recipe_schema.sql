@@ -21,7 +21,9 @@ CREATE TABLE user_recipe (
     cooking_time INT,                       -- 조리 시간 (분)
     servings INT,                           -- 몇 인분
     difficulty_level VARCHAR(20),           -- 난이도: 'easy', 'medium', 'hard'
-    main_image_path VARCHAR(500),           -- 대표 이미지 경로
+    main_image_path VARCHAR(500),           -- 대표 이미지 경로 (레거시, 호환용)
+    main_image_data MEDIUMBLOB,             -- 대표 이미지 바이너리 데이터
+    main_image_type VARCHAR(50),            -- 이미지 MIME 타입 (image/jpeg 등)
     view_count INT DEFAULT 0,               -- 조회수
     like_count INT DEFAULT 0,               -- 좋아요 수 (캐시)
     comment_count INT DEFAULT 0,            -- 댓글 수 (캐시)

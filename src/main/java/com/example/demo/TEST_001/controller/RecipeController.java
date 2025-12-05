@@ -1,17 +1,18 @@
 package com.example.demo.TEST_001.controller;
 
+import com.example.demo.TEST_001.dto.RecipeCommentDTO;
 import com.example.demo.TEST_001.dto.UserDTO;
 import com.example.demo.TEST_001.dto.UserRecipeDTO;
+import com.example.demo.TEST_001.service.RecipeCommentService;
+import com.example.demo.TEST_001.service.RecipeLikeService;
 import com.example.demo.TEST_001.service.RecipeService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,17 +22,21 @@ import java.util.Map;
 public class RecipeController {
 
     private final RecipeService recipeService;
+    private final RecipeLikeService recipeLikeService;
+    private final RecipeCommentService recipeCommentService;
 
     /**
-     * 레시피 목록 페이지
+     * 통합 레시피 목록 페이지 (API + 사용자)
      */
     @GetMapping("/list")
     public String recipeList(
-            @RequestParam(required = false) String rcpWay2,  // 조리방법 (예: 찌기, 끓이기 등)
-            @RequestParam(required = false) String rcpPat2,  // 요리종류 (예: 반찬, 국, 후식 등)
-            @RequestParam(required = false) String searchRecipeName,  // 레시피명 검색어
-            @RequestParam(required = false) String searchIngredient,  // 재료명 검색어
-            @RequestParam(defaultValue = "1") int page,      // 페이지 번호
+            @RequestParam(required = false, defaultValue = "all") String source,  // all, api, user
+            @RequestParam(required = false) String rcpWay2,
+            @RequestParam(required = false) String rcpPat2,
+            @RequestParam(required = false) String searchRecipeName,
+            @RequestParam(required = false) String searchIngredient,
+            @RequestParam(required = false) String searchAuthor,
+            @RequestParam(defaultValue = "1") int page,
             HttpSession session,
             Model model) {
 
@@ -41,16 +46,18 @@ public class RecipeController {
             return "redirect:/login";
         }
 
-        // 페이징 설정 (한 페이지당 20개)
+        // 페이징 설정
         int pageSize = 20;
 
-        // 레시피 목록 + 전체 개수 한번에 조회 (성능 최적화)
-        Map<String, Object> result = recipeService.getRecipeListWithCount(
+        // 통합 레시피 목록 조회
+        Map<String, Object> result = recipeService.getIntegratedRecipeListWithCount(
                 loginUser.getId(),
+                source,
                 rcpWay2,
                 rcpPat2,
                 searchRecipeName,
                 searchIngredient,
+                searchAuthor,
                 page,
                 pageSize
         );
@@ -65,20 +72,22 @@ public class RecipeController {
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("totalCount", totalCount);
+        model.addAttribute("source", source);
         model.addAttribute("rcpWay2", rcpWay2);
         model.addAttribute("rcpPat2", rcpPat2);
         model.addAttribute("searchRecipeName", searchRecipeName);
         model.addAttribute("searchIngredient", searchIngredient);
+        model.addAttribute("searchAuthor", searchAuthor);
 
         return "recipeList";
     }
 
     /**
-     * 레시피 상세 페이지
+     * 통합 레시피 상세 페이지 (ID 기반)
      */
-    @GetMapping("/detail/{rcpSeq}")
+    @GetMapping("/detail/{id}")
     public String recipeDetail(
-            @PathVariable String rcpSeq,
+            @PathVariable Long id,
             HttpSession session,
             Model model) {
 
@@ -88,16 +97,144 @@ public class RecipeController {
             return "redirect:/login";
         }
 
-        // 레시피 상세 정보 조회 (DB 기반)
-        UserRecipeDTO recipe = recipeService.getRecipeDetail(rcpSeq, loginUser.getId());
+        // 통합 레시피 상세 조회
+        UserRecipeDTO recipe = recipeService.getIntegratedRecipeDetail(id, loginUser.getId());
 
         if (recipe == null) {
             model.addAttribute("errorMessage", "레시피를 찾을 수 없습니다.");
             return "redirect:/recipe/list";
         }
 
+        // 댓글 목록 조회
+        List<RecipeCommentDTO> comments = recipeCommentService.getCommentsByRecipeId(id);
+
         model.addAttribute("recipe", recipe);
+        model.addAttribute("comments", comments);
+        model.addAttribute("loginUser", loginUser);
 
         return "recipeDetail";
+    }
+
+    /**
+     * 기존 URL 호환성: rcpSeq로 접근 시 id로 리다이렉트
+     */
+    @GetMapping("/detail/seq/{rcpSeq}")
+    public String recipeDetailBySeq(
+            @PathVariable String rcpSeq,
+            HttpSession session,
+            Model model) {
+
+        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
+        if (loginUser == null) {
+            return "redirect:/login";
+        }
+
+        // rcpSeq로 레시피 조회하여 id 찾기
+        UserRecipeDTO recipe = recipeService.getRecipeDetail(rcpSeq, loginUser.getId());
+        if (recipe == null) {
+            return "redirect:/recipe/list";
+        }
+
+        return "redirect:/recipe/detail/" + recipe.getId();
+    }
+
+    // ========================================
+    // 좋아요/댓글 기능 (통합)
+    // ========================================
+
+    /**
+     * 좋아요 토글 (AJAX)
+     */
+    @PostMapping("/{recipeId}/like")
+    @ResponseBody
+    public Map<String, Object> toggleLike(
+            @PathVariable Long recipeId,
+            HttpSession session) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
+        if (loginUser == null) {
+            response.put("success", false);
+            response.put("message", "로그인이 필요합니다.");
+            return response;
+        }
+
+        try {
+            boolean isLiked = recipeLikeService.toggleLike(recipeId, loginUser.getId());
+            int likeCount = recipeLikeService.getLikeCount(recipeId);
+
+            response.put("success", true);
+            response.put("isLiked", isLiked);
+            response.put("likeCount", likeCount);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "좋아요 처리 중 오류가 발생했습니다.");
+        }
+
+        return response;
+    }
+
+    /**
+     * 댓글 작성
+     */
+    @PostMapping("/{recipeId}/comment")
+    public String addComment(
+            @PathVariable Long recipeId,
+            @RequestParam String content,
+            HttpSession session) {
+
+        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
+        if (loginUser == null) {
+            return "redirect:/login";
+        }
+
+        RecipeCommentDTO comment = new RecipeCommentDTO();
+        comment.setRecipeId(recipeId);
+        comment.setUserId(loginUser.getId());
+        comment.setContent(content);
+
+        recipeCommentService.createComment(comment);
+
+        return "redirect:/recipe/detail/" + recipeId;
+    }
+
+    /**
+     * 댓글 수정
+     */
+    @PostMapping("/comment/{commentId}/edit")
+    public String editComment(
+            @PathVariable Long commentId,
+            @RequestParam String content,
+            @RequestParam Long recipeId,
+            HttpSession session) {
+
+        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
+        if (loginUser == null) {
+            return "redirect:/login";
+        }
+
+        recipeCommentService.updateComment(commentId, content, loginUser.getId());
+
+        return "redirect:/recipe/detail/" + recipeId;
+    }
+
+    /**
+     * 댓글 삭제
+     */
+    @PostMapping("/comment/{commentId}/delete")
+    public String deleteComment(
+            @PathVariable Long commentId,
+            @RequestParam Long recipeId,
+            HttpSession session) {
+
+        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
+        if (loginUser == null) {
+            return "redirect:/login";
+        }
+
+        recipeCommentService.deleteComment(commentId, loginUser.getId());
+
+        return "redirect:/recipe/detail/" + recipeId;
     }
 }

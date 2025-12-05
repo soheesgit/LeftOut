@@ -8,7 +8,10 @@
       "Bash(./gradlew build:*)",
       "Bash(./gradlew clean:*)",
       "Bash(find:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(del \"E:\\3-2\\데베프\\TEST_001\\TEST_001\\src\\main\\resources\\templates\\allRecipes.html\")",
+      "Bash(del \"E:\\3-2\\데베프\\TEST_001\\TEST_001\\src\\main\\resources\\templates\\userRecipeDetail.html\")",
+      "WebFetch(domain:deeplearning.cms.waikato.ac.nz)"
     ],
     "deny": [],
     "ask": []

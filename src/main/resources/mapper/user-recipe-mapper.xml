@@ -15,7 +15,9 @@
             cooking_time,
             servings,
             difficulty_level,
-            main_image_path
+            main_image_path,
+            main_image_data,
+            main_image_type
         )
         VALUES (
             #{userId},
@@ -27,7 +29,9 @@
             #{cookingTime},
             #{servings},
             #{difficultyLevel},
-            #{mainImagePath}
+            #{mainImagePath},
+            #{mainImageData},
+            #{mainImageType}
         )
     </insert>
 
@@ -45,6 +49,8 @@
             ur.servings,
             ur.difficulty_level,
             ur.main_image_path,
+            ur.main_image_data,
+            ur.main_image_type,
             ur.view_count,
             ur.like_count,
             ur.comment_count,
@@ -71,6 +77,8 @@
             ur.servings,
             ur.difficulty_level,
             ur.main_image_path,
+            ur.main_image_data,
+            ur.main_image_type,
             ur.view_count,
             ur.like_count,
             ur.comment_count,
@@ -130,6 +138,7 @@
             ur.servings,
             ur.difficulty_level,
             ur.main_image_path,
+            ur.main_image_type,
             ur.view_count,
             ur.like_count,
             ur.comment_count,
@@ -154,6 +163,7 @@
             ur.servings,
             ur.difficulty_level,
             ur.main_image_path,
+            ur.main_image_type,
             ur.view_count,
             ur.like_count,
             ur.comment_count,
@@ -181,6 +191,10 @@
             difficulty_level = #{difficultyLevel}
             <if test="mainImagePath != null">
                 , main_image_path = #{mainImagePath}
+            </if>
+            <if test="mainImageData != null">
+                , main_image_data = #{mainImageData}
+                , main_image_type = #{mainImageType}
             </if>
         WHERE id = #{id}
     </update>
@@ -422,6 +436,77 @@
         WHERE ur.source = 'api'
         ORDER BY -LOG(1 - RAND()) / (COALESCE(urm.match_percent, 0) + 10)
         LIMIT #{count}
+    </select>
+
+    <!-- ========================================= -->
+    <!-- 통합 레시피 상세 조회                        -->
+    <!-- ========================================= -->
+
+    <!-- 통합 레시피 상세 조회 (ID 기반, 좋아요 여부 + 매칭 정보 포함) -->
+    <select id="findByIdIntegrated" parameterType="map" resultType="com.example.demo.TEST_001.dto.UserRecipeDTO">
+        SELECT
+            ur.id,
+            ur.source,
+            ur.user_id AS userId,
+            ur.rcp_seq AS rcpSeq,
+            ur.title,
+            ur.description,
+            ur.rcp_way2 AS rcpWay2,
+            ur.rcp_pat2 AS rcpPat2,
+            ur.rcp_parts_dtls AS rcpPartsDtls,
+            ur.ingredients,
+            ur.cooking_steps AS cookingSteps,
+            ur.preparation_time AS preparationTime,
+            ur.cooking_time AS cookingTime,
+            ur.servings,
+            ur.difficulty_level AS difficultyLevel,
+            ur.info_wgt AS infoWgt,
+            ur.info_eng AS infoEng,
+            ur.info_car AS infoCar,
+            ur.info_pro AS infoPro,
+            ur.info_fat AS infoFat,
+            ur.info_na AS infoNa,
+            ur.rcp_na_tip AS rcpNaTip,
+            ur.hash_tag AS hashTag,
+            ur.att_file_no_main AS attFileNoMain,
+            ur.att_file_no_mk AS attFileNoMk,
+            ur.main_image_path AS mainImagePath,
+            ur.manual01, ur.manual02, ur.manual03, ur.manual04, ur.manual05,
+            ur.manual06, ur.manual07, ur.manual08, ur.manual09, ur.manual10,
+            ur.manual11, ur.manual12, ur.manual13, ur.manual14, ur.manual15,
+            ur.manual16, ur.manual17, ur.manual18, ur.manual19, ur.manual20,
+            ur.manual_img01 AS manualImg01, ur.manual_img02 AS manualImg02,
+            ur.manual_img03 AS manualImg03, ur.manual_img04 AS manualImg04,
+            ur.manual_img05 AS manualImg05, ur.manual_img06 AS manualImg06,
+            ur.manual_img07 AS manualImg07, ur.manual_img08 AS manualImg08,
+            ur.manual_img09 AS manualImg09, ur.manual_img10 AS manualImg10,
+            ur.manual_img11 AS manualImg11, ur.manual_img12 AS manualImg12,
+            ur.manual_img13 AS manualImg13, ur.manual_img14 AS manualImg14,
+            ur.manual_img15 AS manualImg15, ur.manual_img16 AS manualImg16,
+            ur.manual_img17 AS manualImg17, ur.manual_img18 AS manualImg18,
+            ur.manual_img19 AS manualImg19, ur.manual_img20 AS manualImg20,
+            ur.parsed_ingredients AS parsedIngredients,
+            ur.ingredient_count AS ingredientCount,
+            ur.view_count AS viewCount,
+            ur.like_count AS likeCount,
+            ur.comment_count AS commentCount,
+            ur.created_at AS createdAt,
+            ur.updated_at AS updatedAt,
+            u.name AS authorName,
+            u.username AS authorUsername,
+            CASE WHEN rl.id IS NOT NULL THEN TRUE ELSE FALSE END AS isLiked,
+            COALESCE(urm.matched_count, 0) AS matchedIngredientCount,
+            CASE
+                WHEN urm.total_count IS NOT NULL AND urm.total_count > 0 THEN urm.total_count
+                WHEN ur.ingredient_count IS NOT NULL AND ur.ingredient_count > 0 THEN ur.ingredient_count
+                ELSE 0
+            END AS totalIngredientCount,
+            urm.matched_ingredients AS matchedIngredients
+        FROM user_recipe ur
+        LEFT JOIN users u ON ur.user_id = u.id
+        LEFT JOIN recipe_like rl ON ur.id = rl.recipe_id AND rl.user_id = #{userId}
+        LEFT JOIN user_recipe_match urm ON ur.id = urm.recipe_id AND urm.user_id = #{userId}
+        WHERE ur.id = #{id}
     </select>
 
 </mapper>

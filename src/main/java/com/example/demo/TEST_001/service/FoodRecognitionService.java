@@ -42,62 +42,62 @@ public class FoodRecognitionService {
     private static final Map<String, List<String>> LABEL_SUGGESTIONS = new HashMap<>();
 
     static {
-        // ========== ImageNet-1k 음식 관련 클래스 전체 매핑 ==========
+        // ========== ImageNet-1k 음식 관련 클래스 전체 매핑 (정확한 라벨) ==========
 
         // 과일류
         LABEL_KOREAN_MAP.put("banana", "바나나");
         LABEL_KOREAN_MAP.put("orange", "오렌지");
         LABEL_KOREAN_MAP.put("lemon", "레몬");
         LABEL_KOREAN_MAP.put("fig", "무화과");
-        LABEL_KOREAN_MAP.put("pineapple", "파인애플");
+        LABEL_KOREAN_MAP.put("pineapple, ananas", "파인애플");
         LABEL_KOREAN_MAP.put("strawberry", "딸기");
         LABEL_KOREAN_MAP.put("pomegranate", "석류");
         LABEL_KOREAN_MAP.put("custard apple", "슈가애플");
         LABEL_KOREAN_MAP.put("Granny Smith", "사과");
-        LABEL_KOREAN_MAP.put("jackfruit", "잭프루트");
+        LABEL_KOREAN_MAP.put("jackfruit, jak, jack", "잭프루트");
         LABEL_KOREAN_MAP.put("acorn", "도토리");
 
         // 채소류
         LABEL_KOREAN_MAP.put("broccoli", "브로콜리");
         LABEL_KOREAN_MAP.put("cauliflower", "콜리플라워");
-        LABEL_KOREAN_MAP.put("cucumber", "오이");
-        LABEL_KOREAN_MAP.put("zucchini", "주키니호박");
-        LABEL_KOREAN_MAP.put("artichoke", "아티초크");
+        LABEL_KOREAN_MAP.put("cucumber, cuke", "오이");
+        LABEL_KOREAN_MAP.put("zucchini, courgette", "주키니호박");
+        LABEL_KOREAN_MAP.put("artichoke, globe artichoke", "아티초크");
         LABEL_KOREAN_MAP.put("bell pepper", "피망");
         LABEL_KOREAN_MAP.put("cardoon", "카르돈");
         LABEL_KOREAN_MAP.put("mushroom", "버섯");
         LABEL_KOREAN_MAP.put("agaric", "주름버섯");
-        LABEL_KOREAN_MAP.put("hen-of-the-woods", "잎새버섯");
+        LABEL_KOREAN_MAP.put("hen-of-the-woods, hen of the woods, Polyporus frondosus, Grifola frondosa", "잎새버섯");
         LABEL_KOREAN_MAP.put("bolete", "그물버섯");
-        LABEL_KOREAN_MAP.put("ear", "목이버섯");
+        LABEL_KOREAN_MAP.put("ear, spike, capitulum", "목이버섯");
         LABEL_KOREAN_MAP.put("coral fungus", "싸리버섯");
         LABEL_KOREAN_MAP.put("head cabbage", "양배추");
         LABEL_KOREAN_MAP.put("spaghetti squash", "스파게티호박");
         LABEL_KOREAN_MAP.put("butternut squash", "버터넛호박");
         LABEL_KOREAN_MAP.put("acorn squash", "도토리호박");
         LABEL_KOREAN_MAP.put("corn", "옥수수");
+        LABEL_KOREAN_MAP.put("mashed potato", "매쉬드포테이토");
 
         // 음식/요리
-        LABEL_KOREAN_MAP.put("bagel", "베이글");
+        LABEL_KOREAN_MAP.put("bagel, beigel", "베이글");
         LABEL_KOREAN_MAP.put("pretzel", "프레첼");
         LABEL_KOREAN_MAP.put("cheeseburger", "치즈버거");
-        LABEL_KOREAN_MAP.put("hotdog", "핫도그");
-        LABEL_KOREAN_MAP.put("hot dog", "핫도그");
-        LABEL_KOREAN_MAP.put("pizza", "피자");
+        LABEL_KOREAN_MAP.put("hotdog, hot dog, red hot", "핫도그");
+        LABEL_KOREAN_MAP.put("pizza, pizza pie", "피자");
         LABEL_KOREAN_MAP.put("burrito", "부리토");
-        LABEL_KOREAN_MAP.put("meat loaf", "미트로프");
-        LABEL_KOREAN_MAP.put("meatloaf", "미트로프");
+        LABEL_KOREAN_MAP.put("meat loaf, meatloaf", "미트로프");
         LABEL_KOREAN_MAP.put("French loaf", "바게트");
         LABEL_KOREAN_MAP.put("guacamole", "과카몰리");
         LABEL_KOREAN_MAP.put("consomme", "콩소메");
+        LABEL_KOREAN_MAP.put("hot pot, hotpot", "훠궈");
         LABEL_KOREAN_MAP.put("potpie", "팟파이");
         LABEL_KOREAN_MAP.put("carbonara", "카르보나라");
         LABEL_KOREAN_MAP.put("dough", "반죽");
 
         // 디저트/과자류
-        LABEL_KOREAN_MAP.put("ice cream", "아이스크림");
-        LABEL_KOREAN_MAP.put("ice lolly", "아이스바");
-        LABEL_KOREAN_MAP.put("chocolate sauce", "초콜릿소스");
+        LABEL_KOREAN_MAP.put("ice cream, icecream", "아이스크림");
+        LABEL_KOREAN_MAP.put("ice lolly, lolly, popsicle", "아이스바");
+        LABEL_KOREAN_MAP.put("chocolate sauce, chocolate syrup", "초콜릿소스");
         LABEL_KOREAN_MAP.put("trifle", "트라이플");
 
         // 음료
@@ -105,36 +105,40 @@ public class FoodRecognitionService {
         LABEL_KOREAN_MAP.put("eggnog", "에그노그");
         LABEL_KOREAN_MAP.put("red wine", "레드와인");
 
-        // 해산물
-        LABEL_KOREAN_MAP.put("lobster", "랍스터");
-        LABEL_KOREAN_MAP.put("American lobster", "아메리칸랍스터");
-        LABEL_KOREAN_MAP.put("spiny lobster", "가시랍스터");
-        LABEL_KOREAN_MAP.put("crayfish", "가재");
-        LABEL_KOREAN_MAP.put("Dungeness crab", "던지니스크랩");
-        LABEL_KOREAN_MAP.put("rock crab", "돌게");
+        // 해산물 - 갑각류
+        LABEL_KOREAN_MAP.put("American lobster, Northern lobster, Maine lobster, Homarus americanus", "아메리칸랍스터");
+        LABEL_KOREAN_MAP.put("spiny lobster, langouste, rock lobster, crawfish, crayfish, sea crawfish", "가시랍스터");
+        LABEL_KOREAN_MAP.put("crayfish, crawfish, crawdad, crawdaddy", "가재");
+        LABEL_KOREAN_MAP.put("Dungeness crab, Cancer magister", "던지니스크랩");
+        LABEL_KOREAN_MAP.put("rock crab, Cancer irroratus", "돌게");
         LABEL_KOREAN_MAP.put("fiddler crab", "농게");
-        LABEL_KOREAN_MAP.put("king crab", "킹크랩");
+        LABEL_KOREAN_MAP.put("king crab, Alaska king crab, Alaskan king crab, Paralithodes camtschatica", "킹크랩");
         LABEL_KOREAN_MAP.put("hermit crab", "소라게");
         LABEL_KOREAN_MAP.put("isopod", "등각류");
+
+        // 해산물 - 연체류
         LABEL_KOREAN_MAP.put("conch", "소라");
         LABEL_KOREAN_MAP.put("snail", "달팽이");
         LABEL_KOREAN_MAP.put("slug", "민달팽이");
-        LABEL_KOREAN_MAP.put("chiton", "군부");
-        LABEL_KOREAN_MAP.put("sea slug", "갯민숭달팽이");
-        LABEL_KOREAN_MAP.put("sea cucumber", "해삼");
+        LABEL_KOREAN_MAP.put("chiton, coat-of-mail shell, sea cradle, polyplacophore", "군부");
+        LABEL_KOREAN_MAP.put("chambered nautilus, pearly nautilus, nautilus", "앵무조개");
+        LABEL_KOREAN_MAP.put("sea slug, nudibranch", "갯민숭달팽이");
+
+        // 해산물 - 극피동물
+        LABEL_KOREAN_MAP.put("sea cucumber, holothurian", "해삼");
         LABEL_KOREAN_MAP.put("sea urchin", "성게");
-        LABEL_KOREAN_MAP.put("starfish", "불가사리");
+        LABEL_KOREAN_MAP.put("starfish, sea star", "불가사리");
 
         // 생선
-        LABEL_KOREAN_MAP.put("goldfish", "물고기");
-        LABEL_KOREAN_MAP.put("tench", "잉어");
-        LABEL_KOREAN_MAP.put("gar", "가아");
+        LABEL_KOREAN_MAP.put("goldfish, Carassius auratus", "금붕어");
+        LABEL_KOREAN_MAP.put("tench, Tinca tinca", "잉어");
+        LABEL_KOREAN_MAP.put("gar, garfish, garpike, billfish, Lepisosteus osseus", "가아");
         LABEL_KOREAN_MAP.put("lionfish", "쏠배감펭");
-        LABEL_KOREAN_MAP.put("puffer", "복어");
+        LABEL_KOREAN_MAP.put("puffer, pufferfish, blowfish, globefish", "복어");
         LABEL_KOREAN_MAP.put("sturgeon", "철갑상어");
         LABEL_KOREAN_MAP.put("eel", "장어");
-        LABEL_KOREAN_MAP.put("coho", "은연어");
-        LABEL_KOREAN_MAP.put("barracouta", "꼬치고기");
+        LABEL_KOREAN_MAP.put("coho, cohoe, coho salmon, blue jack, silver salmon, Oncorhynchus kisutch", "은연어");
+        LABEL_KOREAN_MAP.put("barracouta, snoek", "꼬치고기");
 
         // 고기/가금류
         LABEL_KOREAN_MAP.put("hen", "닭");
@@ -142,89 +146,107 @@ public class FoodRecognitionService {
         LABEL_KOREAN_MAP.put("turkey", "칠면조");
         LABEL_KOREAN_MAP.put("goose", "거위");
         LABEL_KOREAN_MAP.put("drake", "수오리");
-        LABEL_KOREAN_MAP.put("red-breasted merganser", "바다비오리");
+        LABEL_KOREAN_MAP.put("red-breasted merganser, Mergus serrator", "바다비오리");
 
         // 음식 라벨 Set 초기화 (LABEL_KOREAN_MAP의 모든 키)
         FOOD_LABELS.addAll(LABEL_KOREAN_MAP.keySet());
 
         // ========== 카테고리 ID 매핑 (DB category 테이블 기준) ==========
-        // 1:채소, 2:육류, 3:유제품, 4:과일, 5:조미료, 6:기타
+        // 1:채소, 2:육류, 3:유제품, 4:과일, 5:조미료, 6:기타, 7:해산물
 
         // 과일 (4)
         LABEL_CATEGORY_MAP.put("banana", 4);
         LABEL_CATEGORY_MAP.put("orange", 4);
         LABEL_CATEGORY_MAP.put("lemon", 4);
         LABEL_CATEGORY_MAP.put("fig", 4);
-        LABEL_CATEGORY_MAP.put("pineapple", 4);
+        LABEL_CATEGORY_MAP.put("pineapple, ananas", 4);
         LABEL_CATEGORY_MAP.put("strawberry", 4);
         LABEL_CATEGORY_MAP.put("pomegranate", 4);
         LABEL_CATEGORY_MAP.put("custard apple", 4);
         LABEL_CATEGORY_MAP.put("Granny Smith", 4);
-        LABEL_CATEGORY_MAP.put("jackfruit", 4);
+        LABEL_CATEGORY_MAP.put("jackfruit, jak, jack", 4);
 
         // 채소 (1)
         LABEL_CATEGORY_MAP.put("broccoli", 1);
         LABEL_CATEGORY_MAP.put("cauliflower", 1);
-        LABEL_CATEGORY_MAP.put("cucumber", 1);
-        LABEL_CATEGORY_MAP.put("zucchini", 1);
-        LABEL_CATEGORY_MAP.put("artichoke", 1);
+        LABEL_CATEGORY_MAP.put("cucumber, cuke", 1);
+        LABEL_CATEGORY_MAP.put("zucchini, courgette", 1);
+        LABEL_CATEGORY_MAP.put("artichoke, globe artichoke", 1);
         LABEL_CATEGORY_MAP.put("bell pepper", 1);
         LABEL_CATEGORY_MAP.put("cardoon", 1);
         LABEL_CATEGORY_MAP.put("mushroom", 1);
         LABEL_CATEGORY_MAP.put("agaric", 1);
-        LABEL_CATEGORY_MAP.put("hen-of-the-woods", 1);
+        LABEL_CATEGORY_MAP.put("hen-of-the-woods, hen of the woods, Polyporus frondosus, Grifola frondosa", 1);
         LABEL_CATEGORY_MAP.put("bolete", 1);
-        LABEL_CATEGORY_MAP.put("ear", 1);
+        LABEL_CATEGORY_MAP.put("ear, spike, capitulum", 1);
         LABEL_CATEGORY_MAP.put("coral fungus", 1);
         LABEL_CATEGORY_MAP.put("head cabbage", 1);
         LABEL_CATEGORY_MAP.put("spaghetti squash", 1);
         LABEL_CATEGORY_MAP.put("butternut squash", 1);
         LABEL_CATEGORY_MAP.put("acorn squash", 1);
         LABEL_CATEGORY_MAP.put("corn", 1);
+        LABEL_CATEGORY_MAP.put("mashed potato", 1);
 
         // 육류/가금류 (2)
         LABEL_CATEGORY_MAP.put("cheeseburger", 2);
-        LABEL_CATEGORY_MAP.put("hotdog", 2);
-        LABEL_CATEGORY_MAP.put("hot dog", 2);
-        LABEL_CATEGORY_MAP.put("meat loaf", 2);
-        LABEL_CATEGORY_MAP.put("meatloaf", 2);
+        LABEL_CATEGORY_MAP.put("hotdog, hot dog, red hot", 2);
+        LABEL_CATEGORY_MAP.put("meat loaf, meatloaf", 2);
         LABEL_CATEGORY_MAP.put("hen", 2);
         LABEL_CATEGORY_MAP.put("cock", 2);
         LABEL_CATEGORY_MAP.put("turkey", 2);
         LABEL_CATEGORY_MAP.put("goose", 2);
         LABEL_CATEGORY_MAP.put("drake", 2);
+        LABEL_CATEGORY_MAP.put("red-breasted merganser, Mergus serrator", 2);
 
-        // 해산물 - 기타로 분류 (6)
-        LABEL_CATEGORY_MAP.put("lobster", 6);
-        LABEL_CATEGORY_MAP.put("American lobster", 6);
-        LABEL_CATEGORY_MAP.put("spiny lobster", 6);
-        LABEL_CATEGORY_MAP.put("crayfish", 6);
-        LABEL_CATEGORY_MAP.put("Dungeness crab", 6);
-        LABEL_CATEGORY_MAP.put("rock crab", 6);
-        LABEL_CATEGORY_MAP.put("fiddler crab", 6);
-        LABEL_CATEGORY_MAP.put("king crab", 6);
-        LABEL_CATEGORY_MAP.put("hermit crab", 6);
-        LABEL_CATEGORY_MAP.put("conch", 6);
-        LABEL_CATEGORY_MAP.put("sea cucumber", 6);
-        LABEL_CATEGORY_MAP.put("sea urchin", 6);
-        LABEL_CATEGORY_MAP.put("eel", 6);
-        LABEL_CATEGORY_MAP.put("coho", 6);
-        LABEL_CATEGORY_MAP.put("sturgeon", 6);
-        LABEL_CATEGORY_MAP.put("puffer", 6);
+        // 해산물 - 갑각류 (7)
+        LABEL_CATEGORY_MAP.put("American lobster, Northern lobster, Maine lobster, Homarus americanus", 7);
+        LABEL_CATEGORY_MAP.put("spiny lobster, langouste, rock lobster, crawfish, crayfish, sea crawfish", 7);
+        LABEL_CATEGORY_MAP.put("crayfish, crawfish, crawdad, crawdaddy", 7);
+        LABEL_CATEGORY_MAP.put("Dungeness crab, Cancer magister", 7);
+        LABEL_CATEGORY_MAP.put("rock crab, Cancer irroratus", 7);
+        LABEL_CATEGORY_MAP.put("fiddler crab", 7);
+        LABEL_CATEGORY_MAP.put("king crab, Alaska king crab, Alaskan king crab, Paralithodes camtschatica", 7);
+        LABEL_CATEGORY_MAP.put("hermit crab", 7);
+        LABEL_CATEGORY_MAP.put("isopod", 7);
+
+        // 해산물 - 연체류 (7)
+        LABEL_CATEGORY_MAP.put("conch", 7);
+        LABEL_CATEGORY_MAP.put("snail", 7);
+        LABEL_CATEGORY_MAP.put("slug", 7);
+        LABEL_CATEGORY_MAP.put("chiton, coat-of-mail shell, sea cradle, polyplacophore", 7);
+        LABEL_CATEGORY_MAP.put("chambered nautilus, pearly nautilus, nautilus", 7);
+        LABEL_CATEGORY_MAP.put("sea slug, nudibranch", 7);
+
+        // 해산물 - 극피동물 (7)
+        LABEL_CATEGORY_MAP.put("sea cucumber, holothurian", 7);
+        LABEL_CATEGORY_MAP.put("sea urchin", 7);
+        LABEL_CATEGORY_MAP.put("starfish, sea star", 7);
+
+        // 생선 (7)
+        LABEL_CATEGORY_MAP.put("goldfish, Carassius auratus", 7);
+        LABEL_CATEGORY_MAP.put("tench, Tinca tinca", 7);
+        LABEL_CATEGORY_MAP.put("gar, garfish, garpike, billfish, Lepisosteus osseus", 7);
+        LABEL_CATEGORY_MAP.put("lionfish", 7);
+        LABEL_CATEGORY_MAP.put("puffer, pufferfish, blowfish, globefish", 7);
+        LABEL_CATEGORY_MAP.put("sturgeon", 7);
+        LABEL_CATEGORY_MAP.put("eel", 7);
+        LABEL_CATEGORY_MAP.put("coho, cohoe, coho salmon, blue jack, silver salmon, Oncorhynchus kisutch", 7);
+        LABEL_CATEGORY_MAP.put("barracouta, snoek", 7);
 
         // 빵/요리 - 기타 (6)
-        LABEL_CATEGORY_MAP.put("bagel", 6);
+        LABEL_CATEGORY_MAP.put("bagel, beigel", 6);
         LABEL_CATEGORY_MAP.put("pretzel", 6);
         LABEL_CATEGORY_MAP.put("French loaf", 6);
-        LABEL_CATEGORY_MAP.put("pizza", 6);
+        LABEL_CATEGORY_MAP.put("pizza, pizza pie", 6);
         LABEL_CATEGORY_MAP.put("burrito", 6);
         LABEL_CATEGORY_MAP.put("potpie", 6);
         LABEL_CATEGORY_MAP.put("dough", 6);
+        LABEL_CATEGORY_MAP.put("hot pot, hotpot", 6);
 
         // 기타/디저트 (6)
-        LABEL_CATEGORY_MAP.put("ice cream", 6);
-        LABEL_CATEGORY_MAP.put("ice lolly", 6);
-        LABEL_CATEGORY_MAP.put("chocolate sauce", 6);
+        LABEL_CATEGORY_MAP.put("ice cream, icecream", 6);
+        LABEL_CATEGORY_MAP.put("ice lolly, lolly, popsicle", 6);
+        LABEL_CATEGORY_MAP.put("chocolate sauce, chocolate syrup", 6);
         LABEL_CATEGORY_MAP.put("trifle", 6);
         LABEL_CATEGORY_MAP.put("espresso", 6);
         LABEL_CATEGORY_MAP.put("eggnog", 6);
@@ -233,22 +255,25 @@ public class FoodRecognitionService {
         LABEL_CATEGORY_MAP.put("consomme", 6);
         LABEL_CATEGORY_MAP.put("carbonara", 6);
 
-        // ========== 추천 식재료 ==========
-        LABEL_SUGGESTIONS.put("pizza", Arrays.asList("피자도우", "모짜렐라치즈", "토마토소스", "페퍼로니"));
+        // ========== 추천 식재료 (ImageNet-1k 정확한 라벨) ==========
+        LABEL_SUGGESTIONS.put("pizza, pizza pie", Arrays.asList("피자도우", "모짜렐라치즈", "토마토소스", "페퍼로니"));
         LABEL_SUGGESTIONS.put("cheeseburger", Arrays.asList("소고기패티", "치즈", "빵", "양상추", "토마토"));
-        LABEL_SUGGESTIONS.put("hotdog", Arrays.asList("소시지", "핫도그빵", "케첩", "머스타드"));
-        LABEL_SUGGESTIONS.put("hot dog", Arrays.asList("소시지", "핫도그빵", "케첩", "머스타드"));
+        LABEL_SUGGESTIONS.put("hotdog, hot dog, red hot", Arrays.asList("소시지", "핫도그빵", "케첩", "머스타드"));
         LABEL_SUGGESTIONS.put("burrito", Arrays.asList("또띠아", "소고기", "콩", "치즈", "살사소스"));
         LABEL_SUGGESTIONS.put("carbonara", Arrays.asList("스파게티면", "베이컨", "계란", "파마산치즈"));
-        LABEL_SUGGESTIONS.put("bagel", Arrays.asList("베이글", "크림치즈", "연어"));
-        LABEL_SUGGESTIONS.put("ice cream", Arrays.asList("우유", "생크림", "설탕", "바닐라"));
+        LABEL_SUGGESTIONS.put("bagel, beigel", Arrays.asList("베이글", "크림치즈", "연어"));
+        LABEL_SUGGESTIONS.put("ice cream, icecream", Arrays.asList("우유", "생크림", "설탕", "바닐라"));
         LABEL_SUGGESTIONS.put("broccoli", Arrays.asList("브로콜리", "마늘", "올리브오일"));
-        LABEL_SUGGESTIONS.put("lobster", Arrays.asList("랍스터", "버터", "레몬"));
+        LABEL_SUGGESTIONS.put("American lobster, Northern lobster, Maine lobster, Homarus americanus", Arrays.asList("랍스터", "버터", "레몬"));
+        LABEL_SUGGESTIONS.put("king crab, Alaska king crab, Alaskan king crab, Paralithodes camtschatica", Arrays.asList("킹크랩", "버터", "레몬"));
         LABEL_SUGGESTIONS.put("banana", Arrays.asList("바나나", "우유", "꿀"));
         LABEL_SUGGESTIONS.put("strawberry", Arrays.asList("딸기", "생크림", "설탕"));
         LABEL_SUGGESTIONS.put("orange", Arrays.asList("오렌지"));
-        LABEL_SUGGESTIONS.put("cucumber", Arrays.asList("오이", "소금", "참기름"));
+        LABEL_SUGGESTIONS.put("cucumber, cuke", Arrays.asList("오이", "소금", "참기름"));
         LABEL_SUGGESTIONS.put("mushroom", Arrays.asList("버섯", "마늘", "버터"));
+        LABEL_SUGGESTIONS.put("hot pot, hotpot", Arrays.asList("소고기", "양배추", "두부", "버섯"));
+        LABEL_SUGGESTIONS.put("coho, cohoe, coho salmon, blue jack, silver salmon, Oncorhynchus kisutch", Arrays.asList("연어", "레몬", "딜"));
+        LABEL_SUGGESTIONS.put("eel", Arrays.asList("장어", "양념장"));
     }
 
     /**

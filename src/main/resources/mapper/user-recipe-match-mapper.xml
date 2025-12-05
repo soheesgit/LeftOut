@@ -47,7 +47,11 @@
             ur.info_eng, ur.att_file_no_main, ur.att_file_no_mk,
             ur.parsed_ingredients, ur.ingredient_count, ur.created_at,
             COALESCE(urm.matched_count, 0) AS matchedIngredientCount,
-            COALESCE(urm.total_count, ur.ingredient_count, 0) AS totalIngredientCount,
+            CASE
+                WHEN urm.total_count IS NOT NULL AND urm.total_count > 0 THEN urm.total_count
+                WHEN ur.ingredient_count IS NOT NULL AND ur.ingredient_count > 0 THEN ur.ingredient_count
+                ELSE 0
+            END AS totalIngredientCount,
             COALESCE(urm.match_percent, 0) AS matchScore,
             urm.matched_ingredients AS matchedIngredients
         FROM user_recipe ur
@@ -93,6 +97,136 @@
         SELECT id, parsed_ingredients AS parsedIngredients, ingredient_count AS ingredientCount
         FROM user_recipe
         WHERE source = 'api'
+    </select>
+
+    <!-- ========================================= -->
+    <!-- 통합 레시피 조회 (API + 사용자)              -->
+    <!-- ========================================= -->
+
+    <!-- 모든 레시피 ID 조회 (API + 사용자, 매칭 계산용) -->
+    <select id="findAllRecipeIds" resultType="map">
+        SELECT
+            id,
+            source,
+            parsed_ingredients AS parsedIngredients,
+            ingredients,
+            ingredient_count AS ingredientCount
+        FROM user_recipe
+    </select>
+
+    <!-- 통합 레시피 목록 조회 (API + 사용자, 매칭 점수 포함) -->
+    <select id="findIntegratedRecipesWithMatch" parameterType="map" resultType="com.example.demo.TEST_001.dto.UserRecipeDTO">
+        SELECT
+            ur.id, ur.source, ur.rcp_seq, ur.title,
+            ur.rcp_way2, ur.rcp_pat2, ur.description,
+            ur.rcp_parts_dtls,
+            ur.info_eng,
+            ur.att_file_no_main AS attFileNoMain,
+            ur.main_image_path AS mainImagePath,
+            ur.parsed_ingredients, ur.ingredient_count,
+            ur.ingredients,
+            ur.view_count AS viewCount,
+            ur.like_count AS likeCount,
+            ur.comment_count AS commentCount,
+            ur.preparation_time AS preparationTime,
+            ur.cooking_time AS cookingTime,
+            ur.servings,
+            ur.difficulty_level AS difficultyLevel,
+            ur.user_id AS userId,
+            ur.created_at AS createdAt,
+            u.name AS authorName,
+            u.username AS authorUsername,
+            COALESCE(urm.matched_count, 0) AS matchedIngredientCount,
+            CASE
+                WHEN urm.total_count IS NOT NULL AND urm.total_count > 0 THEN urm.total_count
+                WHEN ur.ingredient_count IS NOT NULL AND ur.ingredient_count > 0 THEN ur.ingredient_count
+                ELSE 0
+            END AS totalIngredientCount,
+            COALESCE(urm.match_percent, 0) AS matchScore,
+            urm.matched_ingredients AS matchedIngredients
+        FROM user_recipe ur
+        LEFT JOIN users u ON ur.user_id = u.id
+        LEFT JOIN user_recipe_match urm ON ur.id = urm.recipe_id AND urm.user_id = #{userId}
+        <where>
+            <!-- source 필터 -->
+            <choose>
+                <when test="source == 'api'">
+                    AND ur.source = 'api'
+                </when>
+                <when test="source == 'user'">
+                    AND (ur.source = 'user' OR ur.source IS NULL OR ur.source = '')
+                </when>
+                <otherwise>
+                    <!-- 'all' 또는 null: 모든 소스 -->
+                </otherwise>
+            </choose>
+
+            <!-- 조리방법 필터 -->
+            <if test="rcpWay2 != null and rcpWay2 != ''">
+                AND ur.rcp_way2 = #{rcpWay2}
+            </if>
+            <!-- 요리종류 필터 -->
+            <if test="rcpPat2 != null and rcpPat2 != ''">
+                AND ur.rcp_pat2 = #{rcpPat2}
+            </if>
+            <!-- 레시피명 검색 (제목 + 설명) -->
+            <if test="searchRecipeName != null and searchRecipeName != ''">
+                AND (ur.title LIKE CONCAT('%', #{searchRecipeName}, '%')
+                     OR ur.description LIKE CONCAT('%', #{searchRecipeName}, '%'))
+            </if>
+            <!-- 재료명 검색 -->
+            <if test="searchIngredient != null and searchIngredient != ''">
+                AND (ur.rcp_parts_dtls LIKE CONCAT('%', #{searchIngredient}, '%')
+                     OR ur.ingredients LIKE CONCAT('%', #{searchIngredient}, '%')
+                     OR ur.parsed_ingredients LIKE CONCAT('%', #{searchIngredient}, '%'))
+            </if>
+            <!-- 작성자 검색 -->
+            <if test="searchAuthor != null and searchAuthor != ''">
+                AND (u.name LIKE CONCAT('%', #{searchAuthor}, '%')
+                     OR u.username LIKE CONCAT('%', #{searchAuthor}, '%'))
+            </if>
+        </where>
+        ORDER BY COALESCE(urm.match_percent, 0) DESC,
+                 COALESCE(urm.matched_count, 0) DESC,
+                 ur.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 통합 레시피 개수 조회 -->
+    <select id="countIntegratedRecipesFiltered" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM user_recipe ur
+        LEFT JOIN users u ON ur.user_id = u.id
+        <where>
+            <choose>
+                <when test="source == 'api'">
+                    AND ur.source = 'api'
+                </when>
+                <when test="source == 'user'">
+                    AND (ur.source = 'user' OR ur.source IS NULL OR ur.source = '')
+                </when>
+            </choose>
+            <if test="rcpWay2 != null and rcpWay2 != ''">
+                AND ur.rcp_way2 = #{rcpWay2}
+            </if>
+            <if test="rcpPat2 != null and rcpPat2 != ''">
+                AND ur.rcp_pat2 = #{rcpPat2}
+            </if>
+            <!-- 레시피명 검색 (제목 + 설명) -->
+            <if test="searchRecipeName != null and searchRecipeName != ''">
+                AND (ur.title LIKE CONCAT('%', #{searchRecipeName}, '%')
+                     OR ur.description LIKE CONCAT('%', #{searchRecipeName}, '%'))
+            </if>
+            <if test="searchIngredient != null and searchIngredient != ''">
+                AND (ur.rcp_parts_dtls LIKE CONCAT('%', #{searchIngredient}, '%')
+                     OR ur.ingredients LIKE CONCAT('%', #{searchIngredient}, '%')
+                     OR ur.parsed_ingredients LIKE CONCAT('%', #{searchIngredient}, '%'))
+            </if>
+            <if test="searchAuthor != null and searchAuthor != ''">
+                AND (u.name LIKE CONCAT('%', #{searchAuthor}, '%')
+                     OR u.username LIKE CONCAT('%', #{searchAuthor}, '%'))
+            </if>
+        </where>
     </select>
 
 </mapper>

@@ -161,4 +161,16 @@ public class UserRecipeRepository {
         params.put("count", count);
         return sql.selectList("userRecipe.findWeightedRandomApiRecipe", params);
     }
+
+    // ========================================
+    // 통합 레시피 상세 조회
+    // ========================================
+
+    // 통합 레시피 상세 조회 (ID 기반, 좋아요 여부 포함)
+    public UserRecipeDTO findByIdIntegrated(Long id, Long userId) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", id);
+        params.put("userId", userId);
+        return sql.selectOne("userRecipe.findByIdIntegrated", params);
+    }
 }
