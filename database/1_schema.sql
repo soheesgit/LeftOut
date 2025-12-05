@@ -8,8 +8,8 @@
 -- DROP TABLE IF EXISTS users;
 --
 -- DROP DATABASE IF EXISTS leftout;
--- CREATE DATABASE leftout;
--- USE leftout;
+CREATE DATABASE leftout;
+USE leftout;
 
 
 -- user_01 권한 주기
