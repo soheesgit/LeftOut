@@ -108,10 +108,6 @@ database/2_user_recipe_match_schema.sql
 
 # 3. 레시피 테이블
 database/3_user_recipe_schema.sql
-
-
-# 3. 레시피 테이블
-database/4_user_recipe_match.sql
 ```
 
 ### 3. 빌드 및 실행
