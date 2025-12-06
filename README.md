@@ -27,34 +27,7 @@
 ---
 
 ## 주요 기능
-
-### 1. 식재료 관리
-- 내 냉장고 식재료 조회/추가/수정/삭제
-- 빠른 추가 (간편 등록)
-- 상세 추가 (유통기한, 수량 등)
-- **AI 음식 인식** - 사진으로 식재료 자동 인식 및 추가
-- 카테고리별 분류 (채소, 육류, 유제품, 과일, 조미료, 해산물 등)
-
-### 2. 레시피 검색
-- **보유 식재료 기반 레시피 매칭**
-- 매칭률 표시 (보유 재료 몇 % 일치)
-- 조리방법별 필터 (굽기, 끓이기, 볶기, 찌기 등)
-- 요리종류별 필터 (반찬, 국&찌개, 밥, 일품, 후식 등)
-- 레시피명/재료명 검색
-
-### 3. 레시피 게시판
-- 사용자 레시피 작성/수정/삭제
-- 댓글 기능
-- 좋아요(찜) 기능
-- 이미지 업로드
-
-### 4. 랜덤 레시피 추천
-- "오늘 뭐 먹지?" 랜덤 추천
-- 로그인 시 보유 식재료 가중치 적용
-
-### 5. 통계
-- 카테고리별 식재료 현황
-- 유통기한 임박 식재료 알림
+<img width="1504" height="801" alt="image" src="https://github.com/user-attachments/assets/ad7c721e-4fa5-42a8-8ad6-e86a78e5aac2" />
 
 ---
 
@@ -124,68 +97,4 @@ database/3_user_recipe_schema.sql
 
 브라우저에서 `http://localhost:8080` 접속
 
----
 
-## 프로젝트 구조
-
-```
-src/main/java/com/example/demo/TEST_001/
-├── controller/
-│   ├── IndexController.java          # 메인 페이지
-│   ├── AuthController.java           # 로그인/회원가입
-│   ├── IngredientController.java     # 식재료 관리
-│   ├── RecipeController.java         # 레시피 검색/상세
-│   ├── UserRecipeController.java     # 사용자 레시피 게시판
-│   ├── FoodRecognitionController.java # AI 음식 인식
-│   └── StatisticsController.java     # 통계
-├── service/
-│   ├── IngredientService.java
-│   ├── RecipeService.java
-│   ├── UserRecipeService.java
-│   ├── FoodRecognitionService.java
-│   └── ...
-├── repository/
-│   └── ...
-└── dto/
-    └── ...
-
-src/main/resources/
-├── mapper/                           # MyBatis XML
-├── templates/                        # Thymeleaf 템플릿
-└── application.yml                   # 설정 파일
-
-database/
-├── 1_schema.sql                      # 기본 스키마
-├── 2_user_recipe_match_schema.sql    # 매칭 테이블
-└── 3_user_recipe_schema.sql          # 레시피 테이블
-```
-
----
-
-## 주요 API 엔드포인트
-
-### 식재료
-| Method | URL | 설명 |
-|--------|-----|------|
-| GET | `/ingredient/list` | 내 식재료 목록 |
-| GET | `/ingredient/quick-add` | 빠른 추가 폼 |
-| GET | `/ingredient/add` | 상세 추가 폼 |
-| GET | `/ingredient/ai-recognition` | AI 인식 페이지 |
-
-### 레시피
-| Method | URL | 설명 |
-|--------|-----|------|
-| GET | `/recipe/list` | 레시피 목록 (매칭 포함) |
-| GET | `/recipe/detail/{id}` | 레시피 상세 |
-| GET | `/recipe/random` | 랜덤 추천 |
-
-### 사용자 레시피
-| Method | URL | 설명 |
-|--------|-----|------|
-| GET | `/recipe/my-recipes` | 내 레시피 목록 |
-| GET | `/recipe/create` | 레시피 작성 폼 |
-| POST | `/recipe/create` | 레시피 등록 |
-| GET | `/recipe/edit/{id}` | 레시피 수정 폼 |
-| POST | `/recipe/delete/{id}` | 레시피 삭제 |
-
----
