@@ -27,7 +27,7 @@
 ---
 
 ## 주요 기능
-<img width="1504" height="801" alt="image" src="https://github.com/user-attachments/assets/ad7c721e-4fa5-42a8-8ad6-e86a78e5aac2" />
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/ad7c721e-4fa5-42a8-8ad6-e86a78e5aac2" />
 
 ---
 
