@@ -158,6 +158,196 @@
             color: #888;
             font-size: 12px;
         }
+
+        /* 알림 관련 스타일 */
+        .notification-wrapper {
+            display: inline-block;
+            position: relative;
+            margin-right: 15px;
+            vertical-align: middle;
+        }
+
+        .notification-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            padding: 5px 8px;
+            font-size: 20px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .notification-btn:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: #ff4444;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 11px;
+            font-weight: bold;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .notification-panel {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 320px;
+            max-height: 400px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .notification-header button {
+            background: none;
+            border: none;
+            color: #2e7d32;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .notification-header button:hover {
+            background: #e8f5e9;
+        }
+
+        .notification-list {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f5f5f5;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .notification-item:hover {
+            background: #fafafa;
+        }
+
+        .notification-item.unread {
+            background: #e8f5e9;
+        }
+
+        .notification-item.unread:hover {
+            background: #c8e6c9;
+        }
+
+        .notification-item .title {
+            font-weight: bold;
+            font-size: 13px;
+            margin-bottom: 4px;
+            color: #333;
+        }
+
+        .notification-item .message {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+
+        .notification-item .time {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .notification-empty {
+            padding: 40px 20px;
+            text-align: center;
+            color: #999;
+        }
+
+        /* 토스트 알림 스타일 */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #4CAF50, #66BB6A);
+            color: white;
+            padding: 16px 50px 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 2000;
+            display: none;
+            animation: slideInRight 0.3s ease-out;
+            max-width: 350px;
+        }
+
+        .toast-notification.warning {
+            background: linear-gradient(135deg, #FF9800, #FFB74D);
+        }
+
+        .toast-notification.danger {
+            background: linear-gradient(135deg, #f44336, #FF6B6B);
+        }
+
+        .toast-notification.show {
+            display: block;
+        }
+
+        .toast-notification .toast-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .toast-notification .toast-message {
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .toast-notification .toast-close {
+            position: absolute;
+            top: 12px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 20px;
+            opacity: 0.8;
+        }
+
+        .toast-notification .toast-close:hover {
+            opacity: 1;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body>
@@ -170,7 +360,27 @@
 
     <div class="user-info">
         <span th:if="${session.loginUser != null}">
+            <!-- 알림 아이콘 -->
+            <div class="notification-wrapper" id="notificationWrapper">
+                <button class="notification-btn" id="notificationBtn" onclick="toggleNotificationPanel()">
+                    <span>&#128276;</span>
+                    <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+                </button>
+
+                <!-- 알림 패널 -->
+                <div class="notification-panel" id="notificationPanel" style="display: none;">
+                    <div class="notification-header">
+                        <span>알림</span>
+                        <button onclick="markAllAsRead()">모두 읽음</button>
+                    </div>
+                    <div class="notification-list" id="notificationList">
+                        <div class="notification-empty">알림이 없습니다.</div>
+                    </div>
+                </div>
+            </div>
+
             <strong th:text="${session.loginUser.name}">사용자</strong>님 환영합니다!
+            | <a href="/settings/email">설정</a>
             | <a href="/logout">로그아웃</a>
         </span>
         <span th:if="${session.loginUser == null}">
@@ -212,5 +422,241 @@
         냉털이 LeftOut &copy; 2024
     </div>
 </div>
+
+<!-- 토스트 알림 컨테이너 -->
+<div id="toastNotification" class="toast-notification">
+    <button class="toast-close" onclick="closeToast()">&times;</button>
+    <div class="toast-title"></div>
+    <div class="toast-message"></div>
+</div>
+
+<!-- 알림 JavaScript (로그인 시에만) -->
+<script th:if="${session.loginUser != null}">
+    // SSE 연결
+    let eventSource = null;
+    let reconnectAttempts = 0;
+    const MAX_RECONNECT_ATTEMPTS = 5;
+
+    // 브라우저 알림 권한 요청
+    function requestNotificationPermission() {
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }
+
+    // SSE 연결 시작
+    function connectSSE() {
+        if (eventSource) {
+            eventSource.close();
+        }
+
+        eventSource = new EventSource('/notification/subscribe');
+
+        // 연결 성공
+        eventSource.addEventListener('connect', function(e) {
+            console.log('SSE 연결 성공');
+            reconnectAttempts = 0;
+        });
+
+        // 안읽은 알림 개수 업데이트
+        eventSource.addEventListener('unread-count', function(e) {
+            updateBadge(parseInt(e.data));
+        });
+
+        // 새 알림 수신
+        eventSource.addEventListener('notification', function(e) {
+            const notification = JSON.parse(e.data);
+            console.log('새 알림:', notification);
+
+            // 토스트 표시
+            showToastNotification(notification);
+
+            // 브라우저 알림
+            showBrowserNotification(notification);
+
+            // 알림 목록 새로고침
+            loadNotifications();
+        });
+
+        // 에러 처리
+        eventSource.onerror = function(e) {
+            console.error('SSE 연결 오류');
+            eventSource.close();
+
+            // 재연결 시도
+            if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                reconnectAttempts++;
+                console.log('재연결 시도:', reconnectAttempts);
+                setTimeout(connectSSE, 3000 * reconnectAttempts);
+            }
+        };
+    }
+
+    // 뱃지 업데이트
+    function updateBadge(count) {
+        const badge = document.getElementById('notificationBadge');
+        if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : count;
+            badge.style.display = 'inline-block';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    // 알림 패널 토글
+    function toggleNotificationPanel() {
+        const panel = document.getElementById('notificationPanel');
+        if (panel.style.display === 'none') {
+            panel.style.display = 'block';
+            loadNotifications();
+        } else {
+            panel.style.display = 'none';
+        }
+    }
+
+    // 알림 목록 로드
+    async function loadNotifications() {
+        try {
+            const response = await fetch('/notification/list');
+            const data = await response.json();
+
+            if (data.success) {
+                renderNotifications(data.notifications);
+                updateBadge(data.unreadCount);
+            }
+        } catch (error) {
+            console.error('알림 로드 오류:', error);
+        }
+    }
+
+    // 알림 목록 렌더링
+    function renderNotifications(notifications) {
+        const list = document.getElementById('notificationList');
+
+        if (!notifications || notifications.length === 0) {
+            list.innerHTML = '<div class="notification-empty">알림이 없습니다.</div>';
+            return;
+        }
+
+        list.innerHTML = notifications.map(n => `
+            <div class="notification-item ${n.isRead ? '' : 'unread'}"
+                 onclick="handleNotificationClick(${n.notificationId}, ${n.ingredientId || 'null'})">
+                <div class="title">${escapeHtml(n.title)}</div>
+                <div class="message">${escapeHtml(n.message)}</div>
+                <div class="time">${formatTime(n.createdAt)}</div>
+            </div>
+        `).join('');
+    }
+
+    // 알림 클릭 처리
+    async function handleNotificationClick(notificationId, ingredientId) {
+        // 읽음 처리
+        await fetch(`/notification/read/${notificationId}`, { method: 'POST' });
+
+        // 식재료 상세 페이지로 이동
+        if (ingredientId && ingredientId !== 'null') {
+            window.location.href = `/ingredient/detail/${ingredientId}`;
+        } else {
+            loadNotifications();
+        }
+    }
+
+    // 모두 읽음 처리
+    async function markAllAsRead() {
+        await fetch('/notification/read-all', { method: 'POST' });
+        loadNotifications();
+    }
+
+    // 토스트 알림 표시
+    function showToastNotification(notification) {
+        const toast = document.getElementById('toastNotification');
+
+        // 타입에 따른 스타일
+        toast.className = 'toast-notification';
+        if (notification.type === 'EXPIRY_DDAY') {
+            toast.classList.add('danger');
+        } else if (notification.type === 'EXPIRY_D1') {
+            toast.classList.add('warning');
+        }
+
+        toast.querySelector('.toast-title').textContent = notification.title;
+        toast.querySelector('.toast-message').textContent = notification.message;
+        toast.classList.add('show');
+
+        // 5초 후 자동 닫기
+        setTimeout(closeToast, 5000);
+    }
+
+    function closeToast() {
+        const toast = document.getElementById('toastNotification');
+        if (toast) {
+            toast.classList.remove('show');
+        }
+    }
+
+    // 브라우저 알림 표시
+    function showBrowserNotification(notification) {
+        if ('Notification' in window && Notification.permission === 'granted') {
+            const n = new Notification(notification.title, {
+                body: notification.message,
+                icon: '/images/notification-icon.png',
+                tag: 'expiry-' + notification.notificationId
+            });
+
+            n.onclick = function() {
+                window.focus();
+                if (notification.ingredientId) {
+                    window.location.href = `/ingredient/detail/${notification.ingredientId}`;
+                }
+                n.close();
+            };
+
+            setTimeout(() => n.close(), 5000);
+        }
+    }
+
+    // 유틸리티 함수들
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function formatTime(dateStr) {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        const now = new Date();
+        const diff = now - date;
+
+        if (diff < 60000) return '방금 전';
+        if (diff < 3600000) return Math.floor(diff / 60000) + '분 전';
+        if (diff < 86400000) return Math.floor(diff / 3600000) + '시간 전';
+        return Math.floor(diff / 86400000) + '일 전';
+    }
+
+    // 패널 외부 클릭 시 닫기
+    document.addEventListener('click', function(e) {
+        const wrapper = document.getElementById('notificationWrapper');
+        const panel = document.getElementById('notificationPanel');
+        if (wrapper && panel && !wrapper.contains(e.target)) {
+            panel.style.display = 'none';
+        }
+    });
+
+    // 페이지 로드 시 초기화
+    document.addEventListener('DOMContentLoaded', function() {
+        requestNotificationPermission();
+        connectSSE();
+        loadNotifications();
+    });
+
+    // 페이지 종료 시 SSE 연결 해제
+    window.addEventListener('beforeunload', function() {
+        if (eventSource) {
+            eventSource.close();
+        }
+    });
+</script>
 </body>
 </html>

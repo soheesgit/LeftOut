@@ -46,6 +46,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "/login",                     // 로그인 페이지
                         "/signup",                    // 회원가입 페이지
                         "/logout",                    // 로그아웃
+                        "/notification/subscribe",    // SSE 알림 구독
+                        "/notification/unread-count", // 안읽은 알림 개수
                         "/recipe/all-recipes",        // 전체 레시피 목록 (공개)
                         "/recipe/user-recipe/**",     // 레시피 상세보기 (공개)
                         "/css/**",                    // CSS 파일

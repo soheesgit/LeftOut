@@ -41,6 +41,9 @@ dependencies {
 
 	// JSON 처리를 위한 Jackson (Spring Boot에 기본 포함되지만 명시적으로 추가)
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+	// 이메일 발송
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 }
 
 tasks.named('test') {

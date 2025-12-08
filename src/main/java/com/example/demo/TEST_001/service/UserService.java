@@ -57,4 +57,24 @@ public class UserService {
     public boolean checkUsername(String username) {
         return userRepository.existsByUsername(username);
     }
+
+    // ID로 사용자 조회
+    @Transactional(readOnly = true)
+    public UserDTO getUserById(Long userId) {
+        return userRepository.findById(userId);
+    }
+
+    // 이메일 설정 업데이트
+    @Transactional
+    public void updateEmailSettings(Long userId, String email, Boolean emailNotificationEnabled) {
+        // 이메일 중복 체크 (다른 사용자가 사용 중인지)
+        if (email != null && !email.isBlank()) {
+            UserDTO existing = userRepository.findByEmail(email);
+            if (existing != null && !existing.getId().equals(userId)) {
+                throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+            }
+        }
+        userRepository.updateEmailSettings(userId, email, emailNotificationEnabled);
+        log.info("이메일 설정 업데이트: userId={}, email={}, enabled={}", userId, email, emailNotificationEnabled);
+    }
 }

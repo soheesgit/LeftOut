@@ -23,7 +23,7 @@ public class FoodRecognitionService {
     private final FileUploadService fileUploadService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Value("${huggingface.api.key}")
+    @Value("${huggingface.api.key:}")
     private String apiKey;
 
     @Value("${huggingface.api.base-url}")

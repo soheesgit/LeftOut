@@ -7,9 +7,11 @@
         INSERT INTO users(
                          username,
                          password,
-                         name
+                         name,
+                         email,
+                         email_notification_enabled
                         )
-        VALUES          (#{username}, #{password}, #{name})
+        VALUES          (#{username}, #{password}, #{name}, #{email}, #{emailNotificationEnabled})
     </insert>
 
     <!-- 아이디로 사용자 조회 (로그인 시 사용) -->
@@ -18,6 +20,8 @@
                username,
                password,
                name,
+               email,
+               email_notification_enabled as emailNotificationEnabled,
                created_at
           FROM users
          WHERE username = #{username}
@@ -29,5 +33,39 @@
           FROM users
          WHERE username = #{username}
     </select>
+
+    <!-- ID로 사용자 조회 -->
+    <select id="findById" parameterType="long" resultType="user">
+        SELECT id,
+               username,
+               password,
+               name,
+               email,
+               email_notification_enabled as emailNotificationEnabled,
+               created_at
+          FROM users
+         WHERE id = #{id}
+    </select>
+
+    <!-- 이메일로 사용자 조회 -->
+    <select id="findByEmail" parameterType="String" resultType="user">
+        SELECT id,
+               username,
+               password,
+               name,
+               email,
+               email_notification_enabled as emailNotificationEnabled,
+               created_at
+          FROM users
+         WHERE email = #{email}
+    </select>
+
+    <!-- 이메일 설정 업데이트 -->
+    <update id="updateEmailSettings" parameterType="map">
+        UPDATE users
+           SET email = #{email},
+               email_notification_enabled = #{emailNotificationEnabled}
+         WHERE id = #{userId}
+    </update>
 
 </mapper>

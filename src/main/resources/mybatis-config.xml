@@ -16,5 +16,8 @@
         <!-- 사용자 관리 -->
         <typeAlias type="com.example.demo.TEST_001.dto.UserDTO" alias="user"></typeAlias>
 
+        <!-- 알림 시스템 -->
+        <typeAlias type="com.example.demo.TEST_001.dto.NotificationDTO" alias="notification"></typeAlias>
+
     </typeAliases>
 </configuration>
