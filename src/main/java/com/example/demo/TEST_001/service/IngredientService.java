@@ -96,6 +96,18 @@ public class IngredientService {
             }
         }
 
+        // 카테고리 필수 검증 (자동 설정 후에도 없으면 오류)
+        if (ingredientDTO.getCategoryId() == null) {
+            throw new IllegalArgumentException("카테고리를 선택해주세요.");
+        }
+
+        // 날짜 유효성 검증 (유통기한은 구매일보다 이전일 수 없음)
+        if (ingredientDTO.getExpiryDate() != null && ingredientDTO.getPurchaseDate() != null) {
+            if (ingredientDTO.getExpiryDate().isBefore(ingredientDTO.getPurchaseDate())) {
+                throw new IllegalArgumentException("유통기한은 구매일보다 이전일 수 없습니다.");
+            }
+        }
+
         ingredientRepository.save(ingredientDTO);
 
         // 매칭 점수 비동기 재계산

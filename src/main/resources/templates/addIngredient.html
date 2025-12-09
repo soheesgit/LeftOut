@@ -73,7 +73,7 @@
         <a href="/ingredient/list" style="color: #666; text-decoration: none;">목록으로</a>
     </div>
 
-    <form action="/ingredient/add" method="post" name="addForm">
+    <form action="/ingredient/add" method="post" name="addForm" onsubmit="return validateForm()">
         <div class="form-group">
             <label for="ingredientName">식재료명 *</label>
             <input type="text" id="ingredientName" name="ingredientName" required
@@ -208,6 +208,31 @@
 
         function goList() {
             location.href = '/ingredient/list';
+        }
+
+        // 폼 제출 전 검증
+        function validateForm() {
+            const categoryId = document.getElementById('categoryId').value;
+            const purchaseDate = document.getElementById('purchaseDate').value;
+            const expiryDate = document.getElementById('expiryDate').value;
+
+            // 카테고리 검증
+            if (!categoryId) {
+                alert('카테고리를 선택해주세요.');
+                document.getElementById('categoryId').focus();
+                return false;
+            }
+
+            // 날짜 검증 (유통기한이 구매일보다 이전인 경우)
+            if (purchaseDate && expiryDate) {
+                if (new Date(expiryDate) < new Date(purchaseDate)) {
+                    alert('유통기한은 구매일보다 이전일 수 없습니다.');
+                    document.getElementById('expiryDate').focus();
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         // URL 파라미터에서 식재료명 가져오기 (AI 인식 결과)
