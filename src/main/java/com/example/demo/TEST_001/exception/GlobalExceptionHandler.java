@@ -1,0 +1,119 @@
+package com.example.demo.TEST_001.exception;
+
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * 전역 예외 처리 핸들러
+ * 모든 Controller에서 발생하는 예외를 잡아서 처리
+ */
+@Slf4j
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    /**
+     * 일반 페이지 요청에서 발생한 예외 처리
+     * Whitelabel Error Page 대신 사용자 친화적인 에러 페이지 표시
+     */
+    @ExceptionHandler(Exception.class)
+    public Object handleException(Exception e, HttpServletRequest request, Model model) {
+        log.error("예외 발생: {} - {}", request.getRequestURI(), e.getMessage(), e);
+
+        // AJAX 요청인지 확인
+        String ajaxHeader = request.getHeader("X-Requested-With");
+        String acceptHeader = request.getHeader("Accept");
+        boolean isAjax = "XMLHttpRequest".equals(ajaxHeader) ||
+                (acceptHeader != null && acceptHeader.contains("application/json"));
+
+        if (isAjax) {
+            // AJAX 요청이면 JSON 응답
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", getUserFriendlyMessage(e));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+
+        // 일반 요청이면 에러 페이지로 이동
+        model.addAttribute("errorMessage", getUserFriendlyMessage(e));
+        model.addAttribute("errorDetail", e.getMessage());
+        return "error";
+    }
+
+    /**
+     * IllegalArgumentException 처리 (입력 검증 실패)
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public Object handleIllegalArgumentException(IllegalArgumentException e, HttpServletRequest request, Model model) {
+        log.warn("입력 검증 실패: {} - {}", request.getRequestURI(), e.getMessage());
+
+        String ajaxHeader = request.getHeader("X-Requested-With");
+        String acceptHeader = request.getHeader("Accept");
+        boolean isAjax = "XMLHttpRequest".equals(ajaxHeader) ||
+                (acceptHeader != null && acceptHeader.contains("application/json"));
+
+        if (isAjax) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        model.addAttribute("errorMessage", e.getMessage());
+        return "error";
+    }
+
+    /**
+     * SecurityException 처리 (권한 없음)
+     */
+    @ExceptionHandler(SecurityException.class)
+    public Object handleSecurityException(SecurityException e, HttpServletRequest request, Model model) {
+        log.warn("권한 없음: {} - {}", request.getRequestURI(), e.getMessage());
+
+        String ajaxHeader = request.getHeader("X-Requested-With");
+        String acceptHeader = request.getHeader("Accept");
+        boolean isAjax = "XMLHttpRequest".equals(ajaxHeader) ||
+                (acceptHeader != null && acceptHeader.contains("application/json"));
+
+        if (isAjax) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "권한이 없습니다.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        }
+
+        model.addAttribute("errorMessage", "권한이 없습니다.");
+        return "error";
+    }
+
+    /**
+     * 사용자 친화적인 에러 메시지 생성
+     */
+    private String getUserFriendlyMessage(Exception e) {
+        String message = e.getMessage();
+
+        if (message == null || message.isEmpty()) {
+            return "처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+        }
+
+        // 기술적인 메시지를 사용자 친화적으로 변환
+        if (message.contains("Connection refused") || message.contains("connect timed out")) {
+            return "서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.";
+        }
+        if (message.contains("NullPointer")) {
+            return "데이터를 찾을 수 없습니다.";
+        }
+        if (message.contains("DataIntegrity")) {
+            return "데이터 처리 중 오류가 발생했습니다.";
+        }
+
+        return message;
+    }
+}

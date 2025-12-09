@@ -58,6 +58,13 @@
             margin: 10px 0;
             display: none;
         }
+        .error-box {
+            padding: 10px;
+            background-color: #ffebee;
+            border-left: 4px solid #f44336;
+            margin: 10px 0;
+            color: #c62828;
+        }
     </style>
 </head>
 <body>
@@ -71,6 +78,11 @@
         <a href="/ingredient/quick-add" style="color: #4CAF50; text-decoration: none;">빠른 추가</a>
         |
         <a href="/ingredient/list" style="color: #666; text-decoration: none;">목록으로</a>
+    </div>
+
+    <!-- 에러 메시지 표시 -->
+    <div class="error-box" th:if="${errorMessage}">
+        <span th:text="${errorMessage}">에러 메시지</span>
     </div>
 
     <form action="/ingredient/add" method="post" name="addForm" onsubmit="return validateForm()">

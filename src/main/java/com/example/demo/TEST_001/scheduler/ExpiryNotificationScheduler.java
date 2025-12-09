@@ -10,9 +10,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -44,6 +46,9 @@ public class ExpiryNotificationScheduler {
             int createdCount = 0;
             int skippedCount = 0;
             int emailSentCount = 0;
+
+            // 사용자별로 식재료 그룹핑 (이메일 통합 발송용)
+            Map<Long, List<Map<String, Object>>> itemsByUser = new HashMap<>();
 
             for (Map<String, Object> item : expiringItems) {
                 Long userId = ((Number) item.get("userId")).longValue();
@@ -82,19 +87,26 @@ public class ExpiryNotificationScheduler {
 
                 if (notification != null) {
                     createdCount++;
-
-                    // 이메일 발송 (비동기)
-                    try {
-                        UserDTO user = getCachedUser(userId);
-                        if (user != null) {
-                            emailService.sendExpiryNotificationEmail(user, notification);
-                            emailSentCount++;
-                        }
-                    } catch (Exception e) {
-                        log.warn("이메일 발송 요청 실패: userId={}", userId, e);
-                    }
+                    // 이메일 발송을 위해 사용자별로 그룹핑
+                    itemsByUser.computeIfAbsent(userId, k -> new ArrayList<>()).add(item);
                 } else {
                     skippedCount++;
+                }
+            }
+
+            // 사용자별로 통합 이메일 발송 (한 사용자당 하나의 이메일)
+            for (Map.Entry<Long, List<Map<String, Object>>> entry : itemsByUser.entrySet()) {
+                Long userId = entry.getKey();
+                List<Map<String, Object>> userItems = entry.getValue();
+
+                try {
+                    UserDTO user = getCachedUser(userId);
+                    if (user != null) {
+                        emailService.sendDailyExpiryDigestEmail(user, userItems);
+                        emailSentCount++;
+                    }
+                } catch (Exception e) {
+                    log.warn("통합 이메일 발송 요청 실패: userId={}", userId, e);
                 }
             }
 
@@ -103,7 +115,7 @@ public class ExpiryNotificationScheduler {
 
             long endTime = System.currentTimeMillis();
             log.info("=== 유통기한 알림 스케줄러 완료 ===");
-            log.info("처리 시간: {}ms, 생성: {}건, 스킵(중복): {}건, 이메일요청: {}건",
+            log.info("처리 시간: {}ms, 알림생성: {}건, 스킵(중복): {}건, 이메일발송: {}명",
                     (endTime - startTime), createdCount, skippedCount, emailSentCount);
 
         } catch (Exception e) {

@@ -70,15 +70,26 @@ public class IngredientController {
 
     // 식재료 추가 처리
     @PostMapping("/add")
-    public String save(@ModelAttribute IngredientDTO ingredientDTO, HttpSession session) {
+    public String save(@ModelAttribute IngredientDTO ingredientDTO, HttpSession session, Model model) {
         // 로그인 확인
         UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
         if (loginUser == null) {
             return "redirect:/login";
         }
 
-        ingredientService.save(loginUser.getId(), ingredientDTO);
-        return "redirect:/ingredient/list";
+        try {
+            ingredientService.save(loginUser.getId(), ingredientDTO);
+            return "redirect:/ingredient/list";
+        } catch (IllegalArgumentException e) {
+            // 입력 검증 실패 시 폼으로 돌아가기
+            List<CategoryDTO> categories = categoryService.getAll();
+            List<IngredientDefaultExpiryDTO> defaultExpiryList = ingredientService.getAllDefaultExpiry();
+            model.addAttribute("categories", categories);
+            model.addAttribute("defaultExpiryList", defaultExpiryList);
+            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("ingredient", ingredientDTO);
+            return "addIngredient";
+        }
     }
 
     // 식재료 상세 조회
@@ -91,6 +102,9 @@ public class IngredientController {
         }
 
         IngredientDTO ingredientDTO = ingredientService.detail(loginUser.getId(), id);
+        if (ingredientDTO == null) {
+            throw new IllegalArgumentException("식재료를 찾을 수 없습니다.");
+        }
         model.addAttribute("ingredient", ingredientDTO);
         return "detailIngredient";
     }
@@ -105,6 +119,9 @@ public class IngredientController {
         }
 
         IngredientDTO ingredientDTO = ingredientService.detail(loginUser.getId(), id);
+        if (ingredientDTO == null) {
+            throw new IllegalArgumentException("식재료를 찾을 수 없습니다.");
+        }
         List<CategoryDTO> categories = categoryService.getAll();
 
         model.addAttribute("ingredient", ingredientDTO);

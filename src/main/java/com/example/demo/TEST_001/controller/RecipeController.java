@@ -189,6 +189,10 @@ public class RecipeController {
             return "redirect:/login";
         }
 
+        if (content == null || content.trim().isEmpty()) {
+            return "redirect:/recipe/detail/" + recipeId;
+        }
+
         RecipeCommentDTO comment = new RecipeCommentDTO();
         comment.setRecipeId(recipeId);
         comment.setUserId(loginUser.getId());
