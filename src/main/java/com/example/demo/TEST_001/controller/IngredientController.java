@@ -245,7 +245,7 @@ public class IngredientController {
             IngredientDTO ingredientDTO = new IngredientDTO();
             ingredientDTO.setIngredientName(request.getIngredientName());
             ingredientDTO.setCategoryId(request.getCategoryId());
-            ingredientDTO.setQuantity(request.getQuantity());
+            ingredientDTO.setQuantity(request.getQuantity() != null ? request.getQuantity().doubleValue() : null);
             ingredientDTO.setUnit(request.getUnit());
             ingredientDTO.setStorageLocation(request.getStorageLocation()); // 보관 위치 설정
             ingredientDTO.setPurchaseDate(LocalDate.now()); // 오늘 날짜
