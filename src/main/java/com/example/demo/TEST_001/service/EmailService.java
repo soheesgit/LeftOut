@@ -36,12 +36,12 @@ public class EmailService {
      */
     private boolean sendEmailViaBrevo(String toEmail, String subject, String htmlContent) {
         if (brevoApiKey == null || brevoApiKey.isBlank()) {
-            log.debug("Brevo API 키가 설정되어 있지 않습니다.");
+            log.info("Brevo API 키가 설정되어 있지 않습니다.");
             return false;
         }
 
         if (senderEmail == null || senderEmail.isBlank()) {
-            log.debug("발신자 이메일이 설정되어 있지 않습니다.");
+            log.info("발신자 이메일이 설정되어 있지 않습니다.");
             return false;
         }
 
@@ -91,12 +91,12 @@ public class EmailService {
     @Async
     public void sendExpiryNotificationEmail(UserDTO user, NotificationDTO notification) {
         if (user.getEmail() == null || user.getEmail().isBlank()) {
-            log.debug("사용자 이메일 미등록: userId={}", user.getId());
+            log.info("사용자 이메일 미등록: userId={}", user.getId());
             return;
         }
 
         if (!Boolean.TRUE.equals(user.getEmailNotificationEnabled())) {
-            log.debug("사용자 이메일 알림 비활성화: userId={}", user.getId());
+            log.info("사용자 이메일 알림 비활성화: userId={}", user.getId());
             return;
         }
 
@@ -209,17 +209,17 @@ public class EmailService {
     @Async
     public void sendDailyExpiryDigestEmail(UserDTO user, List<Map<String, Object>> items) {
         if (user.getEmail() == null || user.getEmail().isBlank()) {
-            log.debug("사용자 이메일 미등록: userId={}", user.getId());
+            log.info("사용자 이메일 미등록: userId={}", user.getId());
             return;
         }
 
         if (!Boolean.TRUE.equals(user.getEmailNotificationEnabled())) {
-            log.debug("사용자 이메일 알림 비활성화: userId={}", user.getId());
+            log.info("사용자 이메일 알림 비활성화: userId={}", user.getId());
             return;
         }
 
         if (items == null || items.isEmpty()) {
-            log.debug("알림할 식재료가 없습니다: userId={}", user.getId());
+            log.info("알림할 식재료가 없습니다: userId={}", user.getId());
             return;
         }
 
