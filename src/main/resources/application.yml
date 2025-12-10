@@ -2,23 +2,6 @@ server:
   port: 8080
 
 spring:
-  # SMTP 설정 (Brevo 또는 Gmail)
-  mail:
-    host: ${MAIL_HOST:smtp.gmail.com}
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:}
-    password: ${MAIL_PASSWORD:}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-            required: true
-          connectiontimeout: 5000
-          timeout: 5000
-          writetimeout: 5000
-
   datasource:
     # Render의 DB_HOST, DB_PORT, DB_NAME 값을 가져와서 주소 완성
     url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&connectTimeout=60000
@@ -56,3 +39,8 @@ huggingface:
     key: ${HF_API_KEY}
     base-url: https://router.huggingface.co/hf-inference/models
     model: google/vit-base-patch16-224
+
+brevo:
+  api:
+    key: ${BREVO_API_KEY:}
+    sender-email: ${BREVO_SENDER_EMAIL:}

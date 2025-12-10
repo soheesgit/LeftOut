@@ -2,41 +2,94 @@ package com.example.demo.TEST_001.service;
 
 import com.example.demo.TEST_001.dto.NotificationDTO;
 import com.example.demo.TEST_001.dto.UserDTO;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class EmailService {
-    private final JavaMailSender mailSender;
+    private final RestTemplate restTemplate;
 
-    @Value("${spring.mail.username:}")
-    private String fromEmail;
+    private static final String BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
+
+    @Value("${brevo.api.key:}")
+    private String brevoApiKey;
+
+    @Value("${brevo.api.sender-email:}")
+    private String senderEmail;
+
+    public EmailService() {
+        this.restTemplate = new RestTemplate();
+    }
+
+    /**
+     * Brevo HTTP API를 통한 이메일 발송
+     */
+    private boolean sendEmailViaBrevo(String toEmail, String subject, String htmlContent) {
+        if (brevoApiKey == null || brevoApiKey.isBlank()) {
+            log.debug("Brevo API 키가 설정되어 있지 않습니다.");
+            return false;
+        }
+
+        if (senderEmail == null || senderEmail.isBlank()) {
+            log.debug("발신자 이메일이 설정되어 있지 않습니다.");
+            return false;
+        }
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("api-key", brevoApiKey);
+
+            Map<String, Object> sender = new HashMap<>();
+            sender.put("name", "냉털이 LeftOut");
+            sender.put("email", senderEmail);
+
+            Map<String, String> recipient = new HashMap<>();
+            recipient.put("email", toEmail);
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("sender", sender);
+            body.put("to", List.of(recipient));
+            body.put("subject", subject);
+            body.put("htmlContent", htmlContent);
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+            ResponseEntity<String> response = restTemplate.exchange(
+                    BREVO_API_URL,
+                    HttpMethod.POST,
+                    request,
+                    String.class
+            );
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("Brevo API 이메일 발송 성공: {}", toEmail);
+                return true;
+            } else {
+                log.error("Brevo API 이메일 발송 실패: status={}, body={}",
+                        response.getStatusCode(), response.getBody());
+                return false;
+            }
+        } catch (Exception e) {
+            log.error("Brevo API 이메일 발송 중 오류: {}", toEmail, e);
+            return false;
+        }
+    }
 
     /**
      * 비동기 이메일 발송 (유통기한 알림용)
      */
     @Async
     public void sendExpiryNotificationEmail(UserDTO user, NotificationDTO notification) {
-        // 이메일 설정 체크
-        if (fromEmail == null || fromEmail.isBlank()) {
-            log.debug("이메일 발송 설정이 되어있지 않습니다.");
-            return;
-        }
-
         if (user.getEmail() == null || user.getEmail().isBlank()) {
             log.debug("사용자 이메일 미등록: userId={}", user.getId());
             return;
@@ -47,24 +100,16 @@ public class EmailService {
             return;
         }
 
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        String subject = buildSubject(notification);
+        String htmlContent = buildHtmlContent(user, notification);
 
-            helper.setFrom(fromEmail, "냉털이 LeftOut");
-            helper.setTo(user.getEmail());
-            helper.setSubject(buildSubject(notification));
-            helper.setText(buildHtmlContent(user, notification), true);
-
-            mailSender.send(message);
+        boolean success = sendEmailViaBrevo(user.getEmail(), subject, htmlContent);
+        if (success) {
             log.info("이메일 발송 성공: userId={}, email={}, type={}",
                     user.getId(), user.getEmail(), notification.getType());
-
-        } catch (MessagingException | UnsupportedEncodingException e) {
+        } else {
             log.error("이메일 발송 실패: userId={}, email={}",
-                    user.getId(), user.getEmail(), e);
-        } catch (Exception e) {
-            log.error("이메일 발송 중 예외 발생: userId={}", user.getId(), e);
+                    user.getId(), user.getEmail());
         }
     }
 
@@ -134,39 +179,28 @@ public class EmailService {
      * 테스트용 이메일 발송
      */
     public boolean sendTestEmail(String toEmail) {
-        if (fromEmail == null || fromEmail.isBlank()) {
-            log.warn("이메일 발송 설정이 되어있지 않습니다.");
-            return false;
-        }
+        String subject = "[냉털이] 테스트 이메일";
+        String htmlContent = """
+            <!DOCTYPE html>
+            <html>
+            <head><meta charset="UTF-8"></head>
+            <body style="font-family: Arial, sans-serif; padding: 20px;">
+                <div style="max-width: 500px; margin: 0 auto; background: #e8f5e9; padding: 30px; border-radius: 12px; text-align: center;">
+                    <h1 style="color: #2e7d32;">&#129482; 테스트 이메일</h1>
+                    <p style="color: #333; font-size: 16px;">이메일 설정이 정상적으로 완료되었습니다!</p>
+                    <p style="color: #666; font-size: 14px;">이제 유통기한 알림을 이메일로 받으실 수 있습니다.</p>
+                </div>
+            </body>
+            </html>
+            """;
 
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-
-            helper.setFrom(fromEmail, "냉털이 LeftOut");
-            helper.setTo(toEmail);
-            helper.setSubject("[냉털이] 테스트 이메일");
-            helper.setText("""
-                <!DOCTYPE html>
-                <html>
-                <head><meta charset="UTF-8"></head>
-                <body style="font-family: Arial, sans-serif; padding: 20px;">
-                    <div style="max-width: 500px; margin: 0 auto; background: #e8f5e9; padding: 30px; border-radius: 12px; text-align: center;">
-                        <h1 style="color: #2e7d32;">&#129482; 테스트 이메일</h1>
-                        <p style="color: #333; font-size: 16px;">이메일 설정이 정상적으로 완료되었습니다!</p>
-                        <p style="color: #666; font-size: 14px;">이제 유통기한 알림을 이메일로 받으실 수 있습니다.</p>
-                    </div>
-                </body>
-                </html>
-                """, true);
-
-            mailSender.send(message);
+        boolean success = sendEmailViaBrevo(toEmail, subject, htmlContent);
+        if (success) {
             log.info("테스트 이메일 발송 성공: {}", toEmail);
-            return true;
-        } catch (Exception e) {
-            log.error("테스트 이메일 발송 실패: {}", toEmail, e);
-            return false;
+        } else {
+            log.error("테스트 이메일 발송 실패: {}", toEmail);
         }
+        return success;
     }
 
     /**
@@ -174,12 +208,6 @@ public class EmailService {
      */
     @Async
     public void sendDailyExpiryDigestEmail(UserDTO user, List<Map<String, Object>> items) {
-        // 이메일 설정 체크
-        if (fromEmail == null || fromEmail.isBlank()) {
-            log.debug("이메일 발송 설정이 되어있지 않습니다.");
-            return;
-        }
-
         if (user.getEmail() == null || user.getEmail().isBlank()) {
             log.debug("사용자 이메일 미등록: userId={}", user.getId());
             return;
@@ -195,24 +223,16 @@ public class EmailService {
             return;
         }
 
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        String subject = "[냉털이] 오늘의 유통기한 알림";
+        String htmlContent = buildDigestHtmlContent(user, items);
 
-            helper.setFrom(fromEmail, "냉털이 LeftOut");
-            helper.setTo(user.getEmail());
-            helper.setSubject("[냉털이] 오늘의 유통기한 알림");
-            helper.setText(buildDigestHtmlContent(user, items), true);
-
-            mailSender.send(message);
+        boolean success = sendEmailViaBrevo(user.getEmail(), subject, htmlContent);
+        if (success) {
             log.info("통합 이메일 발송 성공: userId={}, email={}, 식재료수={}",
                     user.getId(), user.getEmail(), items.size());
-
-        } catch (MessagingException | UnsupportedEncodingException e) {
+        } else {
             log.error("통합 이메일 발송 실패: userId={}, email={}",
-                    user.getId(), user.getEmail(), e);
-        } catch (Exception e) {
-            log.error("통합 이메일 발송 중 예외 발생: userId={}", user.getId(), e);
+                    user.getId(), user.getEmail());
         }
     }
 
