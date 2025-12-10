@@ -10,7 +10,7 @@ import lombok.ToString;
 public class QuickAddRequestDTO {
     private String ingredientName;
     private Integer categoryId;
-    private Double quantity;
+    private Integer quantity;
     private String unit;
     private String storageLocation;  // 보관 위치 (냉장, 냉동, 실온)
 }
