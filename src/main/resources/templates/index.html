@@ -18,37 +18,57 @@
             padding: 20px;
         }
         .container {
-            max-width: 600px;
+            max-width: 1200px;
             margin: 0 auto;
         }
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         .logo {
             margin-bottom: 10px;
         }
         .logo img {
-            width: 80px;
-            height: 80px;
+            width: 150px;
+            height: 150px;
         }
         .brand {
-            font-size: 32px;
+            font-size: 56px;
             font-weight: bold;
             color: #2e7d32;
+            letter-spacing: 2px;
         }
-        .brand-sub {
-            font-size: 14px;
-            color: #666;
-            margin-top: 5px;
+
+        /* 랜덤 추천 버튼 */
+        .random-btn-wrapper {
+            text-align: center;
+            margin-top: 25px;
         }
+        .random-btn {
+            display: inline-block;
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 17px;
+            font-weight: 500;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        .random-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
         .user-info {
             text-align: right;
-            padding: 10px 15px;
+            padding: 12px 18px;
             background: white;
             border-radius: 8px;
             margin-bottom: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 15px;
         }
         .user-info a {
             color: #2e7d32;
@@ -58,16 +78,23 @@
         .user-info a:hover {
             text-decoration: underline;
         }
+
+        /* 2칼럼 그리드 */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
         .menu-section {
             background: white;
             border-radius: 12px;
             padding: 20px;
-            margin-bottom: 15px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         .menu-section h3 {
             color: #333;
-            font-size: 16px;
+            font-size: 20px;
             margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 2px solid #e8f5e9;
@@ -80,87 +107,17 @@
         }
         .menu-list a {
             display: block;
-            padding: 12px 15px;
+            padding: 14px 18px;
             background: #f8f9fa;
             border-radius: 8px;
             text-decoration: none;
             color: #333;
+            font-size: 17px;
             transition: all 0.2s;
         }
         .menu-list a:hover {
             background: #e8f5e9;
             transform: translateX(5px);
-        }
-        .menu-list a.highlight-green {
-            background: linear-gradient(135deg, #4CAF50, #66BB6A);
-            color: white;
-        }
-        .menu-list a.highlight-green:hover {
-            background: linear-gradient(135deg, #43A047, #4CAF50);
-        }
-        .menu-list a.highlight-orange {
-            background: linear-gradient(135deg, #FF9800, #FFB74D);
-            color: white;
-        }
-        .menu-list a.highlight-orange:hover {
-            background: linear-gradient(135deg, #F57C00, #FF9800);
-        }
-        .menu-list a.highlight-red {
-            background: linear-gradient(135deg, #FF6B6B, #FF8A80);
-            color: white;
-        }
-        .menu-list a.highlight-red:hover {
-            background: linear-gradient(135deg, #EF5350, #FF6B6B);
-        }
-        .random-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 15px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        }
-        .random-section h3 {
-            color: white;
-            font-size: 20px;
-            margin-bottom: 10px;
-        }
-        .random-section p {
-            color: rgba(255,255,255,0.85);
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-        .random-btn {
-            display: inline-block;
-            padding: 15px 30px;
-            background: white;
-            color: #667eea;
-            border-radius: 30px;
-            text-decoration: none;
-            font-size: 18px;
-            font-weight: bold;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        .random-btn:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-        }
-        .random-btn .dice {
-            display: inline-block;
-            animation: shake 2s ease-in-out infinite;
-        }
-        @keyframes shake {
-            0%, 100% { transform: rotate(0deg); }
-            10% { transform: rotate(-10deg); }
-            20% { transform: rotate(10deg); }
-            30% { transform: rotate(0deg); }
-        }
-        .footer {
-            text-align: center;
-            margin-top: 30px;
-            color: #888;
-            font-size: 12px;
         }
 
         /* 알림 관련 스타일 */
@@ -352,6 +309,13 @@
                 opacity: 1;
             }
         }
+
+        /* 반응형 - 모바일에서는 1칼럼 */
+        @media (max-width: 768px) {
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -359,7 +323,6 @@
     <div class="header">
         <div class="logo"><img src="/images/logo.png" alt="냉털이 로고"></div>
         <div class="brand">냉털이</div>
-        <div class="brand-sub">LeftOut - 냉장고 털기 프로젝트</div>
     </div>
 
     <div class="user-info">
@@ -392,38 +355,32 @@
         </span>
     </div>
 
-    <div class="menu-section">
-        <h3>🥬 식재료 관리</h3>
-        <ul class="menu-list">
-            <li><a href="/ingredient/list">📋 내 냉장고 보기</a></li>
-            <li><a href="/ingredient/quick-add" class="highlight-green">⚡ 빠른 추가</a></li>
-            <li><a href="/ingredient/add">📝 상세 추가</a></li>
-            <li><a href="/ingredient/ai-recognition">🤖 AI 식재료 인식</a></li>
-            <li><a href="/statistics">📊 통계</a></li>
-        </ul>
+    <div class="menu-grid">
+        <div class="menu-section">
+            <h3>🥬 식재료 관리</h3>
+            <ul class="menu-list">
+                <li><a href="/ingredient/list">📋 내 냉장고 보기</a></li>
+                <li><a href="/ingredient/quick-add">⚡ 빠른 추가</a></li>
+                <li><a href="/ingredient/add">📝 상세 추가</a></li>
+                <li><a href="/ingredient/ai-recognition">🤖 AI 식재료 인식</a></li>
+                <li><a href="/statistics">📊 통계</a></li>
+            </ul>
+        </div>
+
+        <div class="menu-section">
+            <h3>✍️ 레시피 게시판</h3>
+            <ul class="menu-list">
+                <li><a href="/recipe/list">📚 레시피보기</a></li>
+                <li><a href="/recipe/my-recipes">👤 내 레시피</a></li>
+                <li><a href="/recipe/create">➕ 새 레시피 작성</a></li>
+                <li><a href="/recipe/liked-recipes">❤️ 좋아요한 레시피</a></li>
+            </ul>
+        </div>
     </div>
 
-    <!-- 오늘 뭐 먹지? 랜덤 추천 -->
-    <div class="random-section">
-        <h3><span class="dice">🎲</span> 오늘 뭐 먹지?</h3>
-        <p>결정 장애 해결! 랜덤으로 레시피를 추천받아보세요</p>
-        <a href="/recipe/random" class="random-btn">
-            <span class="dice">🎲</span> 랜덤 추천받기
-        </a>
-    </div>
-
-    <div class="menu-section">
-        <h3>✍️ 레시피 게시판</h3>
-        <ul class="menu-list">
-            <li><a href="/recipe/list">📚 사용자 레시피</a></li>
-            <li><a href="/recipe/my-recipes">👤 내 레시피</a></li>
-            <li><a href="/recipe/create" class="highlight-red">➕ 새 레시피 작성</a></li>
-            <li><a href="/recipe/liked-recipes">❤️ 좋아요한 레시피</a></li>
-        </ul>
-    </div>
-
-    <div class="footer">
-        냉털이 LeftOut &copy; 2024
+    <!-- 랜덤 추천 버튼 -->
+    <div class="random-btn-wrapper">
+        <a href="/recipe/random" class="random-btn">🎲 오늘 뭐 먹지?</a>
     </div>
 </div>
 
