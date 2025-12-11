@@ -345,8 +345,10 @@
 <body>
     <div class="container">
         <div class="header-actions">
-            <a href="/recipe/list" class="back-btn">← 목록으로</a>
-            <a href="/" class="back-btn">🏠 홈으로</a>
+            <div style="display: flex; gap: 10px;">
+                <a href="/recipe/list" class="back-btn">← 목록으로</a>
+                <a href="/" class="back-btn">홈으로</a>
+            </div>
             <div>
                 <!-- 좋아요 버튼 -->
                 <button th:if="${loginUser != null}"

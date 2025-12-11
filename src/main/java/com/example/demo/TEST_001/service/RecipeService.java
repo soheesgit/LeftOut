@@ -1,8 +1,11 @@
 package com.example.demo.TEST_001.service;
 
 import com.example.demo.TEST_001.dto.IngredientDTO;
+import com.example.demo.TEST_001.dto.IngredientItemDTO;
 import com.example.demo.TEST_001.dto.RecipeDTO;
+import com.example.demo.TEST_001.dto.RecipeStepDTO;
 import com.example.demo.TEST_001.dto.UserRecipeDTO;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.example.demo.TEST_001.repository.IngredientRepository;
 import com.example.demo.TEST_001.repository.UserRecipeMatchRepository;
 import com.example.demo.TEST_001.repository.UserRecipeRepository;
@@ -505,6 +508,11 @@ public class RecipeService {
                 return null;
             }
 
+            // 사용자 레시피인 경우 JSON 파싱
+            if (!"api".equals(recipe.getSource())) {
+                parseJsonFields(recipe);
+            }
+
             // 조회수 증가
             userRecipeRepository.incrementViewCount(id);
 
@@ -513,6 +521,34 @@ public class RecipeService {
         } catch (Exception e) {
             log.error("통합 레시피 상세 조회 중 오류 발생", e);
             return null;
+        }
+    }
+
+    /**
+     * 사용자 레시피 JSON 필드 파싱 (ingredients, cookingSteps)
+     */
+    private void parseJsonFields(UserRecipeDTO recipe) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            // 재료 리스트 파싱
+            if (recipe.getIngredients() != null && !recipe.getIngredients().isEmpty()) {
+                List<IngredientItemDTO> ingredientList = objectMapper.readValue(
+                        recipe.getIngredients(),
+                        new TypeReference<List<IngredientItemDTO>>() {}
+                );
+                recipe.setIngredientList(ingredientList);
+            }
+
+            // 조리 단계 파싱
+            if (recipe.getCookingSteps() != null && !recipe.getCookingSteps().isEmpty()) {
+                List<RecipeStepDTO> stepList = objectMapper.readValue(
+                        recipe.getCookingSteps(),
+                        new TypeReference<List<RecipeStepDTO>>() {}
+                );
+                recipe.setStepList(stepList);
+            }
+        } catch (Exception e) {
+            log.error("JSON 파싱 오류", e);
         }
     }
 }
