@@ -2,57 +2,81 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="icon" href="data:,">
     <title>식재료 통계</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f8f9fa;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        h1 {
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #e8f5e9 0%, #fff3e0 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background: white;
+            padding: 20px 25px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .page-header h1 {
             color: #333;
+            font-size: 24px;
+            margin: 0;
         }
         .nav-section {
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
         }
         .btn {
-            padding: 10px 20px;
-            margin: 5px;
+            padding: 10px 18px;
             text-decoration: none;
-            border-radius: 5px;
-            display: inline-block;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             border: none;
             cursor: pointer;
             font-size: 14px;
-            transition: all 0.3s;
+            font-weight: 500;
+            transition: all 0.2s;
         }
         .btn-primary {
-            background-color: #4CAF50;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
             color: white;
+            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
         }
         .btn-secondary {
-            background-color: #008CBA;
-            color: white;
+            background: #f5f5f5;
+            color: #555;
         }
-        .btn:hover {
-            opacity: 0.8;
+        .btn-secondary:hover {
+            background: #e8f5e9;
             transform: translateY(-2px);
         }
         .period-toggle {
-            margin: 20px 0;
-            padding: 15px;
+            margin-bottom: 20px;
+            padding: 20px 25px;
             background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             text-align: center;
         }
         .period-toggle h3 {
@@ -87,8 +111,8 @@
         .stats-card {
             background-color: #fff;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         .stats-card.full-width {
             grid-column: 1 / -1;
@@ -268,14 +292,15 @@
     </style>
 </head>
 <body>
-    <h1>📊 식재료 통계</h1>
-
-    <!-- Navigation -->
-    <div class="nav-section">
-        <a href="/ingredient/list" class="btn btn-secondary">📋 식재료 목록</a>
-        <a href="/ingredient/add" class="btn btn-primary">➕ 식재료 추가</a>
-        <a href="/category/manage" class="btn btn-secondary">🗂️ 카테고리 관리</a>
-        <a href="/" class="btn btn-secondary">🏠 메인 페이지</a>
+<div class="container">
+    <!-- 헤더 -->
+    <div class="page-header">
+        <h1>📊 식재료 통계</h1>
+        <div class="nav-section">
+            <a href="/ingredient/list" class="btn btn-secondary">📋 내 냉장고</a>
+            <a href="/ingredient/add" class="btn btn-primary">➕ 식재료 추가</a>
+            <a href="/" class="btn btn-secondary">🏠 메인</a>
+        </div>
     </div>
 
     <!-- Period Toggle -->
@@ -368,6 +393,7 @@
             <div id="storageEfficiencyInfo" class="efficiency-info"></div>
         </div>
     </div>
+</div>
 
     <script th:inline="javascript">
         /*<![CDATA[*/

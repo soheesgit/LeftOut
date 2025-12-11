@@ -139,7 +139,6 @@ INSERT INTO ingredient_default_expiry (ingredient_name, default_expiry_days, cat
 ('콜리플라워', 7, 1),
 ('오이', 7, 1),
 ('주키니호박', 7, 1),
-('아티초크', 7, 1),
 ('피망', 7, 1),
 ('버섯', 5, 1),
 ('주름버섯', 5, 1),
@@ -147,9 +146,6 @@ INSERT INTO ingredient_default_expiry (ingredient_name, default_expiry_days, cat
 ('그물버섯', 5, 1),
 ('목이버섯', 14, 1),
 ('싸리버섯', 5, 1),
-('스파게티호박', 14, 1),
-('버터넛호박', 30, 1),
-('도토리호박', 30, 1),
 ('옥수수', 5, 1),
 
 -- 빵/곡류 (category_id: 6 - 기타)
@@ -185,7 +181,6 @@ INSERT INTO ingredient_default_expiry (ingredient_name, default_expiry_days, cat
 ('해삼', 3, 7),
 ('성게', 2, 7),
 ('복어', 2, 7),
-('철갑상어', 2, 7),
 ('장어', 2, 7),
 ('은연어', 2, 7),
 
@@ -199,7 +194,6 @@ INSERT INTO ingredient_default_expiry (ingredient_name, default_expiry_days, cat
 
 -- 채소류 (category_id: 1)
 ('양배추', 14, 1),
-('카르돈', 7, 1),
 
 -- 기타 (category_id: 6)
 ('도토리', 30, 6),
@@ -211,22 +205,14 @@ INSERT INTO ingredient_default_expiry (ingredient_name, default_expiry_days, cat
 ('던지니스크랩', 2, 7),
 ('돌게', 2, 7),
 ('농게', 2, 7),
-('소라게', 2, 7),
-('등각류', 2, 7),
 ('달팽이', 2, 7),
-('민달팽이', 2, 7),
-('군부', 2, 7),
-('갯민숭달팽이', 2, 7),
-('불가사리', 2, 7),
 
 -- 생선류 추가 (category_id: 7)
 ('물고기', 2, 7),
 ('잉어', 2, 7),
 ('가아', 2, 7),
-('쏠배감펭', 2, 7),
 ('꼬치고기', 2, 7),
 
 -- 가금류 추가 (category_id: 2 - 육류)
 ('수탉', 2, 2),
-('수오리', 3, 2),
-('바다비오리', 3, 2);
+('수오리', 3, 2);

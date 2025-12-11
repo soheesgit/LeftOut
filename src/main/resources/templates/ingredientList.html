@@ -2,12 +2,20 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="/images/logo.png">
-    <title>냉장고 식재료 관리</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <title>내 냉장고 - 냉털이</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #e8f5e9 0%, #fff3e0 100%);
+            min-height: 100vh;
+            padding: 20px;
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
         }
@@ -17,139 +25,352 @@
         body.fade-out {
             opacity: 0;
         }
-        h1 {
-            color: #333;
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
         }
+
+        /* 헤더 */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background: white;
+            padding: 20px 25px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .page-header h1 {
+            color: #333;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #f5f5f5;
+            color: #333;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .back-btn:hover {
+            background: #e8f5e9;
+            transform: translateX(-3px);
+        }
+
+        /* 필터 섹션 */
         .filter-section {
-            margin: 20px 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-            border-radius: 8px;
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
         }
         .filter-row {
             display: flex;
-            gap: 10px;
+            gap: 15px;
             align-items: center;
             flex-wrap: wrap;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .filter-row:last-child {
+            margin-bottom: 0;
         }
         .search-box {
             display: flex;
-            gap: 5px;
+            gap: 8px;
             align-items: center;
         }
-        .search-input {
-            padding: 8px 12px;
+        .filter-label {
+            font-weight: 600;
+            color: #555;
             font-size: 14px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            width: 250px;
-            transition: border-color 0.3s;
+            white-space: nowrap;
+        }
+        .search-input {
+            padding: 12px 16px;
+            font-size: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            width: 280px;
+            background: #fafafa;
+            transition: all 0.2s;
         }
         .search-input:focus {
             outline: none;
             border-color: #4CAF50;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1);
         }
-        .search-btn {
-            padding: 8px 16px;
-            background-color: #4CAF50;
-            color: white;
+        select {
+            padding: 12px 16px;
+            font-size: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            background: white;
+        }
+
+        /* 버튼 스타일 */
+        .btn {
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             border: none;
-            border-radius: 5px;
             cursor: pointer;
             font-size: 14px;
-            transition: background-color 0.3s;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #555;
+        }
+        .btn-secondary:hover {
+            background: #e8f5e9;
+            transform: translateY(-2px);
+        }
+        .btn-ai {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            box-shadow: 0 2px 6px rgba(33, 150, 243, 0.3);
+        }
+        .btn-ai:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #66BB6A 0%, #4CAF50 100%);
+            color: white;
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+            color: white;
+        }
+        .btn-danger:hover {
+            transform: translateY(-2px);
+        }
+        .btn-sm {
+            padding: 8px 14px;
+            font-size: 13px;
+        }
+        .search-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
         }
         .search-btn:hover {
-            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        /* 테이블 카드 */
+        .table-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
         }
         th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
+            padding: 15px 18px;
             text-align: left;
         }
         th {
-            background-color: #4CAF50;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
             color: white;
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
         }
-        tr:hover {
-            background-color: #f5f5f5;
+        td {
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            color: #333;
         }
-        .expired {
-            background-color: #ffcccc;
+        tr:last-child td {
+            border-bottom: none;
         }
-        .expiring-soon {
-            background-color: #fff4cc;
+        tr:hover td {
+            background-color: #fafafa;
         }
+        .expired td {
+            background-color: #ffebee !important;
+        }
+        .expired:hover td {
+            background-color: #ffcdd2 !important;
+        }
+        .expiring-soon td {
+            background-color: #fff8e1 !important;
+        }
+        .expiring-soon:hover td {
+            background-color: #ffecb3 !important;
+        }
+
+        /* D-day 스타일 */
         .d-day {
-            font-weight: bold;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            display: inline-block;
         }
         .d-day.expired {
-            color: red;
+            background: #ffebee;
+            color: #c62828;
         }
         .d-day.expiring-soon {
-            color: orange;
+            background: #fff3e0;
+            color: #ef6c00;
         }
         .d-day.safe {
-            color: green;
+            background: #e8f5e9;
+            color: #2e7d32;
         }
-        .btn {
-            padding: 10px 20px;
-            margin: 5px;
-            text-decoration: none;
-            border-radius: 5px;
-            display: inline-block;
-            border: none;
-            cursor: pointer;
+
+        /* 보관 위치 아이콘 */
+        .storage-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 500;
         }
-        .btn-primary {
-            background-color: #4CAF50;
-            color: white;
+        .storage-냉장 {
+            background: #e3f2fd;
+            color: #1565c0;
         }
-        .btn-secondary {
-            background-color: #008CBA;
-            color: white;
+        .storage-냉동 {
+            background: #e1f5fe;
+            color: #0277bd;
         }
-        .btn-success {
-            background-color: #5cb85c;
-            color: white;
+        .storage-실온 {
+            background: #fff3e0;
+            color: #ef6c00;
         }
-        .btn-danger {
-            background-color: #d9534f;
-            color: white;
-        }
-        .btn:hover {
-            opacity: 0.8;
-        }
+
+        /* 액션 버튼 */
         .action-buttons {
             display: flex;
-            gap: 5px;
+            gap: 6px;
             flex-wrap: wrap;
         }
-        select {
-            padding: 8px;
-            font-size: 14px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
+
+        /* 빈 목록 */
+        .empty-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
         }
-        .filter-label {
-            font-weight: bold;
-            margin-right: 5px;
+        .empty-message .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .empty-message p {
+            font-size: 16px;
+        }
+
+        /* 카테고리 배지 */
+        .category-badge {
+            background: #f5f5f5;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* 메모 셀 */
+        .memo-cell {
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #888;
+            font-size: 13px;
+        }
+
+        /* 반응형 */
+        @media (max-width: 1200px) {
+            .filter-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .search-input {
+                width: 100%;
+                flex: 1;
+            }
+        }
+        @media (max-width: 900px) {
+            .table-card {
+                overflow-x: auto;
+            }
+            table {
+                min-width: 900px;
+            }
+            .page-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>냉장고 식재료 관리</h1>
+<div class="container">
+    <!-- 헤더 -->
+    <div class="page-header">
+        <h1>🥬 내 냉장고</h1>
+        <a href="/" class="back-btn">← 메인으로</a>
+    </div>
 
+    <!-- 필터 섹션 -->
     <div class="filter-section">
         <div class="filter-row">
             <div class="search-box">
-                <span class="filter-label">🔍 검색:</span>
+                <span class="filter-label">🔍 검색</span>
                 <input type="text"
                        id="searchInput"
                        class="search-input"
@@ -160,7 +381,7 @@
             </div>
 
             <div class="search-box">
-                <span class="filter-label">📂 카테고리:</span>
+                <span class="filter-label">📂 카테고리</span>
                 <select id="categoryFilter">
                     <option value="0" th:selected="${selectedCategory == 0}">전체</option>
                     <option th:each="category : ${categories}"
@@ -172,7 +393,7 @@
             </div>
 
             <div class="search-box">
-                <span class="filter-label">🧊 보관 위치:</span>
+                <span class="filter-label">📍 보관 위치</span>
                 <select id="storageFilter">
                     <option value="" th:selected="${storageLocation == null or storageLocation == ''}">전체</option>
                     <option value="냉장" th:selected="${storageLocation == '냉장'}">❄️ 냉장</option>
@@ -184,108 +405,123 @@
 
         <div class="filter-row">
             <a href="/ingredient/add" class="btn btn-primary">➕ 식재료 추가</a>
-            <a href="/ingredient/ai-recognition" class="btn" style="background-color: #2196F3; color: white;">📷 AI 사진 인식</a>
+            <a href="/ingredient/ai-recognition" class="btn btn-ai">🤖 AI 사진 인식</a>
             <a href="/ingredient/quick-add" class="btn btn-secondary">⚡ 빠른 추가</a>
             <a href="/statistics" class="btn btn-secondary">📊 통계</a>
-            <a href="/category/manage" class="btn btn-secondary">🗂️ 카테고리 관리</a>
-            <a href="/" class="btn btn-secondary">🏠 메인 페이지</a>
         </div>
     </div>
 
-    <table>
-        <tr>
-            <th>식재료명</th>
-            <th>카테고리</th>
-            <th>보관 위치</th>
-            <th>구매일</th>
-            <th>유통기한</th>
-            <th>D-day</th>
-            <th>수량</th>
-            <th>메모</th>
-            <th>작업</th>
-        </tr>
-        <tr th:if="${#lists.isEmpty(ingredientList)}">
-            <td colspan="9" style="text-align: center;">등록된 식재료가 없습니다.</td>
-        </tr>
-        <tr th:each="ingredient : ${ingredientList}"
-            th:classappend="${ingredient.daysUntilExpiry != null and ingredient.daysUntilExpiry < 0} ? 'expired' :
-                           (${ingredient.daysUntilExpiry != null and ingredient.daysUntilExpiry <= 3} ? 'expiring-soon' : '')">
-            <td th:text="${ingredient.ingredientName}"></td>
-            <td th:text="${ingredient.categoryName}"></td>
-            <td>
-                <span th:if="${ingredient.storageLocation == '냉장'}">❄️ 냉장</span>
-                <span th:if="${ingredient.storageLocation == '냉동'}">🧊 냉동</span>
-                <span th:if="${ingredient.storageLocation == '실온'}">🌡️ 실온</span>
-            </td>
-            <td th:text="${#temporals.format(ingredient.purchaseDate, 'yyyy-MM-dd')}"></td>
-            <td th:text="${#temporals.format(ingredient.expiryDate, 'yyyy-MM-dd')}"></td>
-            <td>
-                <span class="d-day"
-                      th:classappend="${ingredient.daysUntilExpiry != null and ingredient.daysUntilExpiry < 0} ? 'expired' :
-                                     (${ingredient.daysUntilExpiry != null and ingredient.daysUntilExpiry <= 3} ? 'expiring-soon' : 'safe')"
-                      th:text="${ingredient.daysUntilExpiry != null and ingredient.daysUntilExpiry < 0} ?
-                               ('D+' + ${-ingredient.daysUntilExpiry} + ' (기한만료)') :
-                               (${ingredient.daysUntilExpiry != null and ingredient.daysUntilExpiry == 0} ? 'D-Day' :
-                               ('D-' + ${ingredient.daysUntilExpiry}))">
-                </span>
-            </td>
-            <td th:text="${ingredient.quantity != null ? ingredient.quantity + (ingredient.unit != null ? ingredient.unit : '') : '-'}"></td>
-            <td th:text="${ingredient.memo}"></td>
-            <td>
-                <div class="action-buttons">
-                    <a th:href="@{/ingredient/detail/{id}(id=${ingredient.ingredientId})}"
-                       class="btn btn-secondary">상세</a>
-                    <a th:href="@{/ingredient/consume/{id}(id=${ingredient.ingredientId})}"
-                       class="btn btn-success"
-                       onclick="return confirm('이 식재료를 소비 완료 처리하시겠습니까?')">✓ 다 먹음</a>
-                    <a th:href="@{/ingredient/discard/{id}(id=${ingredient.ingredientId})}"
-                       class="btn btn-danger"
-                       onclick="return confirm('이 식재료를 폐기 처리하시겠습니까?')">🗑️ 폐기</a>
-                </div>
-            </td>
-        </tr>
-    </table>
+    <!-- 테이블 -->
+    <div class="table-card">
+        <table>
+            <thead>
+            <tr>
+                <th>식재료명</th>
+                <th>카테고리</th>
+                <th>보관 위치</th>
+                <th>구매일</th>
+                <th>유통기한</th>
+                <th>D-day</th>
+                <th>수량</th>
+                <th>메모</th>
+                <th>작업</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(ingredientList)}">
+                <td colspan="9">
+                    <div class="empty-message">
+                        <div class="icon">🥗</div>
+                        <p>등록된 식재료가 없습니다.<br>식재료를 추가해보세요!</p>
+                    </div>
+                </td>
+            </tr>
+            <tr th:each="ingredient : ${ingredientList}"
+                th:classappend="${ingredient.daysUntilExpiry != null and ingredient.daysUntilExpiry < 0} ? 'expired' :
+                               (${ingredient.daysUntilExpiry != null and ingredient.daysUntilExpiry <= 3} ? 'expiring-soon' : '')">
+                <td>
+                    <strong th:text="${ingredient.ingredientName}"></strong>
+                </td>
+                <td>
+                    <span class="category-badge" th:text="${ingredient.categoryName}"></span>
+                </td>
+                <td>
+                    <span th:if="${ingredient.storageLocation == '냉장'}" class="storage-badge storage-냉장">❄️ 냉장</span>
+                    <span th:if="${ingredient.storageLocation == '냉동'}" class="storage-badge storage-냉동">🧊 냉동</span>
+                    <span th:if="${ingredient.storageLocation == '실온'}" class="storage-badge storage-실온">🌡️ 실온</span>
+                </td>
+                <td th:text="${#temporals.format(ingredient.purchaseDate, 'yyyy-MM-dd')}"></td>
+                <td th:text="${#temporals.format(ingredient.expiryDate, 'yyyy-MM-dd')}"></td>
+                <td>
+                    <span class="d-day"
+                          th:classappend="${ingredient.daysUntilExpiry != null and ingredient.daysUntilExpiry < 0} ? 'expired' :
+                                         (${ingredient.daysUntilExpiry != null and ingredient.daysUntilExpiry <= 3} ? 'expiring-soon' : 'safe')"
+                          th:text="${ingredient.daysUntilExpiry != null and ingredient.daysUntilExpiry < 0} ?
+                                   ('D+' + ${-ingredient.daysUntilExpiry}) :
+                                   (${ingredient.daysUntilExpiry != null and ingredient.daysUntilExpiry == 0} ? 'D-Day' :
+                                   ('D-' + ${ingredient.daysUntilExpiry}))">
+                    </span>
+                </td>
+                <td th:text="${ingredient.quantity != null ? ingredient.quantity + (ingredient.unit != null ? ingredient.unit : '') : '-'}"></td>
+                <td class="memo-cell" th:text="${ingredient.memo}" th:title="${ingredient.memo}"></td>
+                <td>
+                    <div class="action-buttons">
+                        <a th:href="@{/ingredient/detail/{id}(id=${ingredient.ingredientId})}"
+                           class="btn btn-secondary btn-sm">상세</a>
+                        <a th:href="@{/ingredient/consume/{id}(id=${ingredient.ingredientId})}"
+                           class="btn btn-success btn-sm"
+                           onclick="return confirm('이 식재료를 소비 완료 처리하시겠습니까?')">✓ 완료</a>
+                        <a th:href="@{/ingredient/discard/{id}(id=${ingredient.ingredientId})}"
+                           class="btn btn-danger btn-sm"
+                           onclick="return confirm('이 식재료를 폐기 처리하시겠습니까?')">🗑️ 폐기</a>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
-    <script th:inline="javascript">
-        function applyFilter() {
-            const categoryId = document.getElementById('categoryFilter').value;
-            const searchKeyword = document.getElementById('searchInput').value.trim();
-            const storageLocation = document.getElementById('storageFilter').value;
+<script th:inline="javascript">
+    function applyFilter() {
+        const categoryId = document.getElementById('categoryFilter').value;
+        const searchKeyword = document.getElementById('searchInput').value.trim();
+        const storageLocation = document.getElementById('storageFilter').value;
 
-            let url = '/ingredient/list?categoryId=' + categoryId;
-            if (searchKeyword) {
-                url += '&searchKeyword=' + encodeURIComponent(searchKeyword);
-            }
-            if (storageLocation) {
-                url += '&storageLocation=' + encodeURIComponent(storageLocation);
-            }
-
-            location.href = url;
+        let url = '/ingredient/list?categoryId=' + categoryId;
+        if (searchKeyword) {
+            url += '&searchKeyword=' + encodeURIComponent(searchKeyword);
+        }
+        if (storageLocation) {
+            url += '&storageLocation=' + encodeURIComponent(storageLocation);
         }
 
-        // 카테고리 또는 보관 위치 선택 시에도 필터 적용
-        document.getElementById('categoryFilter').addEventListener('change', applyFilter);
-        document.getElementById('storageFilter').addEventListener('change', applyFilter);
+        location.href = url;
+    }
 
-        // 페이지 전환 효과
-        document.addEventListener('DOMContentLoaded', function() {
-            document.body.classList.add('loaded');
-        });
+    // 카테고리 또는 보관 위치 선택 시에도 필터 적용
+    document.getElementById('categoryFilter').addEventListener('change', applyFilter);
+    document.getElementById('storageFilter').addEventListener('change', applyFilter);
 
-        document.querySelectorAll('a').forEach(function(link) {
-            if (link.hostname === window.location.hostname && !link.hasAttribute('data-no-transition')) {
-                link.addEventListener('click', function(e) {
-                    const href = this.getAttribute('href');
-                    if (href && !href.startsWith('#') && !href.startsWith('javascript:') && !this.hasAttribute('onclick')) {
-                        e.preventDefault();
-                        document.body.classList.add('fade-out');
-                        setTimeout(function() {
-                            window.location.href = href;
-                        }, 300);
-                    }
-                });
-            }
-        });
-    </script>
+    // 페이지 전환 효과
+    document.addEventListener('DOMContentLoaded', function() {
+        document.body.classList.add('loaded');
+    });
+
+    document.querySelectorAll('a').forEach(function(link) {
+        if (link.hostname === window.location.hostname && !link.hasAttribute('data-no-transition')) {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href && !href.startsWith('#') && !href.startsWith('javascript:') && !this.hasAttribute('onclick')) {
+                    e.preventDefault();
+                    document.body.classList.add('fade-out');
+                    setTimeout(function() {
+                        window.location.href = href;
+                    }, 300);
+                }
+            });
+        }
+    });
+</script>
 </body>
 </html>

@@ -2,8 +2,9 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="/images/logo.png">
-    <title>AI 식재료 인식 - 식재료 관리</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <title>AI 식재료 인식 - 냉털이</title>
     <style>
         * {
             margin: 0;
@@ -12,155 +13,211 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #e8f5e9 0%, #fff3e0 100%);
+            min-height: 100vh;
             padding: 20px;
-            background-color: #f5f5f5;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        body.loaded {
+            opacity: 1;
+        }
+        body.fade-out {
+            opacity: 0;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        h1 {
-            color: #4CAF50;
-            margin-bottom: 10px;
+        /* 헤더 */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background: white;
+            padding: 20px 25px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .page-header h1 {
+            color: #333;
+            font-size: 24px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
+        .header-right {
+            display: flex;
+            gap: 10px;
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #f5f5f5;
+            color: #333;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .back-btn:hover {
+            background: #e8f5e9;
+            transform: translateX(-3px);
+        }
+
+        /* 메인 카드 */
+        .main-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
 
         .subtitle {
             color: #666;
-            margin-bottom: 20px;
-        }
-
-        .nav-links {
-            margin-bottom: 20px;
-        }
-
-        .nav-links a {
-            margin-right: 15px;
-            text-decoration: none;
-            color: #008CBA;
-        }
-
-        .nav-links a:hover {
-            text-decoration: underline;
+            margin-bottom: 25px;
+            font-size: 15px;
+            text-align: center;
         }
 
         /* 업로드 영역 */
         .upload-area {
             border: 3px dashed #4CAF50;
-            border-radius: 10px;
-            padding: 40px;
+            border-radius: 16px;
+            padding: 50px 40px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
-            margin-bottom: 20px;
-            background-color: #fafafa;
+            background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
         }
 
         .upload-area:hover {
-            background-color: #e8f5e9;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-color: #43A047;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
         }
 
         .upload-area.dragover {
-            background-color: #c8e6c9;
+            background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%);
             border-color: #2E7D32;
+            transform: scale(1.02);
         }
 
         .upload-icon {
-            font-size: 64px;
-            margin-bottom: 15px;
+            font-size: 72px;
+            margin-bottom: 20px;
+            display: block;
         }
 
         .upload-text {
-            font-size: 18px;
-            font-weight: bold;
+            font-size: 20px;
+            font-weight: 600;
             color: #333;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .upload-hint {
             font-size: 14px;
-            color: #666;
+            color: #888;
         }
 
         /* 미리보기 영역 */
         .preview-area {
             display: none;
-            margin-bottom: 20px;
             text-align: center;
         }
 
         .preview-image {
             max-width: 100%;
-            max-height: 350px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-height: 400px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
 
         .preview-buttons {
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
         }
 
-        /* 버튼 */
+        /* 버튼 스타일 */
         .btn {
-            padding: 12px 24px;
+            padding: 14px 28px;
             border: none;
-            border-radius: 5px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: all 0.3s;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
         }
 
         .btn-primary {
-            background-color: #4CAF50;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
             color: white;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
         }
 
         .btn-primary:hover {
-            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-ai {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+        }
+
+        .btn-ai:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
         }
 
         .btn-secondary {
-            background-color: #6c757d;
-            color: white;
+            background: #f5f5f5;
+            color: #555;
         }
 
         .btn-secondary:hover {
-            background-color: #5a6268;
+            background: #e8e8e8;
+            transform: translateY(-2px);
         }
 
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none !important;
         }
 
         /* 로딩 영역 */
         .loading-area {
             display: none;
             text-align: center;
-            padding: 40px;
+            padding: 50px;
         }
 
         .spinner {
-            border: 5px solid #f3f3f3;
+            width: 70px;
+            height: 70px;
+            border: 5px solid #e8f5e9;
             border-top: 5px solid #4CAF50;
             border-radius: 50%;
-            width: 60px;
-            height: 60px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            margin: 0 auto 25px;
         }
 
         @keyframes spin {
@@ -169,65 +226,89 @@
         }
 
         .loading-text {
-            font-size: 18px;
+            font-size: 20px;
             color: #333;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
+            font-weight: 600;
         }
 
         .loading-hint {
             font-size: 14px;
-            color: #666;
+            color: #888;
         }
 
         /* 결과 영역 */
         .result-area {
             display: none;
-            margin-top: 20px;
+            margin-top: 25px;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 16px;
             padding: 25px;
-            background-color: #f9f9f9;
-            border-radius: 10px;
         }
 
         .result-header {
-            font-size: 22px;
-            font-weight: bold;
+            font-size: 20px;
+            font-weight: 700;
             margin-bottom: 20px;
             color: #333;
             display: flex;
             align-items: center;
             gap: 10px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
         }
 
         .prediction-item {
             display: flex;
             align-items: center;
             margin-bottom: 12px;
-            padding: 12px 15px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 15px 18px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            transition: all 0.2s;
+        }
+
+        .prediction-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
         }
 
         .prediction-rank {
-            font-size: 20px;
-            margin-right: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-right: 15px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
         }
 
         .prediction-label {
             flex: 1;
-            font-weight: bold;
+            font-weight: 600;
             font-size: 16px;
+            color: #333;
+        }
+
+        .prediction-label small {
+            color: #888;
+            font-weight: 400;
+            font-size: 13px;
         }
 
         .prediction-score-container {
-            width: 150px;
-            margin-right: 10px;
+            width: 140px;
+            margin-right: 15px;
         }
 
         .score-bar {
-            height: 24px;
+            height: 10px;
             background-color: #e0e0e0;
-            border-radius: 12px;
+            border-radius: 5px;
             overflow: hidden;
         }
 
@@ -235,47 +316,51 @@
             height: 100%;
             background: linear-gradient(90deg, #4CAF50, #8BC34A);
             transition: width 0.5s ease-out;
-            border-radius: 12px;
+            border-radius: 5px;
         }
 
         .score-text {
             font-size: 14px;
-            color: #666;
-            min-width: 50px;
+            font-weight: 600;
+            color: #4CAF50;
+            min-width: 55px;
             text-align: right;
         }
 
         /* 추가 버튼 */
         .add-btn {
-            width: 36px;
-            height: 36px;
+            width: 42px;
+            height: 42px;
             border: none;
-            border-radius: 50%;
-            background-color: #4CAF50;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
             color: white;
-            font-size: 20px;
+            font-size: 22px;
             font-weight: bold;
             cursor: pointer;
-            margin-left: 10px;
-            transition: all 0.3s;
+            margin-left: 12px;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
         }
 
         .add-btn:hover {
-            background-color: #45a049;
             transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
         }
 
         .add-btn:disabled {
-            background-color: #ccc;
+            background: #ccc;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
 
         .add-btn.added {
-            background-color: #2196F3;
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            box-shadow: 0 2px 6px rgba(33, 150, 243, 0.3);
         }
 
         /* 결과 하단 버튼 */
@@ -283,71 +368,119 @@
             margin-top: 25px;
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
         }
 
-        /* 에러 메시지 */
+        /* 에러 영역 */
         .error-area {
             display: none;
-            padding: 20px;
-            background-color: #ffebee;
-            border-radius: 10px;
+            padding: 40px;
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border-radius: 16px;
             text-align: center;
-            margin-top: 20px;
         }
 
         .error-icon {
-            font-size: 48px;
-            margin-bottom: 10px;
+            font-size: 56px;
+            margin-bottom: 15px;
         }
 
         .error-message {
             color: #c62828;
             font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        /* 안내 카드 */
+        .info-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 25px;
+        }
+
+        .info-card h3 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-list {
+            list-style: none;
+        }
+
+        .info-list li {
+            padding: 10px 0;
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+
+        .info-list .icon {
+            font-size: 20px;
         }
 
         /* 반응형 */
-        @media (max-width: 600px) {
-            .container {
-                padding: 15px;
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
             }
-
+            .header-right {
+                width: 100%;
+                justify-content: center;
+            }
             .prediction-item {
                 flex-wrap: wrap;
+                gap: 10px;
             }
-
             .prediction-score-container {
                 width: 100%;
-                margin-top: 10px;
                 margin-right: 0;
             }
-
             .score-text {
-                margin-top: 5px;
                 text-align: left;
+            }
+            .preview-buttons, .result-buttons {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>
-            <span>AI 식재료 인식</span>
-        </h1>
-        <p class="subtitle">
-            사진을 업로드하면 AI가 음식/식재료를 자동으로 인식합니다!
-        </p>
-
-        <div class="nav-links">
-            <a href="/ingredient/list">내 냉장고 보기</a>
-            <a href="/ingredient/quick-add">빠른 추가</a>
-            <a href="/ingredient/add">상세 추가</a>
-            <a href="/">메인 페이지</a>
+<div class="container">
+    <!-- 헤더 -->
+    <div class="page-header">
+        <h1>🤖 AI 식재료 인식</h1>
+        <div class="header-right">
+            <a href="/ingredient/list" class="back-btn">📋 내 냉장고</a>
+            <a href="/" class="back-btn">🏠 메인</a>
         </div>
+    </div>
+
+    <!-- 메인 카드 -->
+    <div class="main-card">
+        <p class="subtitle">사진을 업로드하면 AI가 식재료를 자동으로 인식합니다!</p>
 
         <!-- 업로드 영역 -->
         <div id="uploadArea" class="upload-area">
-            <div class="upload-icon">📷</div>
+            <span class="upload-icon">📷</span>
             <p class="upload-text">클릭하거나 이미지를 드래그하세요</p>
             <p class="upload-hint">지원 형식: JPG, JPEG, PNG, GIF (최대 10MB)</p>
             <input type="file" id="imageInput" accept="image/*" style="display: none;">
@@ -357,11 +490,11 @@
         <div id="previewArea" class="preview-area">
             <img id="previewImage" class="preview-image" src="" alt="미리보기">
             <div class="preview-buttons">
-                <button class="btn btn-primary" onclick="analyzeImage()">
-                    AI 분석 시작
+                <button class="btn btn-ai" onclick="analyzeImage()">
+                    🔍 AI 분석 시작
                 </button>
                 <button class="btn btn-secondary" onclick="resetUpload()">
-                    다시 선택
+                    🔄 다시 선택
                 </button>
             </div>
         </div>
@@ -375,241 +508,275 @@
 
         <!-- 에러 영역 -->
         <div id="errorArea" class="error-area">
-            <div class="error-icon">❌</div>
+            <div class="error-icon">😢</div>
             <p id="errorMessage" class="error-message"></p>
-            <button class="btn btn-secondary" style="margin-top: 15px;" onclick="resetUpload()">
-                다시 시도
+            <button class="btn btn-secondary" onclick="resetUpload()">
+                🔄 다시 시도
             </button>
         </div>
 
         <!-- 결과 영역 -->
         <div id="resultArea" class="result-area">
-            <div class="result-header">
-                <span>인식 결과</span>
-            </div>
-            <div id="predictions"></div>
+            <div class="result-card">
+                <div class="result-header">
+                    <span>✨ 인식 결과</span>
+                </div>
+                <div id="predictions"></div>
 
-            <div class="result-buttons">
-                <button class="btn btn-primary" onclick="goToQuickAdd()">
-                    빠른 추가로 이동
-                </button>
-                <button class="btn btn-secondary" onclick="resetUpload()">
-                    다른 이미지 분석
-                </button>
+                <div class="result-buttons">
+                    <button class="btn btn-primary" onclick="goToQuickAdd()">
+                        ⚡ 빠른 추가로 이동
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetUpload()">
+                        📷 다른 이미지 분석
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <script th:inline="javascript">
-        const uploadArea = document.getElementById('uploadArea');
-        const imageInput = document.getElementById('imageInput');
-        const previewArea = document.getElementById('previewArea');
-        const previewImage = document.getElementById('previewImage');
-        const loadingArea = document.getElementById('loadingArea');
-        const errorArea = document.getElementById('errorArea');
-        const resultArea = document.getElementById('resultArea');
+    <!-- 안내 카드 -->
+    <div class="info-card">
+        <h3>💡 사용 팁</h3>
+        <ul class="info-list">
+            <li><span class="icon">📸</span> 식재료가 잘 보이도록 가까이에서 촬영하세요</li>
+            <li><span class="icon">💡</span> 밝은 조명에서 촬영하면 인식률이 높아집니다</li>
+            <li><span class="icon">➕</span> 결과에서 + 버튼을 누르면 바로 냉장고에 추가됩니다</li>
+            <li><span class="icon">🔄</span> 인식이 잘 안 되면 다른 각도로 다시 시도해보세요</li>
+        </ul>
+    </div>
+</div>
 
-        let selectedFile = null;
-        let recognitionResult = null;
+<script th:inline="javascript">
+    const uploadArea = document.getElementById('uploadArea');
+    const imageInput = document.getElementById('imageInput');
+    const previewArea = document.getElementById('previewArea');
+    const previewImage = document.getElementById('previewImage');
+    const loadingArea = document.getElementById('loadingArea');
+    const errorArea = document.getElementById('errorArea');
+    const resultArea = document.getElementById('resultArea');
 
-        // 클릭으로 파일 선택
-        uploadArea.addEventListener('click', () => imageInput.click());
+    let selectedFile = null;
+    let recognitionResult = null;
 
-        // 파일 선택 이벤트
-        imageInput.addEventListener('change', (e) => {
-            handleFile(e.target.files[0]);
-        });
+    // 클릭으로 파일 선택
+    uploadArea.addEventListener('click', () => imageInput.click());
 
-        // 드래그 앤 드롭
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
+    // 파일 선택 이벤트
+    imageInput.addEventListener('change', (e) => {
+        handleFile(e.target.files[0]);
+    });
 
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
+    // 드래그 앤 드롭
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
 
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            handleFile(e.dataTransfer.files[0]);
-        });
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
 
-        function handleFile(file) {
-            if (!file) return;
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        handleFile(e.dataTransfer.files[0]);
+    });
 
-            // 파일 타입 검증
-            if (!file.type.startsWith('image/')) {
-                showError('이미지 파일만 업로드 가능합니다.');
-                return;
-            }
+    function handleFile(file) {
+        if (!file) return;
 
-            // 파일 크기 검증 (10MB)
-            if (file.size > 10 * 1024 * 1024) {
-                showError('파일 크기는 10MB를 초과할 수 없습니다.');
-                return;
-            }
-
-            selectedFile = file;
-
-            // 미리보기 표시
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                previewImage.src = e.target.result;
-                uploadArea.style.display = 'none';
-                previewArea.style.display = 'block';
-                errorArea.style.display = 'none';
-                resultArea.style.display = 'none';
-            };
-            reader.readAsDataURL(file);
+        // 파일 타입 검증
+        if (!file.type.startsWith('image/')) {
+            showError('이미지 파일만 업로드 가능합니다.');
+            return;
         }
 
-        async function analyzeImage() {
-            if (!selectedFile) {
-                showError('이미지를 선택해주세요.');
-                return;
-            }
+        // 파일 크기 검증 (10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            showError('파일 크기는 10MB를 초과할 수 없습니다.');
+            return;
+        }
 
-            // UI 상태 변경
-            previewArea.style.display = 'none';
-            loadingArea.style.display = 'block';
+        selectedFile = file;
+
+        // 미리보기 표시
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            previewImage.src = e.target.result;
+            uploadArea.style.display = 'none';
+            previewArea.style.display = 'block';
             errorArea.style.display = 'none';
             resultArea.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
 
-            try {
-                const formData = new FormData();
-                formData.append('image', selectedFile);
-
-                const response = await fetch('/ingredient/ai-recognize', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-                recognitionResult = result;
-
-                loadingArea.style.display = 'none';
-
-                if (result.success) {
-                    displayResults(result);
-                } else {
-                    showError(result.message || '인식에 실패했습니다.');
-                }
-
-            } catch (error) {
-                loadingArea.style.display = 'none';
-                showError('오류가 발생했습니다: ' + error.message);
-            }
+    async function analyzeImage() {
+        if (!selectedFile) {
+            showError('이미지를 선택해주세요.');
+            return;
         }
 
-        function displayResults(result) {
-            const predictionsDiv = document.getElementById('predictions');
-            predictionsDiv.innerHTML = '';
+        // UI 상태 변경
+        previewArea.style.display = 'none';
+        loadingArea.style.display = 'block';
+        errorArea.style.display = 'none';
+        resultArea.style.display = 'none';
 
-            const rankEmojis = ['1위', '2위', '3위', '4위', '5위'];
+        try {
+            const formData = new FormData();
+            formData.append('image', selectedFile);
 
-            result.predictions.slice(0, 5).forEach((pred, index) => {
-                const scorePercent = (pred.score * 100).toFixed(1);
-                const item = document.createElement('div');
-                item.className = 'prediction-item';
-
-                // 음식인지 확인 (기타가 아닌 경우)
-                const isFood = pred.koreanLabel !== '기타';
-                const btnDisabled = isFood ? '' : 'disabled';
-                const btnTitle = isFood ? '냉장고에 추가' : '음식이 아닙니다';
-
-                item.innerHTML = `
-                    <span class="prediction-rank">${rankEmojis[index]}</span>
-                    <span class="prediction-label">${pred.koreanLabel} (${pred.label})</span>
-                    <div class="prediction-score-container">
-                        <div class="score-bar">
-                            <div class="score-fill" style="width: ${scorePercent}%"></div>
-                        </div>
-                    </div>
-                    <span class="score-text">${scorePercent}%</span>
-                    <button class="add-btn"
-                            onclick="addToFridge('${pred.koreanLabel}', ${pred.suggestedCategoryId || 6}, this)"
-                            ${btnDisabled}
-                            title="${btnTitle}">+</button>
-                `;
-                predictionsDiv.appendChild(item);
+            const response = await fetch('/ingredient/ai-recognize', {
+                method: 'POST',
+                body: formData
             });
 
-            previewArea.style.display = 'block';
-            resultArea.style.display = 'block';
-        }
+            const result = await response.json();
+            recognitionResult = result;
 
-        function showError(message) {
-            document.getElementById('errorMessage').textContent = message;
-            uploadArea.style.display = 'none';
-            previewArea.style.display = 'none';
             loadingArea.style.display = 'none';
-            errorArea.style.display = 'block';
-            resultArea.style.display = 'none';
-        }
 
-        function resetUpload() {
-            selectedFile = null;
-            recognitionResult = null;
-            imageInput.value = '';
-            previewImage.src = '';
-            uploadArea.style.display = 'block';
-            previewArea.style.display = 'none';
+            if (result.success) {
+                displayResults(result);
+            } else {
+                showError(result.message || '인식에 실패했습니다.');
+            }
+
+        } catch (error) {
             loadingArea.style.display = 'none';
-            errorArea.style.display = 'none';
-            resultArea.style.display = 'none';
+            showError('오류가 발생했습니다: ' + error.message);
         }
+    }
 
-        async function addToFridge(ingredientName, categoryId, button) {
-            // 버튼 비활성화
-            button.disabled = true;
-            button.textContent = '...';
+    function displayResults(result) {
+        const predictionsDiv = document.getElementById('predictions');
+        predictionsDiv.innerHTML = '';
 
-            try {
-                const formData = new FormData();
-                formData.append('ingredientName', ingredientName);
-                formData.append('categoryId', categoryId);
+        const rankLabels = ['1위', '2위', '3위', '4위', '5위'];
 
-                const response = await fetch('/ingredient/ai-add', {
-                    method: 'POST',
-                    body: formData
-                });
+        result.predictions.slice(0, 5).forEach((pred, index) => {
+            const scorePercent = (pred.score * 100).toFixed(1);
+            const item = document.createElement('div');
+            item.className = 'prediction-item';
 
-                const result = await response.json();
+            // 음식인지 확인 (기타가 아닌 경우)
+            const isFood = pred.koreanLabel !== '기타';
+            const btnDisabled = isFood ? '' : 'disabled';
+            const btnTitle = isFood ? '냉장고에 추가' : '음식이 아닙니다';
 
-                if (result.success) {
-                    // 성공: 버튼을 체크마크로 변경
-                    button.textContent = '✓';
-                    button.classList.add('added');
-                    button.title = '추가됨!';
-                } else {
-                    // 실패: 에러 메시지 표시
-                    alert(result.message || '추가에 실패했습니다.');
-                    button.disabled = false;
-                    button.textContent = '+';
-                }
-            } catch (error) {
-                alert('오류가 발생했습니다: ' + error.message);
+            item.innerHTML = `
+                <span class="prediction-rank">${rankLabels[index]}</span>
+                <span class="prediction-label">${pred.koreanLabel} <small>(${pred.label})</small></span>
+                <div class="prediction-score-container">
+                    <div class="score-bar">
+                        <div class="score-fill" style="width: ${scorePercent}%"></div>
+                    </div>
+                </div>
+                <span class="score-text">${scorePercent}%</span>
+                <button class="add-btn"
+                        onclick="addToFridge('${pred.koreanLabel}', ${pred.suggestedCategoryId || 6}, this)"
+                        ${btnDisabled}
+                        title="${btnTitle}">+</button>
+            `;
+            predictionsDiv.appendChild(item);
+        });
+
+        previewArea.style.display = 'block';
+        resultArea.style.display = 'block';
+    }
+
+    function showError(message) {
+        document.getElementById('errorMessage').textContent = message;
+        uploadArea.style.display = 'none';
+        previewArea.style.display = 'none';
+        loadingArea.style.display = 'none';
+        errorArea.style.display = 'block';
+        resultArea.style.display = 'none';
+    }
+
+    function resetUpload() {
+        selectedFile = null;
+        recognitionResult = null;
+        imageInput.value = '';
+        previewImage.src = '';
+        uploadArea.style.display = 'block';
+        previewArea.style.display = 'none';
+        loadingArea.style.display = 'none';
+        errorArea.style.display = 'none';
+        resultArea.style.display = 'none';
+    }
+
+    async function addToFridge(ingredientName, categoryId, button) {
+        // 버튼 비활성화
+        button.disabled = true;
+        button.textContent = '...';
+
+        try {
+            const formData = new FormData();
+            formData.append('ingredientName', ingredientName);
+            formData.append('categoryId', categoryId);
+
+            const response = await fetch('/ingredient/ai-add', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // 성공: 버튼을 체크마크로 변경
+                button.textContent = '✓';
+                button.classList.add('added');
+                button.title = '추가됨!';
+            } else {
+                // 실패: 에러 메시지 표시
+                alert(result.message || '추가에 실패했습니다.');
                 button.disabled = false;
                 button.textContent = '+';
             }
+        } catch (error) {
+            alert('오류가 발생했습니다: ' + error.message);
+            button.disabled = false;
+            button.textContent = '+';
         }
+    }
 
-        function goToQuickAdd() {
-            location.href = '/ingredient/quick-add';
+    function goToQuickAdd() {
+        location.href = '/ingredient/quick-add';
+    }
+
+    function goToAddWithIngredient(ingredientName) {
+        location.href = '/ingredient/add?name=' + encodeURIComponent(ingredientName);
+    }
+
+    // ESC 키로 리셋
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            resetUpload();
         }
+    });
 
-        function goToAddWithIngredient(ingredientName) {
-            location.href = '/ingredient/add?name=' + encodeURIComponent(ingredientName);
+    // 페이지 전환 효과
+    document.addEventListener('DOMContentLoaded', function() {
+        document.body.classList.add('loaded');
+    });
+
+    document.querySelectorAll('a').forEach(function(link) {
+        if (link.hostname === window.location.hostname && !link.hasAttribute('data-no-transition')) {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+                    e.preventDefault();
+                    document.body.classList.add('fade-out');
+                    setTimeout(function() {
+                        window.location.href = href;
+                    }, 300);
+                }
+            });
         }
-
-        // ESC 키로 리셋
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                resetUpload();
-            }
-        });
-    </script>
+    });
+</script>
 </body>
 </html>

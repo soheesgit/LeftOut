@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="icon" href="data:,">
     <title>오늘 뭐 먹지? - 냉털이</title>
     <style>
         * {
@@ -287,7 +287,7 @@
             </div>
 
             <div class="btn-group">
-                <a th:href="@{/recipe/detail/{seq}(seq=${recipe.rcpSeq})}" class="btn btn-primary" id="viewDetailBtn">
+                <a th:href="@{/recipe/detail/{id}(id=${recipe.id})}" class="btn btn-primary" id="viewDetailBtn">
                     레시피 보기
                 </a>
                 <a href="/" class="btn btn-secondary">홈으로</a>
@@ -414,8 +414,8 @@
 
         // 상세보기 링크 업데이트
         const viewDetailBtn = document.getElementById('viewDetailBtn');
-        if (viewDetailBtn && recipe.rcpSeq) {
-            viewDetailBtn.href = '/recipe/detail/' + recipe.rcpSeq;
+        if (viewDetailBtn && recipe.id) {
+            viewDetailBtn.href = '/recipe/detail/' + recipe.id;
         }
 
         // 애니메이션 재실행

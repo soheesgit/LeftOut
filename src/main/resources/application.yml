@@ -3,13 +3,8 @@ server:
 
 spring:
   datasource:
-    # Render의 DB_HOST, DB_PORT, DB_NAME 값을 가져와서 주소 완성
     url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?serverTimezone=Asia/Seoul&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&connectTimeout=60000
-# 연결 안정성을 위해 옵션 추가 (SSL 해제, 자동 재접속, 타임아웃 연장)
-    # Render의 DB_USERNAME 값을 가져옴
     username: ${DB_USERNAME}
-
-    # Render의 DB_PASSWORD 값을 가져옴
     password: ${DB_PASSWORD}
 
     driver-class-name: com.mysql.cj.jdbc.Driver

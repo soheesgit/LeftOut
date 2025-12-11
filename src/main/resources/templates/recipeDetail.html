@@ -2,13 +2,19 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="icon" href="data:,">
     <title th:text="|${recipe.title} - 레시피 상세|">레시피 상세</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f9f9f9;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #e8f5e9 0%, #fff3e0 100%);
+            min-height: 100vh;
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
         }
@@ -23,8 +29,8 @@
             margin: 0 auto;
             background-color: white;
             padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         h1 {
             color: #333;
@@ -339,7 +345,7 @@
 <body>
     <div class="container">
         <div class="header-actions">
-            <a href="/recipe/list" class="back-btn">← 목록으로</a>
+            <a href="javascript:history.back()" class="back-btn">← 뒤로가기</a>
             <div>
                 <!-- 좋아요 버튼 -->
                 <button th:if="${loginUser != null}"

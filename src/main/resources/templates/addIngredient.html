@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
     <title>식재료 추가</title>
     <style>
         * {
@@ -505,15 +506,6 @@
                 alert('카테고리를 선택해주세요.');
                 document.getElementById('categoryId').focus();
                 return false;
-            }
-
-            // 날짜 검증 (유통기한이 구매일보다 이전인 경우)
-            if (purchaseDate && expiryDate) {
-                if (new Date(expiryDate) < new Date(purchaseDate)) {
-                    alert('유통기한은 구매일보다 이전일 수 없습니다.');
-                    document.getElementById('expiryDate').focus();
-                    return false;
-                }
             }
 
             return true;

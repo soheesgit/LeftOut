@@ -2,14 +2,19 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="icon" href="data:,">
     <title th:text="${pageTitle}">내 레시피</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
             padding: 20px;
-            background-color: #f5f5f5;
+            background: linear-gradient(135deg, #e8f5e9 0%, #fff3e0 100%);
+            min-height: 100vh;
         }
         .header {
             display: flex;
@@ -122,10 +127,30 @@
             background: white;
             border-radius: 10px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
         }
         .empty-state h2 {
             color: #666;
-            margin-bottom: 20px;
+            margin: 0;
+            font-size: 20px;
+        }
+        .empty-state p {
+            color: #888;
+            margin: 0;
+            font-size: 14px;
+        }
+        .info-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            background-color: #e7f3ff;
+            color: #0066cc;
+            border-radius: 3px;
+            font-size: 12px;
+            margin-right: 5px;
         }
         .difficulty {
             padding: 3px 8px;
@@ -173,16 +198,33 @@
         <div class="recipe-card" th:each="recipe : ${recipes}"
              th:onclick="|location.href='/recipe/detail/' + ${recipe.id}|">
             <div class="recipe-image">
-                <img th:if="${recipe.mainImageType != null}"
+                <!-- API 레시피: 외부 이미지 URL 사용 -->
+                <img th:if="${recipe.source == 'api' and recipe.attFileNoMain != null}"
+                     th:src="${recipe.attFileNoMain}"
+                     alt="레시피 이미지"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <!-- 사용자 레시피: DB 이미지 사용 -->
+                <img th:if="${recipe.source != 'api' and recipe.mainImageType != null}"
                      th:src="@{'/recipe/image/' + ${recipe.id}}"
-                     alt="레시피 이미지">
-                <span th:if="${recipe.mainImageType == null}">이미지 없음</span>
+                     alt="레시피 이미지"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <span th:if="${(recipe.source == 'api' and recipe.attFileNoMain == null) or (recipe.source != 'api' and recipe.mainImageType == null)}"
+                      style="display: flex; align-items: center; justify-content: center; height: 200px; background: #f0f0f0;">
+                    이미지 없음
+                </span>
             </div>
             <div class="recipe-content">
                 <h2 class="recipe-title" th:text="${recipe.title}">레시피 제목</h2>
-                <p class="recipe-description" th:text="${recipe.description}">레시피 설명</p>
+                <p class="recipe-description" th:if="${recipe.description != null}" th:text="${recipe.description}">레시피 설명</p>
 
                 <div class="recipe-meta">
+                    <!-- API 레시피용 메타 정보 -->
+                    <span th:if="${recipe.rcpWay2 != null}" class="info-badge" th:text="${recipe.rcpWay2}">조리방법</span>
+                    <span th:if="${recipe.rcpPat2 != null}" class="info-badge" th:text="${recipe.rcpPat2}">카테고리</span>
+                    <span th:if="${recipe.infoEng != null}">
+                        <span th:text="${recipe.infoEng}">0</span> kcal
+                    </span>
+                    <!-- 사용자 레시피용 메타 정보 -->
                     <span th:if="${recipe.preparationTime != null}">
                         준비: <span th:text="${recipe.preparationTime}">0</span>분
                     </span>
@@ -202,9 +244,9 @@
                 </div>
 
                 <div class="recipe-stats">
-                    <span>👁 <span th:text="${recipe.viewCount}">0</span></span>
-                    <span>❤ <span th:text="${recipe.likeCount}">0</span></span>
-                    <span>💬 <span th:text="${recipe.commentCount}">0</span></span>
+                    <span>👁 <span th:text="${recipe.viewCount != null ? recipe.viewCount : 0}">0</span></span>
+                    <span>❤ <span th:text="${recipe.likeCount != null ? recipe.likeCount : 0}">0</span></span>
+                    <span>💬 <span th:text="${recipe.commentCount != null ? recipe.commentCount : 0}">0</span></span>
                 </div>
             </div>
         </div>

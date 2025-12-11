@@ -151,19 +151,24 @@
         ORDER BY ur.created_at DESC
     </select>
 
-    <!-- 좋아요한 레시피 목록 -->
+    <!-- 좋아요한 레시피 목록 (API + 사용자 레시피 통합) -->
     <select id="findLikedRecipes" parameterType="long" resultType="com.example.demo.TEST_001.dto.UserRecipeDTO">
         SELECT
             ur.id,
             ur.user_id,
             ur.title,
             ur.description,
+            ur.source,
             ur.preparation_time,
             ur.cooking_time,
             ur.servings,
             ur.difficulty_level,
             ur.main_image_path,
             ur.main_image_type,
+            ur.att_file_no_main AS attFileNoMain,
+            ur.rcp_way2 AS rcpWay2,
+            ur.rcp_pat2 AS rcpPat2,
+            ur.info_eng AS infoEng,
             ur.view_count,
             ur.like_count,
             ur.comment_count,
@@ -171,7 +176,7 @@
             u.name AS authorName,
             u.username AS authorUsername
         FROM user_recipe ur
-        JOIN users u ON ur.user_id = u.id
+        LEFT JOIN users u ON ur.user_id = u.id
         JOIN recipe_like rl ON ur.id = rl.recipe_id
         WHERE rl.user_id = #{userId}
         ORDER BY rl.created_at DESC

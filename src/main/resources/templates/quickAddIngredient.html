@@ -2,8 +2,9 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="/images/logo.png">
-    <title>빠른 추가 - 식재료 관리</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <title>빠른 추가 - 냉털이</title>
     <style>
         * {
             margin: 0;
@@ -12,9 +13,10 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #e8f5e9 0%, #fff3e0 100%);
+            min-height: 100vh;
             padding: 20px;
-            background-color: #f5f5f5;
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
         }
@@ -26,116 +28,180 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        h1 {
-            color: #4CAF50;
-            margin-bottom: 10px;
-        }
-
-        .subtitle {
-            color: #666;
+        /* 헤더 */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 20px;
+            background: white;
+            padding: 20px 25px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-
-        .nav-links {
-            margin-bottom: 20px;
+        .header-left h1 {
+            color: #333;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
         }
-
-        .nav-links a {
-            margin-right: 15px;
-            text-decoration: none;
-            color: #008CBA;
+        .header-left .subtitle {
+            color: #888;
+            font-size: 14px;
         }
-
-        .nav-links a:hover {
-            text-decoration: underline;
-        }
-
-        /* 카테고리 탭 */
-        .category-tabs {
+        .header-right {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #e0e0e0;
             flex-wrap: wrap;
         }
-
-        .category-tab {
-            padding: 12px 24px;
-            background-color: #f0f0f0;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            border-radius: 5px 5px 0 0;
-            transition: all 0.3s;
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 18px;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
         }
-
-        .category-tab:hover {
-            background-color: #e0e0e0;
-        }
-
-        .category-tab.active {
-            background-color: #4CAF50;
+        .nav-btn-primary {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
             color: white;
-            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
         }
-
-        /* 식재료 그리드 */
-        .ingredient-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
+        .nav-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
         }
-
-        .ingredient-card {
-            background-color: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
+        .nav-btn-ai {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            box-shadow: 0 2px 6px rgba(33, 150, 243, 0.3);
         }
-
-        .ingredient-card:hover {
-            border-color: #4CAF50;
-            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.2);
+        .nav-btn-ai:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+        }
+        .nav-btn-secondary {
+            background: #f5f5f5;
+            color: #555;
+        }
+        .nav-btn-secondary:hover {
+            background: #e8f5e9;
             transform: translateY(-2px);
         }
 
+        /* 카테고리 섹션 */
+        .category-section {
+            background: white;
+            padding: 20px 25px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .category-tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .category-tab {
+            padding: 12px 24px;
+            background: #f5f5f5;
+            border: 2px solid transparent;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 25px;
+            transition: all 0.2s;
+            color: #666;
+        }
+        .category-tab:hover {
+            background: #e8f5e9;
+            border-color: #c8e6c9;
+        }
+        .category-tab.active {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
+
+        /* 식재료 그리드 */
+        .ingredient-section {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .ingredient-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+        }
+        .ingredient-card {
+            background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+            border: 2px solid #e8e8e8;
+            border-radius: 14px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+        .ingredient-card:hover {
+            border-color: #4CAF50;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            transform: translateY(-4px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.2);
+        }
         .ingredient-card .name {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 8px;
             color: #333;
         }
-
         .ingredient-card .expiry-info {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 15px;
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
         }
-
         .ingredient-card .add-btn {
-            background-color: #4CAF50;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
             color: white;
             border: none;
-            padding: 8px 20px;
-            border-radius: 5px;
+            padding: 10px 24px;
+            border-radius: 20px;
             cursor: pointer;
             font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+        }
+        .ingredient-card .add-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
         }
 
-        .ingredient-card .add-btn:hover {
-            background-color: #45a049;
+        /* 빈 상태 */
+        .empty-message {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        .empty-message .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
         }
 
         /* 모달 */
@@ -148,84 +214,97 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
         }
-
         .modal.show {
             display: flex;
             justify-content: center;
             align-items: center;
+            animation: fadeIn 0.2s ease-out;
         }
-
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
         .modal-content {
-            background-color: white;
+            background: white;
             padding: 30px;
-            border-radius: 10px;
-            width: 400px;
+            border-radius: 20px;
+            width: 420px;
             max-width: 90%;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease-out;
         }
-
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         .modal-header {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 20px;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 25px;
             color: #333;
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e8f5e9;
         }
-
         .modal-body {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
-
         .modal-body label {
             display: block;
             margin-bottom: 8px;
-            font-weight: bold;
+            font-weight: 600;
             color: #555;
-        }
-
-        .modal-body input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        .modal-body input:focus {
-            outline: none;
-            border-color: #4CAF50;
-        }
-
-        .modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        .modal-footer button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
             font-size: 14px;
         }
-
+        .modal-body input,
+        .modal-body select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            background: #fafafa;
+            transition: all 0.2s;
+            margin-bottom: 15px;
+        }
+        .modal-body input:focus,
+        .modal-body select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1);
+        }
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+        }
+        .modal-footer button {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
         .btn-cancel {
-            background-color: #6c757d;
-            color: white;
+            background: #f5f5f5;
+            color: #666;
         }
-
-        .btn-confirm {
-            background-color: #4CAF50;
-            color: white;
-        }
-
         .btn-cancel:hover {
-            background-color: #5a6268;
+            background: #e0e0e0;
         }
-
+        .btn-confirm {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
         .btn-confirm:hover {
-            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
         }
 
         /* 토스트 알림 */
@@ -233,24 +312,21 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            background-color: #4CAF50;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
             color: white;
-            padding: 16px 24px;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 18px 24px;
+            border-radius: 14px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
             z-index: 2000;
             display: none;
             animation: slideIn 0.3s ease-out;
         }
-
         .toast.show {
             display: block;
         }
-
         .toast.error {
-            background-color: #f44336;
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
         }
-
         @keyframes slideIn {
             from {
                 transform: translateX(400px);
@@ -261,61 +337,79 @@
                 opacity: 1;
             }
         }
-
         .toast-content {
             display: flex;
             align-items: center;
             gap: 15px;
         }
-
         .toast-message {
             flex: 1;
+            font-weight: 500;
         }
-
         .toast-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
-
         .toast-actions button {
-            background-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.2);
             color: white;
-            border: 1px solid white;
-            padding: 5px 12px;
-            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 6px 14px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
         }
-
         .toast-actions button:hover {
-            background-color: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.3);
         }
 
         /* 반응형 */
-        @media (max-width: 768px) {
-            .ingredient-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        @media (max-width: 900px) {
+            .page-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
             }
-
-            .category-tabs {
-                overflow-x: auto;
+            .header-right {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        @media (max-width: 600px) {
+            .ingredient-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            }
+            .category-tab {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+            .nav-btn {
+                padding: 8px 14px;
+                font-size: 13px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>빠른 추가</h1>
-        <p class="subtitle">카테고리에서 식재료를 클릭하여 빠르게 추가하세요!</p>
-
-        <div class="nav-links">
-            <a href="/ingredient/list">내 냉장고 보기</a>
-            <a href="/ingredient/ai-recognition" style="color: #2196F3; font-weight: bold;">AI 사진 인식</a>
-            <a href="/ingredient/add">상세 추가 (폼 입력)</a>
-            <a href="/">메인 페이지</a>
+<div class="container">
+    <!-- 헤더 -->
+    <div class="page-header">
+        <div class="header-left">
+            <h1>⚡ 빠른 추가</h1>
+            <p class="subtitle">카테고리에서 식재료를 클릭하여 빠르게 추가하세요!</p>
         </div>
+        <div class="header-right">
+            <a href="/ingredient/ai-recognition" class="nav-btn nav-btn-ai">🤖 AI 인식</a>
+            <a href="/ingredient/add" class="nav-btn nav-btn-secondary">📝 상세 추가</a>
+            <a href="/ingredient/list" class="nav-btn nav-btn-secondary">📋 내 냉장고</a>
+            <a href="/" class="nav-btn nav-btn-secondary">🏠 메인</a>
+        </div>
+    </div>
 
-        <!-- 카테고리 탭 -->
+    <!-- 카테고리 탭 -->
+    <div class="category-section">
         <div class="category-tabs">
             <button class="category-tab active" data-category="0">전체</button>
             <button class="category-tab" th:each="category : ${categories}"
@@ -323,277 +417,266 @@
                     th:text="${category.categoryName}">
             </button>
         </div>
+    </div>
 
-        <!-- 식재료 그리드 -->
+    <!-- 식재료 그리드 -->
+    <div class="ingredient-section">
         <div id="ingredientGrid" class="ingredient-grid">
             <!-- JavaScript로 동적 생성 -->
         </div>
     </div>
+</div>
 
-    <!-- 수량 입력 모달 -->
-    <div id="quantityModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span id="modalIngredientName"></span> 추가
-            </div>
-            <div class="modal-body">
-                <label for="quantityInput">수량을 입력하세요:</label>
-                <input type="number" id="quantityInput" min="1" step="1" placeholder="예: 500">
+<!-- 수량 입력 모달 -->
+<div id="quantityModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span id="modalIngredientName"></span> 추가
+        </div>
+        <div class="modal-body">
+            <label for="quantityInput">수량</label>
+            <input type="number" id="quantityInput" min="1" step="1" placeholder="예: 500">
 
-                <label for="unitInput" style="margin-top: 15px;">단위를 선택하세요:</label>
-                <select id="unitInput">
-                    <option value="">선택하세요</option>
-                    <option value="개">개</option>
-                    <option value="g">g</option>
-                    <option value="kg">kg</option>
-                    <option value="mL">mL</option>
-                    <option value="L">L</option>
-                    <option value="봉지">봉지</option>
-                    <option value="팩">팩</option>
-                </select>
+            <label for="unitInput">단위</label>
+            <select id="unitInput">
+                <option value="">선택하세요</option>
+                <option value="개">개</option>
+                <option value="g">g</option>
+                <option value="kg">kg</option>
+                <option value="mL">mL</option>
+                <option value="L">L</option>
+                <option value="봉지">봉지</option>
+                <option value="팩">팩</option>
+            </select>
 
-                <label for="storageInput" style="margin-top: 15px;">보관 위치:</label>
-                <select id="storageInput">
-                    <option value="냉장" selected>❄️ 냉장</option>
-                    <option value="냉동">🧊 냉동</option>
-                    <option value="실온">🌡️ 실온</option>
-                </select>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-cancel" onclick="closeModal()">취소</button>
-                <button class="btn-confirm" onclick="confirmAdd()">추가하기</button>
-            </div>
+            <label for="storageInput">보관 위치</label>
+            <select id="storageInput">
+                <option value="냉장" selected>❄️ 냉장</option>
+                <option value="냉동">🧊 냉동</option>
+                <option value="실온">🌡️ 실온</option>
+            </select>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal()">취소</button>
+            <button class="btn-confirm" onclick="confirmAdd()">추가하기</button>
         </div>
     </div>
+</div>
 
-    <!-- 토스트 알림 -->
-    <div id="toast" class="toast">
-        <div class="toast-content">
-            <div class="toast-message" id="toastMessage"></div>
-            <div class="toast-actions">
-                <button onclick="goToList()">목록 보기</button>
-                <button onclick="closeToast()">닫기</button>
-            </div>
+<!-- 토스트 알림 -->
+<div id="toast" class="toast">
+    <div class="toast-content">
+        <div class="toast-message" id="toastMessage"></div>
+        <div class="toast-actions">
+            <button onclick="goToList()">목록 보기</button>
+            <button onclick="closeToast()">닫기</button>
         </div>
     </div>
+</div>
 
-    <script th:inline="javascript">
-        // 데이터
-        const categories = /*[[${categories}]]*/ [];
-        const defaultExpiryList = /*[[${defaultExpiryList}]]*/ [];
+<script th:inline="javascript">
+    // 데이터
+    const categories = /*[[${categories}]]*/ [];
+    const defaultExpiryList = /*[[${defaultExpiryList}]]*/ [];
 
-        // 카테고리별로 식재료 그룹화
-        const ingredientsByCategory = {};
-        defaultExpiryList.forEach(item => {
-            if (!ingredientsByCategory[item.categoryId]) {
-                ingredientsByCategory[item.categoryId] = [];
-            }
-            ingredientsByCategory[item.categoryId].push(item);
-        });
+    // 카테고리별로 식재료 그룹화
+    const ingredientsByCategory = {};
+    defaultExpiryList.forEach(item => {
+        if (!ingredientsByCategory[item.categoryId]) {
+            ingredientsByCategory[item.categoryId] = [];
+        }
+        ingredientsByCategory[item.categoryId].push(item);
+    });
 
-        // 현재 선택된 식재료
-        let selectedIngredient = null;
+    // 현재 선택된 식재료
+    let selectedIngredient = null;
 
-        // 페이지 로드 시 전체 표시
-        document.addEventListener('DOMContentLoaded', function() {
-            displayIngredients(0);
-            setupCategoryTabs();
-        });
+    // 페이지 로드 시 전체 표시
+    document.addEventListener('DOMContentLoaded', function() {
+        document.body.classList.add('loaded');
+        displayIngredients(0);
+        setupCategoryTabs();
+    });
 
-        // 카테고리 탭 설정
-        function setupCategoryTabs() {
-            const tabs = document.querySelectorAll('.category-tab');
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    // 활성 탭 변경
-                    tabs.forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-
-                    // 식재료 표시
-                    const categoryId = parseInt(this.dataset.category);
-                    displayIngredients(categoryId);
-                });
+    // 카테고리 탭 설정
+    function setupCategoryTabs() {
+        const tabs = document.querySelectorAll('.category-tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                tabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                const categoryId = parseInt(this.dataset.category);
+                displayIngredients(categoryId);
             });
+        });
+    }
+
+    // 식재료 표시
+    function displayIngredients(categoryId) {
+        const grid = document.getElementById('ingredientGrid');
+        grid.innerHTML = '';
+
+        let ingredientsToShow = [];
+
+        if (categoryId === 0) {
+            ingredientsToShow = defaultExpiryList;
+        } else {
+            ingredientsToShow = ingredientsByCategory[categoryId] || [];
         }
 
-        // 식재료 표시
-        function displayIngredients(categoryId) {
-            const grid = document.getElementById('ingredientGrid');
-            grid.innerHTML = '';
+        if (ingredientsToShow.length === 0) {
+            grid.innerHTML = '<div class="empty-message"><div class="icon">🥗</div><p>등록된 식재료가 없습니다.</p></div>';
+            return;
+        }
 
-            let ingredientsToShow = [];
+        ingredientsToShow.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'ingredient-card';
+            card.onclick = () => openModal(item);
 
-            if (categoryId === 0) {
-                // 전체
-                ingredientsToShow = defaultExpiryList;
+            card.innerHTML = `
+                <div class="name">${item.ingredientName}</div>
+                <div class="expiry-info">📅 보통 ${item.defaultExpiryDays}일</div>
+                <button class="add-btn">+ 추가</button>
+            `;
+
+            grid.appendChild(card);
+        });
+    }
+
+    // 모달 열기
+    function openModal(ingredient) {
+        selectedIngredient = ingredient;
+        document.getElementById('modalIngredientName').textContent = ingredient.ingredientName;
+        document.getElementById('quantityInput').value = '';
+        document.getElementById('unitInput').value = '';
+        document.getElementById('storageInput').value = '냉장';
+        document.getElementById('quantityModal').classList.add('show');
+        document.getElementById('quantityInput').focus();
+    }
+
+    // 모달 닫기
+    function closeModal() {
+        document.getElementById('quantityModal').classList.remove('show');
+        selectedIngredient = null;
+    }
+
+    // Enter 키로 추가
+    document.getElementById('quantityInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            confirmAdd();
+        }
+    });
+
+    // 추가 확인
+    async function confirmAdd() {
+        if (!selectedIngredient) {
+            alert('식재료 정보가 올바르지 않습니다!');
+            return;
+        }
+
+        if (!selectedIngredient.ingredientName || selectedIngredient.ingredientName.trim() === '') {
+            alert('식재료 이름이 올바르지 않습니다!');
+            return;
+        }
+
+        const quantity = document.getElementById('quantityInput').value;
+        const unit = document.getElementById('unitInput').value;
+        const storageLocation = document.getElementById('storageInput').value;
+
+        if (!quantity || quantity <= 0) {
+            alert('수량을 입력해주세요!');
+            return;
+        }
+
+        if (!unit) {
+            alert('단위를 선택해주세요!');
+            return;
+        }
+
+        const ingredientToAdd = {
+            ingredientName: selectedIngredient.ingredientName,
+            categoryId: selectedIngredient.categoryId,
+            quantity: parseInt(quantity),
+            unit: unit,
+            storageLocation: storageLocation
+        };
+
+        closeModal();
+
+        try {
+            const response = await fetch('/ingredient/quick-add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(ingredientToAdd)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showToast(result.message, false);
             } else {
-                // 특정 카테고리
-                ingredientsToShow = ingredientsByCategory[categoryId] || [];
+                showToast(result.message, true);
             }
+        } catch (error) {
+            showToast('추가 중 오류가 발생했습니다: ' + error.message, true);
+        }
+    }
 
-            if (ingredientsToShow.length === 0) {
-                grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">등록된 식재료가 없습니다.</p>';
-                return;
-            }
+    // 토스트 표시
+    function showToast(message, isError) {
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
 
-            ingredientsToShow.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'ingredient-card';
-                card.onclick = () => openModal(item);
+        toastMessage.textContent = message;
 
-                card.innerHTML = `
-                    <div class="name">${item.ingredientName}</div>
-                    <div class="expiry-info">보통 ${item.defaultExpiryDays}일</div>
-                    <button class="add-btn">추가</button>
-                `;
-
-                grid.appendChild(card);
-            });
+        if (isError) {
+            toast.classList.add('error');
+        } else {
+            toast.classList.remove('error');
         }
 
-        // 모달 열기
-        function openModal(ingredient) {
-            selectedIngredient = ingredient;
-            document.getElementById('modalIngredientName').textContent = ingredient.ingredientName;
-            document.getElementById('quantityInput').value = '';
-            document.getElementById('unitInput').value = '';
-            document.getElementById('storageInput').value = '냉장';
-            document.getElementById('quantityModal').classList.add('show');
-            document.getElementById('quantityInput').focus();
-        }
+        toast.classList.add('show');
 
-        // 모달 닫기
-        function closeModal() {
-            document.getElementById('quantityModal').classList.remove('show');
-            selectedIngredient = null;
-        }
+        setTimeout(() => {
+            closeToast();
+        }, 3000);
+    }
 
-        // Enter 키로 추가
-        document.getElementById('quantityInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                confirmAdd();
-            }
-        });
+    // 토스트 닫기
+    function closeToast() {
+        document.getElementById('toast').classList.remove('show');
+    }
 
-        // 추가 확인
-        async function confirmAdd() {
-            // 식재료 선택 검증
-            if (!selectedIngredient) {
-                alert('식재료 정보가 올바르지 않습니다!');
-                return;
-            }
+    // 목록 페이지로 이동
+    function goToList() {
+        location.href = '/ingredient/list';
+    }
 
-            if (!selectedIngredient.ingredientName || selectedIngredient.ingredientName.trim() === '') {
-                alert('식재료 이름이 올바르지 않습니다!');
-                return;
-            }
-
-            const quantity = document.getElementById('quantityInput').value;
-            const unit = document.getElementById('unitInput').value;
-            const storageLocation = document.getElementById('storageInput').value;
-
-            if (!quantity || quantity <= 0) {
-                alert('수량을 입력해주세요!');
-                return;
-            }
-
-            if (!unit) {
-                alert('단위를 선택해주세요!');
-                return;
-            }
-
-            // selectedIngredient 데이터를 임시 변수에 저장 (closeModal 전에)
-            const ingredientToAdd = {
-                ingredientName: selectedIngredient.ingredientName,
-                categoryId: selectedIngredient.categoryId,
-                quantity: parseInt(quantity),
-                unit: unit,
-                storageLocation: storageLocation
-            };
-
+    // ESC 키로 모달 닫기
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
             closeModal();
+        }
+    });
 
-            // AJAX 요청
-            try {
-                const response = await fetch('/ingredient/quick-add', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(ingredientToAdd)
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    showToast(result.message, false);
-                } else {
-                    showToast(result.message, true);
+    // 페이지 전환 효과
+    document.querySelectorAll('a').forEach(function(link) {
+        if (link.hostname === window.location.hostname && !link.hasAttribute('data-no-transition')) {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+                    e.preventDefault();
+                    document.body.classList.add('fade-out');
+                    setTimeout(function() {
+                        window.location.href = href;
+                    }, 300);
                 }
-            } catch (error) {
-                showToast('추가 중 오류가 발생했습니다: ' + error.message, true);
-                //추가 중 오류가 발생했습니다: Cannot read properties of null (reading 'ingredientName')
-
-            }
+            });
         }
-
-        // 토스트 표시
-        function showToast(message, isError) {
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toastMessage');
-
-            toastMessage.textContent = message;
-
-            if (isError) {
-                toast.classList.add('error');
-            } else {
-                toast.classList.remove('error');
-            }
-
-            toast.classList.add('show');
-
-            // 3초 후 자동 닫기
-            setTimeout(() => {
-                closeToast();
-            }, 3000);
-        }
-
-        // 토스트 닫기
-        function closeToast() {
-            document.getElementById('toast').classList.remove('show');
-        }
-
-        // 목록 페이지로 이동
-        function goToList() {
-            location.href = '/ingredient/list';
-        }
-
-        // ESC 키로 모달 닫기
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeModal();
-            }
-        });
-
-        // 페이지 전환 효과
-        document.addEventListener('DOMContentLoaded', function() {
-            document.body.classList.add('loaded');
-        });
-
-        document.querySelectorAll('a').forEach(function(link) {
-            if (link.hostname === window.location.hostname && !link.hasAttribute('data-no-transition')) {
-                link.addEventListener('click', function(e) {
-                    const href = this.getAttribute('href');
-                    if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
-                        e.preventDefault();
-                        document.body.classList.add('fade-out');
-                        setTimeout(function() {
-                            window.location.href = href;
-                        }, 300);
-                    }
-                });
-            }
-        });
-    </script>
+    });
+</script>
 </body>
 </html>

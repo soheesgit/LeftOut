@@ -2,13 +2,19 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="icon" href="data:,">
     <title>레시피 조회</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f9f9f9;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #e8f5e9 0%, #fff3e0 100%);
+            min-height: 100vh;
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
         }
@@ -18,30 +24,54 @@
         body.fade-out {
             opacity: 0;
         }
-        h1 {
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background: white;
+            padding: 20px 25px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .page-header h1 {
             color: #333;
+            font-size: 24px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
+        .header-btns {
+            display: flex;
+            gap: 10px;
+        }
         .back-btn {
-            padding: 10px 20px;
-            background-color: #6c757d;
-            color: white;
+            padding: 10px 18px;
+            background: #f5f5f5;
+            color: #555;
             text-decoration: none;
-            border-radius: 5px;
+            border-radius: 10px;
             font-size: 14px;
-            transition: background-color 0.3s;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
         .back-btn:hover {
-            background-color: #5a6268;
+            background: #e8f5e9;
+            transform: translateY(-2px);
         }
         .filter-section {
-            margin: 20px 0;
-            padding: 20px;
+            margin-bottom: 20px;
+            padding: 20px 25px;
             background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         .filter-row {
             display: flex;
@@ -235,10 +265,15 @@
     </style>
 </head>
 <body>
-    <h1>
-        <span>레시피 조회</span>
-        <a href="/" class="back-btn">← 메인으로</a>
-    </h1>
+<div class="container">
+    <div class="page-header">
+        <h1>🍳 레시피 조회</h1>
+        <div class="header-btns">
+            <a href="/recipe/my-recipes" class="back-btn">📝 내 레시피</a>
+            <a href="/recipe/create" class="back-btn">✏️ 레시피 작성</a>
+            <a href="/" class="back-btn">🏠 메인</a>
+        </div>
+    </div>
 
     <div class="filter-section">
         <form id="filterForm" method="get" action="/recipe/list">
@@ -262,32 +297,6 @@
                 <label for="searchAuthor">작성자:</label>
                 <input type="text" id="searchAuthor" name="searchAuthor"
                        th:value="${searchAuthor}" placeholder="작성자 이름">
-            </div>
-
-            <!-- 두 번째 행: 필터 선택 -->
-            <div class="filter-row">
-                <label for="rcpPat2">요리종류:</label>
-                <select id="rcpPat2" name="rcpPat2">
-                    <option value="">전체</option>
-                    <option value="반찬" th:selected="${rcpPat2 == '반찬'}">반찬</option>
-                    <option value="국&찌개" th:selected="${rcpPat2 == '국&찌개'}">국&찌개</option>
-                    <option value="밥" th:selected="${rcpPat2 == '밥'}">밥</option>
-                    <option value="일품" th:selected="${rcpPat2 == '일품'}">일품</option>
-                    <option value="후식" th:selected="${rcpPat2 == '후식'}">후식</option>
-                    <option value="기타" th:selected="${rcpPat2 == '기타'}">기타</option>
-                </select>
-
-                <label for="rcpWay2">조리방법:</label>
-                <select id="rcpWay2" name="rcpWay2">
-                    <option value="">전체</option>
-                    <option value="굽기" th:selected="${rcpWay2 == '굽기'}">굽기</option>
-                    <option value="끓이기" th:selected="${rcpWay2 == '끓이기'}">끓이기</option>
-                    <option value="볶기" th:selected="${rcpWay2 == '볶기'}">볶기</option>
-                    <option value="찌기" th:selected="${rcpWay2 == '찌기'}">찌기</option>
-                    <option value="튀기기" th:selected="${rcpWay2 == '튀기기'}">튀기기</option>
-                    <option value="무침" th:selected="${rcpWay2 == '무침'}">무침</option>
-                    <option value="기타" th:selected="${rcpWay2 == '기타'}">기타</option>
-                </select>
 
                 <button type="submit" class="filter-btn">검색</button>
             </div>
@@ -409,5 +418,6 @@
             }
         });
     </script>
+</div>
 </body>
 </html>
