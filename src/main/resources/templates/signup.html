@@ -2,80 +2,266 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="/images/logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>회원가입</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 500px;
-            margin: 50px auto;
-            padding: 20px;
-        }
-        h2 {
-            text-align: center;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input[type="text"],
-        input[type="password"] {
-            width: 100%;
-            padding: 8px;
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
-        button {
+
+        body {
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e8f5e9 0%, #fff3e0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        body.loaded {
+            opacity: 1;
+        }
+        body.fade-out {
+            opacity: 0;
+        }
+
+        .signup-container {
             width: 100%;
-            padding: 10px;
-            background-color: #4CAF50;
+            max-width: 420px;
+        }
+
+        .signup-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-section img {
+            width: 160px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 15px;
+        }
+
+        .message-box {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .message-box.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.2s;
+            background: #fafafa;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: #aaa;
+        }
+
+        .form-group .hint {
+            font-size: 12px;
+            color: #888;
+            margin-top: 6px;
+        }
+
+        .btn-signup {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
             color: white;
             border: none;
-            cursor: pointer;
+            border-radius: 10px;
             font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
         }
-        button:hover {
-            background-color: #45a049;
+
+        .btn-signup:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
         }
-        .error {
-            color: red;
-            margin-bottom: 10px;
+
+        .btn-signup:active {
+            transform: translateY(0);
         }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .divider span {
+            padding: 0 15px;
+        }
+
         .login-link {
             text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .login-link a:hover {
+            color: #388E3C;
+            text-decoration: underline;
+        }
+
+        .home-link {
+            text-align: center;
             margin-top: 20px;
+        }
+
+        .home-link a {
+            color: #888;
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.2s;
+        }
+
+        .home-link a:hover {
+            color: #4CAF50;
         }
     </style>
 </head>
 <body>
-    <h2>회원가입</h2>
+    <div class="signup-container">
+        <div class="signup-card">
+            <div class="logo-section">
+                <img src="/images/logo.png" alt="로고">
+            </div>
 
-    <div th:if="${error}" class="error" th:text="${error}"></div>
+            <div th:if="${error}" class="message-box error">
+                <span>!</span>
+                <span th:text="${error}"></span>
+            </div>
 
-    <form action="/signup" method="post">
-        <div class="form-group">
-            <label for="username">아이디:</label>
-            <input type="text" id="username" name="username" required>
+            <form action="/signup" method="post">
+                <div class="form-group">
+                    <label for="username">아이디</label>
+                    <input type="text" id="username" name="username" placeholder="아이디를 입력하세요" required>
+                    <p class="hint">영문, 숫자 조합 4자 이상 권장</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="password" name="password" placeholder="비밀번호를 입력하세요" required>
+                    <p class="hint">8자 이상 권장</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="name">이름</label>
+                    <input type="text" id="name" name="name" placeholder="이름을 입력하세요" required>
+                </div>
+
+                <button type="submit" class="btn-signup">가입하기</button>
+            </form>
+
+            <div class="divider"><span>또는</span></div>
+
+            <div class="login-link">
+                이미 계정이 있으신가요? <a href="/login">로그인</a>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="password">비밀번호:</label>
-            <input type="password" id="password" name="password" required>
+        <div class="home-link">
+            <a href="/">← 홈으로 돌아가기</a>
         </div>
-
-        <div class="form-group">
-            <label for="name">이름:</label>
-            <input type="text" id="name" name="name" required>
-        </div>
-
-        <button type="submit">가입하기</button>
-    </form>
-
-    <div class="login-link">
-        이미 계정이 있으신가요? <a href="/login">로그인</a>
     </div>
+<script>
+    // 페이지 전환 효과
+    document.addEventListener('DOMContentLoaded', function() {
+        document.body.classList.add('loaded');
+    });
+
+    document.querySelectorAll('a').forEach(function(link) {
+        if (link.hostname === window.location.hostname && !link.hasAttribute('data-no-transition')) {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+                    e.preventDefault();
+                    document.body.classList.add('fade-out');
+                    setTimeout(function() {
+                        window.location.href = href;
+                    }, 300);
+                }
+            });
+        }
+    });
+</script>
 </body>
 </html>

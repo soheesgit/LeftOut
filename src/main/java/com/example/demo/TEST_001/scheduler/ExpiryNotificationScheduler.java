@@ -28,10 +28,10 @@ public class ExpiryNotificationScheduler {
     private final Map<Long, UserDTO> userCache = new HashMap<>();
 
     /**
-     * 매일 오전 9시에 유통기한 임박 알림 생성
+     * 매일 오전 9시 30분(한국 시간)에 유통기한 임박 알림 생성
      * cron: 초 분 시 일 월 요일
      */
-    @Scheduled(cron = "0 0 9 * * *")
+    @Scheduled(cron = "0 30 9 * * *", zone = "Asia/Seoul")
     public void checkExpiringIngredients() {
         log.info("=== 유통기한 임박 알림 스케줄러 시작 ===");
         long startTime = System.currentTimeMillis();
@@ -140,7 +140,7 @@ public class ExpiryNotificationScheduler {
     /**
      * 매일 새벽 3시에 오래된 알림 정리
      */
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
     public void cleanupOldNotifications() {
         log.info("=== 오래된 알림 정리 스케줄러 시작 ===");
 

@@ -9,6 +9,14 @@
             font-family: Arial, sans-serif;
             margin: 20px;
             background-color: #f9f9f9;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        body.loaded {
+            opacity: 1;
+        }
+        body.fade-out {
+            opacity: 0;
         }
         .container {
             max-width: 1000px;
@@ -643,6 +651,26 @@
                 alert('좋아요 처리 중 오류가 발생했습니다.');
             }
         }
+
+        // 페이지 전환 효과
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.classList.add('loaded');
+        });
+
+        document.querySelectorAll('a').forEach(function(link) {
+            if (link.hostname === window.location.hostname && !link.hasAttribute('data-no-transition')) {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+                        e.preventDefault();
+                        document.body.classList.add('fade-out');
+                        setTimeout(function() {
+                            window.location.href = href;
+                        }, 300);
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
