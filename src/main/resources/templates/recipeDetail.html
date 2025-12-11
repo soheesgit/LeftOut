@@ -185,13 +185,19 @@
             color: #555;
             white-space: pre-wrap;
         }
-        .ingredients-list ul {
+        ul.ingredients-list {
             list-style: none;
             padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px;
         }
-        .ingredients-list li {
-            padding: 8px 0;
-            border-bottom: 1px dashed #eee;
+        ul.ingredients-list li {
+            padding: 10px 14px;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #ffe0b2;
+            white-space: nowrap;
         }
         .cooking-steps {
             margin-top: 30px;
