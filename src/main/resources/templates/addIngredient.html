@@ -2,164 +2,435 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="/images/logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>식재료 추가</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            max-width: 600px;
-        }
-        h1 {
-            color: #333;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 8px;
-            font-size: 14px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
-        textarea {
-            resize: vertical;
-            min-height: 60px;
+
+        body {
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e8f5e9 0%, #fff3e0 100%);
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
         }
-        .btn {
-            padding: 10px 20px;
-            margin: 5px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+        body.loaded {
+            opacity: 1;
+        }
+        body.fade-out {
+            opacity: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .nav-links a.ai-link {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+        }
+
+        .nav-links a.quick-link {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .nav-links a.list-link {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .nav-links a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        .form-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .form-column {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #4CAF50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8f5e9;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
             font-size: 14px;
         }
-        .btn-primary {
-            background-color: #4CAF50;
-            color: white;
+
+        .form-group label .required {
+            color: #f44336;
         }
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.2s;
+            background: #fafafa;
         }
-        .btn:hover {
-            opacity: 0.8;
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1);
         }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group .hint {
+            font-size: 12px;
+            color: #888;
+            margin-top: 6px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
         .info-box {
-            padding: 10px;
-            background-color: #e7f3fe;
-            border-left: 4px solid #2196F3;
-            margin: 10px 0;
+            padding: 14px 16px;
+            background: #e3f2fd;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #1565c0;
             display: none;
+            border-left: 4px solid #2196F3;
         }
+
+        .info-box.show {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
         .error-box {
-            padding: 10px;
-            background-color: #ffebee;
-            border-left: 4px solid #f44336;
-            margin: 10px 0;
+            padding: 14px 16px;
+            background: #ffebee;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
             color: #c62828;
+            border-left: 4px solid #f44336;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .storage-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .storage-option {
+            position: relative;
+        }
+
+        .storage-option input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .storage-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fafafa;
+        }
+
+        .storage-option label .icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .storage-option label .text {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .storage-option input:checked + label {
+            border-color: #4CAF50;
+            background: #e8f5e9;
+        }
+
+        .storage-option input:checked + label .text {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        @media (max-width: 768px) {
+            .form-layout {
+                grid-template-columns: 1fr;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .storage-options {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>식재료 추가</h1>
+    <div class="container">
+        <div class="header">
+            <h1>🥬 식재료 추가</h1>
+            <div class="nav-links">
+                <a href="/ingredient/ai-recognition" class="ai-link">🤖 AI 사진 인식</a>
+                <a href="/ingredient/quick-add" class="quick-link">⚡ 빠른 추가</a>
+                <a href="/ingredient/list" class="list-link">📋 목록으로</a>
+            </div>
+        </div>
 
-    <div style="margin-bottom: 15px;">
-        <a href="/ingredient/ai-recognition" style="color: #2196F3; text-decoration: none; font-weight: bold;">
-            AI로 사진 인식하여 추가하기
-        </a>
-        |
-        <a href="/ingredient/quick-add" style="color: #4CAF50; text-decoration: none;">빠른 추가</a>
-        |
-        <a href="/ingredient/list" style="color: #666; text-decoration: none;">목록으로</a>
+        <div class="card">
+            <!-- 에러 메시지 표시 -->
+            <div class="error-box" th:if="${errorMessage}">
+                <span>⚠️</span>
+                <span th:text="${errorMessage}">에러 메시지</span>
+            </div>
+
+            <form action="/ingredient/add" method="post" name="addForm" onsubmit="return validateForm()">
+                <div class="form-layout">
+                    <div class="form-column">
+                        <div class="section-title">기본 정보</div>
+
+                        <div class="form-group">
+                            <label for="ingredientName">식재료명 <span class="required">*</span></label>
+                            <input type="text" id="ingredientName" name="ingredientName" required
+                                   placeholder="예: 계란, 우유, 당근"
+                                   onchange="checkDefaultExpiry()"
+                                   onkeydown="if(event.key === 'Enter') { event.preventDefault(); }">
+                        </div>
+
+                        <div id="defaultExpiryInfo" class="info-box">
+                            💡 <span id="defaultExpiryText"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="categoryId">카테고리 <span class="required">*</span></label>
+                            <select id="categoryId" name="categoryId" required>
+                                <option value="">선택하세요</option>
+                                <option th:each="category : ${categories}"
+                                        th:value="${category.categoryId}"
+                                        th:text="${category.categoryName}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="section-title">날짜 정보</div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="purchaseDate">구매일 <span class="required">*</span></label>
+                                <input type="date" id="purchaseDate" name="purchaseDate" required
+                                       onchange="calculateExpiryDate()">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="expiryDate">유통기한 <span class="required">*</span></label>
+                                <input type="date" id="expiryDate" name="expiryDate" required>
+                                <p class="hint">자동 계산된 날짜를 수정할 수 있어요</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-column">
+                        <div class="section-title">수량 및 보관</div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="quantity">수량</label>
+                                <input type="number" id="quantity" name="quantity" min="0" step="1"
+                                       placeholder="예: 500">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="unit">단위</label>
+                                <select id="unit" name="unit">
+                                    <option value="">선택하세요</option>
+                                    <option value="개">개</option>
+                                    <option value="g">g</option>
+                                    <option value="kg">kg</option>
+                                    <option value="mL">mL</option>
+                                    <option value="L">L</option>
+                                    <option value="봉지">봉지</option>
+                                    <option value="팩">팩</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>보관 위치 <span class="required">*</span></label>
+                            <div class="storage-options">
+                                <div class="storage-option">
+                                    <input type="radio" id="storage-cold" name="storageLocation" value="냉장" checked>
+                                    <label for="storage-cold">
+                                        <span class="icon">❄️</span>
+                                        <span class="text">냉장</span>
+                                    </label>
+                                </div>
+                                <div class="storage-option">
+                                    <input type="radio" id="storage-frozen" name="storageLocation" value="냉동">
+                                    <label for="storage-frozen">
+                                        <span class="icon">🧊</span>
+                                        <span class="text">냉동</span>
+                                    </label>
+                                </div>
+                                <div class="storage-option">
+                                    <input type="radio" id="storage-room" name="storageLocation" value="실온">
+                                    <label for="storage-room">
+                                        <span class="icon">🌡️</span>
+                                        <span class="text">실온</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="memo">메모</label>
+                            <textarea id="memo" name="memo"
+                                      placeholder="추가 정보를 입력하세요 (선택사항)"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="goList()">취소</button>
+                    <button type="submit" class="btn btn-primary">저장하기</button>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <!-- 에러 메시지 표시 -->
-    <div class="error-box" th:if="${errorMessage}">
-        <span th:text="${errorMessage}">에러 메시지</span>
-    </div>
-
-    <form action="/ingredient/add" method="post" name="addForm" onsubmit="return validateForm()">
-        <div class="form-group">
-            <label for="ingredientName">식재료명 *</label>
-            <input type="text" id="ingredientName" name="ingredientName" required
-                   placeholder="예: 계란, 우유, 당근"
-                   onchange="checkDefaultExpiry()"
-                   onkeydown="if(event.key === 'Enter') { event.preventDefault(); }">
-        </div>
-
-        <div id="defaultExpiryInfo" class="info-box">
-            <span id="defaultExpiryText"></span>
-        </div>
-
-        <div class="form-group">
-            <label for="categoryId">카테고리 *</label>
-            <select id="categoryId" name="categoryId" required>
-                <option value="">선택하세요</option>
-                <option th:each="category : ${categories}"
-                        th:value="${category.categoryId}"
-                        th:text="${category.categoryName}">
-                </option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="purchaseDate">구매일 *</label>
-            <input type="date" id="purchaseDate" name="purchaseDate" required
-                   onchange="calculateExpiryDate()">
-        </div>
-
-        <div class="form-group">
-            <label for="expiryDate">유통기한 *</label>
-            <input type="date" id="expiryDate" name="expiryDate" required>
-            <small style="color: #666;">자동 계산된 날짜를 직접 수정할 수 있습니다.</small>
-        </div>
-
-        <div class="form-group">
-            <label for="quantity">수량</label>
-            <input type="number" id="quantity" name="quantity" min="0" step="0.01"
-                   placeholder="예: 500">
-        </div>
-
-        <div class="form-group">
-            <label for="unit">단위</label>
-            <select id="unit" name="unit">
-                <option value="">선택하세요</option>
-                <option value="개">개</option>
-                <option value="g">g</option>
-                <option value="kg">kg</option>
-                <option value="mL">mL</option>
-                <option value="L">L</option>
-                <option value="봉지">봉지</option>
-                <option value="팩">팩</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="storageLocation">보관 위치 *</label>
-            <select id="storageLocation" name="storageLocation" required>
-                <option value="냉장" selected>❄️ 냉장</option>
-                <option value="냉동">🧊 냉동</option>
-                <option value="실온">🌡️ 실온</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="memo">메모</label>
-            <textarea id="memo" name="memo"
-                      placeholder="추가 정보를 입력하세요 (선택사항)"></textarea>
-        </div>
-
-        <button type="submit" class="btn btn-primary">저장</button>
-        <button type="button" class="btn btn-secondary" onclick="goList()">취소</button>
-    </form>
 
     <script th:inline="javascript">
         // 기본 유통기한 데이터
@@ -188,7 +459,7 @@
                 const categoryId = defaultExpiryMap[ingredientName].categoryId;
 
                 infoText.textContent = `이 식재료의 평균 유통기한은 ${days}일입니다.`;
-                infoBox.style.display = 'block';
+                infoBox.classList.add('show');
 
                 // 카테고리 자동 선택
                 if (categoryId) {
@@ -198,7 +469,7 @@
                 // 유통기한 자동 계산
                 calculateExpiryDate();
             } else {
-                infoBox.style.display = 'none';
+                infoBox.classList.remove('show');
             }
         }
 
@@ -250,11 +521,28 @@
 
         // URL 파라미터에서 식재료명 가져오기 (AI 인식 결과)
         document.addEventListener('DOMContentLoaded', function() {
+            document.body.classList.add('loaded');
             const urlParams = new URLSearchParams(window.location.search);
             const ingredientName = urlParams.get('name');
             if (ingredientName) {
                 document.getElementById('ingredientName').value = ingredientName;
                 checkDefaultExpiry();
+            }
+        });
+
+        // 페이지 전환 효과
+        document.querySelectorAll('a').forEach(function(link) {
+            if (link.hostname === window.location.hostname && !link.hasAttribute('data-no-transition')) {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+                        e.preventDefault();
+                        document.body.classList.add('fade-out');
+                        setTimeout(function() {
+                            window.location.href = href;
+                        }, 300);
+                    }
+                });
             }
         });
     </script>

@@ -2,139 +2,371 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="/images/logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>식재료 수정</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            max-width: 600px;
-        }
-        h1 {
-            color: #333;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 8px;
-            font-size: 14px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
-        input[readonly] {
-            background-color: #f0f0f0;
+
+        body {
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e8f5e9 0%, #fff3e0 100%);
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
         }
-        textarea {
-            resize: vertical;
-            min-height: 60px;
+        body.loaded {
+            opacity: 1;
         }
-        .btn {
-            padding: 10px 20px;
-            margin: 5px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+        body.fade-out {
+            opacity: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            background: #f5f5f5;
+            color: #666;
+            transition: all 0.2s;
+        }
+
+        .nav-links a:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #FF9800;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #fff3e0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
             font-size: 14px;
         }
+
+        .form-group label .required {
+            color: #f44336;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.2s;
+            background: #fafafa;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #FF9800;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(255, 152, 0, 0.1);
+        }
+
+        .form-group input[readonly] {
+            background: #f0f0f0;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .storage-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .storage-option {
+            position: relative;
+        }
+
+        .storage-option input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .storage-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fafafa;
+        }
+
+        .storage-option label .icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .storage-option label .text {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .storage-option input:checked + label {
+            border-color: #FF9800;
+            background: #fff3e0;
+        }
+
+        .storage-option input:checked + label .text {
+            color: #e65100;
+            font-weight: 600;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
         .btn-primary {
-            background-color: #4CAF50;
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
             color: white;
         }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+        }
+
         .btn-secondary {
-            background-color: #6c757d;
-            color: white;
+            background: #f5f5f5;
+            color: #666;
         }
-        .btn:hover {
-            opacity: 0.8;
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .id-badge {
+            display: inline-block;
+            background: #f5f5f5;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 500px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .storage-options {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>식재료 수정</h1>
-
-    <form th:action="@{/ingredient/update/{id}(id=${ingredient.ingredientId})}" method="post" name="updateForm">
-        <input type="hidden" name="ingredientId" th:value="${ingredient.ingredientId}">
-
-        <div class="form-group">
-            <label for="ingredientId">ID</label>
-            <input type="text" id="ingredientId" readonly="readonly" th:value="${ingredient.ingredientId}">
+    <div class="container">
+        <div class="header">
+            <h1>✏️ 식재료 수정</h1>
+            <div class="nav-links">
+                <a href="/ingredient/list">📋 목록으로</a>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="ingredientName">식재료명 *</label>
-            <input type="text" id="ingredientName" name="ingredientName" required
-                   th:value="${ingredient.ingredientName}">
-        </div>
+        <div class="card">
+            <span class="id-badge">ID: <span th:text="${ingredient.ingredientId}"></span></span>
 
-        <div class="form-group">
-            <label for="categoryId">카테고리 *</label>
-            <select id="categoryId" name="categoryId" required>
-                <option th:each="category : ${categories}"
-                        th:value="${category.categoryId}"
-                        th:text="${category.categoryName}"
-                        th:selected="${category.categoryId == ingredient.categoryId}">
-                </option>
-            </select>
-        </div>
+            <form th:action="@{/ingredient/update/{id}(id=${ingredient.ingredientId})}" method="post" name="updateForm">
+                <input type="hidden" name="ingredientId" th:value="${ingredient.ingredientId}">
 
-        <div class="form-group">
-            <label for="purchaseDate">구매일 *</label>
-            <input type="date" id="purchaseDate" name="purchaseDate" required
-                   th:value="${#temporals.format(ingredient.purchaseDate, 'yyyy-MM-dd')}">
-        </div>
+                <div class="section-title">기본 정보</div>
 
-        <div class="form-group">
-            <label for="expiryDate">유통기한 *</label>
-            <input type="date" id="expiryDate" name="expiryDate" required
-                   th:value="${#temporals.format(ingredient.expiryDate, 'yyyy-MM-dd')}">
-        </div>
+                <div class="form-group">
+                    <label for="ingredientName">식재료명 <span class="required">*</span></label>
+                    <input type="text" id="ingredientName" name="ingredientName" required
+                           th:value="${ingredient.ingredientName}">
+                </div>
 
-        <div class="form-group">
-            <label for="quantity">수량</label>
-            <input type="number" id="quantity" name="quantity" min="0" step="0.01"
-                   th:value="${ingredient.quantity}"
-                   placeholder="예: 500">
-        </div>
+                <div class="form-group">
+                    <label for="categoryId">카테고리 <span class="required">*</span></label>
+                    <select id="categoryId" name="categoryId" required>
+                        <option th:each="category : ${categories}"
+                                th:value="${category.categoryId}"
+                                th:text="${category.categoryName}"
+                                th:selected="${category.categoryId == ingredient.categoryId}">
+                        </option>
+                    </select>
+                </div>
 
-        <div class="form-group">
-            <label for="unit">단위</label>
-            <select id="unit" name="unit">
-                <option value="">선택하세요</option>
-                <option value="개" th:selected="${ingredient.unit == '개'}">개</option>
-                <option value="g" th:selected="${ingredient.unit == 'g'}">g</option>
-                <option value="kg" th:selected="${ingredient.unit == 'kg'}">kg</option>
-                <option value="mL" th:selected="${ingredient.unit == 'mL'}">mL</option>
-                <option value="L" th:selected="${ingredient.unit == 'L'}">L</option>
-                <option value="봉지" th:selected="${ingredient.unit == '봉지'}">봉지</option>
-                <option value="팩" th:selected="${ingredient.unit == '팩'}">팩</option>
-            </select>
-        </div>
+                <div class="section-title">날짜 정보</div>
 
-        <div class="form-group">
-            <label for="storageLocation">보관 위치 *</label>
-            <select id="storageLocation" name="storageLocation" required>
-                <option value="냉장" th:selected="${ingredient.storageLocation == '냉장'}">❄️ 냉장</option>
-                <option value="냉동" th:selected="${ingredient.storageLocation == '냉동'}">🧊 냉동</option>
-                <option value="실온" th:selected="${ingredient.storageLocation == '실온'}">🌡️ 실온</option>
-            </select>
-        </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="purchaseDate">구매일 <span class="required">*</span></label>
+                        <input type="date" id="purchaseDate" name="purchaseDate" required
+                               th:value="${#temporals.format(ingredient.purchaseDate, 'yyyy-MM-dd')}">
+                    </div>
 
-        <div class="form-group">
-            <label for="memo">메모</label>
-            <textarea id="memo" name="memo" th:text="${ingredient.memo}"></textarea>
-        </div>
+                    <div class="form-group">
+                        <label for="expiryDate">유통기한 <span class="required">*</span></label>
+                        <input type="date" id="expiryDate" name="expiryDate" required
+                               th:value="${#temporals.format(ingredient.expiryDate, 'yyyy-MM-dd')}">
+                    </div>
+                </div>
 
-        <button type="button" class="btn btn-primary" onclick="submitUpdate()">저장</button>
-        <button type="button" class="btn btn-secondary" onclick="goList()">취소</button>
-    </form>
+                <div class="section-title">수량 및 보관</div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="quantity">수량</label>
+                        <input type="number" id="quantity" name="quantity" min="0" step="1"
+                               th:value="${ingredient.quantity}"
+                               placeholder="예: 500">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="unit">단위</label>
+                        <select id="unit" name="unit">
+                            <option value="">선택하세요</option>
+                            <option value="개" th:selected="${ingredient.unit == '개'}">개</option>
+                            <option value="g" th:selected="${ingredient.unit == 'g'}">g</option>
+                            <option value="kg" th:selected="${ingredient.unit == 'kg'}">kg</option>
+                            <option value="mL" th:selected="${ingredient.unit == 'mL'}">mL</option>
+                            <option value="L" th:selected="${ingredient.unit == 'L'}">L</option>
+                            <option value="봉지" th:selected="${ingredient.unit == '봉지'}">봉지</option>
+                            <option value="팩" th:selected="${ingredient.unit == '팩'}">팩</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>보관 위치 <span class="required">*</span></label>
+                    <div class="storage-options">
+                        <div class="storage-option">
+                            <input type="radio" id="storage-cold" name="storageLocation" value="냉장"
+                                   th:checked="${ingredient.storageLocation == '냉장'}">
+                            <label for="storage-cold">
+                                <span class="icon">❄️</span>
+                                <span class="text">냉장</span>
+                            </label>
+                        </div>
+                        <div class="storage-option">
+                            <input type="radio" id="storage-frozen" name="storageLocation" value="냉동"
+                                   th:checked="${ingredient.storageLocation == '냉동'}">
+                            <label for="storage-frozen">
+                                <span class="icon">🧊</span>
+                                <span class="text">냉동</span>
+                            </label>
+                        </div>
+                        <div class="storage-option">
+                            <input type="radio" id="storage-room" name="storageLocation" value="실온"
+                                   th:checked="${ingredient.storageLocation == '실온'}">
+                            <label for="storage-room">
+                                <span class="icon">🌡️</span>
+                                <span class="text">실온</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="memo">메모</label>
+                    <textarea id="memo" name="memo" th:text="${ingredient.memo}"
+                              placeholder="추가 정보를 입력하세요 (선택사항)"></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="goList()">취소</button>
+                    <button type="button" class="btn btn-primary" onclick="submitUpdate()">저장하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script>
         function submitUpdate() {
@@ -146,6 +378,26 @@
         function goList() {
             location.href = '/ingredient/list';
         }
+
+        // 페이지 전환 효과
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.classList.add('loaded');
+        });
+
+        document.querySelectorAll('a').forEach(function(link) {
+            if (link.hostname === window.location.hostname && !link.hasAttribute('data-no-transition')) {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+                        e.preventDefault();
+                        document.body.classList.add('fade-out');
+                        setTimeout(function() {
+                            window.location.href = href;
+                        }, 300);
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>

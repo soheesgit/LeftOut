@@ -16,6 +16,14 @@
             background: linear-gradient(135deg, #e8f5e9 0%, #fff3e0 100%);
             min-height: 100vh;
             padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        body.loaded {
+            opacity: 1;
+        }
+        body.fade-out {
+            opacity: 0;
         }
         .container {
             max-width: 1200px;
@@ -29,14 +37,8 @@
             margin-bottom: 10px;
         }
         .logo img {
-            width: 150px;
-            height: 150px;
-        }
-        .brand {
-            font-size: 56px;
-            font-weight: bold;
-            color: #2e7d32;
-            letter-spacing: 2px;
+            width: 300px;
+            height: auto;
         }
 
         /* 랜덤 추천 버튼 */
@@ -322,7 +324,6 @@
 <div class="container">
     <div class="header">
         <div class="logo"><img src="/images/logo.png" alt="냉털이 로고"></div>
-        <div class="brand">냉털이</div>
     </div>
 
     <div class="user-info">
@@ -616,6 +617,27 @@
     window.addEventListener('beforeunload', function() {
         if (eventSource) {
             eventSource.close();
+        }
+    });
+</script>
+<script>
+    // 페이지 전환 효과
+    document.addEventListener('DOMContentLoaded', function() {
+        document.body.classList.add('loaded');
+    });
+
+    document.querySelectorAll('a').forEach(function(link) {
+        if (link.hostname === window.location.hostname && !link.hasAttribute('data-no-transition')) {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+                    e.preventDefault();
+                    document.body.classList.add('fade-out');
+                    setTimeout(function() {
+                        window.location.href = href;
+                    }, 300);
+                }
+            });
         }
     });
 </script>

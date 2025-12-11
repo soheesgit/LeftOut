@@ -9,6 +9,14 @@
             font-family: Arial, sans-serif;
             margin: 20px;
             background-color: #f9f9f9;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        body.loaded {
+            opacity: 1;
+        }
+        body.fade-out {
+            opacity: 0;
         }
         h1 {
             color: #333;
@@ -365,6 +373,11 @@
     </div>
 
     <script>
+        // 페이지 전환 효과
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.classList.add('loaded');
+        });
+
         // 카드 클릭 이벤트 (ID 기반으로 상세 페이지 이동)
         document.querySelectorAll('.recipe-card').forEach(card => {
             card.addEventListener('click', function(e) {
@@ -372,12 +385,28 @@
 
                 // 카드 클릭 효과
                 this.style.transform = 'scale(0.98)';
+                document.body.classList.add('fade-out');
 
                 // ID 기반으로 통합 상세 페이지 이동
                 setTimeout(() => {
                     location.href = '/recipe/detail/' + recipeId;
-                }, 100);
+                }, 300);
             });
+        });
+
+        document.querySelectorAll('a').forEach(function(link) {
+            if (link.hostname === window.location.hostname && !link.hasAttribute('data-no-transition')) {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+                        e.preventDefault();
+                        document.body.classList.add('fade-out');
+                        setTimeout(function() {
+                            window.location.href = href;
+                        }, 300);
+                    }
+                });
+            }
         });
     </script>
 </body>

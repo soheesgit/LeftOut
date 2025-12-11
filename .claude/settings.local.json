@@ -12,7 +12,10 @@
       "Bash(del \"E:\\3-2\\데베프\\TEST_001\\TEST_001\\src\\main\\resources\\templates\\allRecipes.html\")",
       "Bash(del \"E:\\3-2\\데베프\\TEST_001\\TEST_001\\src\\main\\resources\\templates\\userRecipeDetail.html\")",
       "WebFetch(domain:deeplearning.cms.waikato.ac.nz)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git fetch:*)",
+      "Bash(xargs -I {} sh -c 'echo \"\"=== {} ===\"\" && cat {}')",
+      "Bash(git -C /c/LeftOut status --short)"
     ],
     "deny": [],
     "ask": []

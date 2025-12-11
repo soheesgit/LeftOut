@@ -2,229 +2,449 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="/images/logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>카테고리 관리</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
-            max-width: 800px;
-        }
-        h1 {
-            color: #333;
-        }
-        .form-section {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e8f5e9 0%, #fff3e0 100%);
             padding: 20px;
-            background-color: #f5f5f5;
-            border-radius: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        body.loaded {
+            opacity: 1;
+        }
+        body.fade-out {
+            opacity: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
             margin-bottom: 20px;
         }
-        .form-group {
+
+        .header h1 {
+            font-size: 28px;
+            color: #333;
             margin-bottom: 15px;
         }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
         }
-        input {
-            padding: 8px;
-            font-size: 14px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            width: 300px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-        th {
-            background-color: #4CAF50;
-            color: white;
-        }
-        tr:hover {
-            background-color: #f5f5f5;
-        }
-        .btn {
-            padding: 10px 20px;
-            margin: 5px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
+
+        .nav-links a {
             text-decoration: none;
-            display: inline-block;
-        }
-        .btn-primary {
-            background-color: #4CAF50;
-            color: white;
-        }
-        .btn-danger {
-            background-color: #f44336;
-            color: white;
-        }
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-        .btn:hover {
-            opacity: 0.8;
-        }
-        .btn-warning {
-            background-color: #ff9800;
-            color: white;
-        }
-        .alert {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-        }
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .alert-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .edit-row {
-            background-color: #fff3cd;
-        }
-        .edit-input {
-            width: 100%;
-            padding: 5px;
+            padding: 8px 16px;
+            border-radius: 20px;
             font-size: 14px;
+            background: #f5f5f5;
+            color: #666;
+            transition: all 0.2s;
+        }
+
+        .nav-links a:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert {
+            padding: 14px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+
+        .alert-error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+
+        .add-form {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.2s;
+            background: #fafafa;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.1);
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .category-item {
+            background: #fafafa;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .category-item:hover {
+            border-color: #4CAF50;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-item.editing {
+            border-color: #FF9800;
+            background: #fff8e1;
+        }
+
+        .category-id {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .category-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .category-name input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #FF9800;
+            border-radius: 8px;
+            font-size: 15px;
+            background: white;
+        }
+
+        .category-name input:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(255, 152, 0, 0.1);
+        }
+
+        .category-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 8px 14px;
+            font-size: 13px;
+            flex: 1;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 500px) {
+            .add-form {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-<h1>카테고리 관리</h1>
-
-<!-- 성공 메시지 -->
-<div th:if="${successMessage}" class="alert alert-success">
-    <span th:text="${successMessage}"></span>
-</div>
-
-<!-- 에러 메시지 -->
-<div th:if="${errorMessage}" class="alert alert-error">
-    <span th:text="${errorMessage}"></span>
-</div>
-
-<div class="form-section">
-    <h3>카테고리 추가</h3>
-    <form action="/category/add" method="post">
-        <div class="form-group">
-            <label for="categoryName">카테고리명 *</label>
-            <input type="text" id="categoryName" name="categoryName" required
-                   placeholder="예: 냉동식품, 소스류 등">
+    <div class="container">
+        <div class="header">
+            <h1>🏷️ 카테고리 관리</h1>
+            <div class="nav-links">
+                <a href="/">🏠 메인</a>
+                <a href="/ingredient/list">📋 식재료 목록</a>
+                <a href="/statistics">📊 통계</a>
+            </div>
         </div>
-        <button type="submit" class="btn btn-primary">추가</button>
-    </form>
-</div>
 
-<h3>현재 카테고리 목록</h3>
-<table>
-    <tr>
-        <th>ID</th>
-        <th>카테고리명</th>
-        <th>수정</th>
-    </tr>
-    <tr th:if="${#lists.isEmpty(categories)}">
-        <td colspan="3" style="text-align: center;">등록된 카테고리가 없습니다.</td>
-    </tr>
-    <tr th:each="category : ${categories}" th:id="'row-' + ${category.categoryId}">
-        <td th:text="${category.categoryId}" th:id="'id-' + ${category.categoryId}"></td>
-        <td th:id="'name-' + ${category.categoryId}">
-            <span th:id="'name-text-' + ${category.categoryId}" th:text="${category.categoryName}"></span>
-            <form th:id="'edit-form-' + ${category.categoryId}" style="display: none;" th:action="@{/category/update}" method="post" onsubmit="return false;">
-                <input type="hidden" name="categoryId" th:value="${category.categoryId}">
-                <input type="text" name="categoryName" th:value="${category.categoryName}"
-                       class="edit-input" th:id="'edit-input-' + ${category.categoryId}" required>
+        <!-- 성공 메시지 -->
+        <div th:if="${successMessage}" class="alert alert-success">
+            <span>✓</span>
+            <span th:text="${successMessage}"></span>
+        </div>
+
+        <!-- 에러 메시지 -->
+        <div th:if="${errorMessage}" class="alert alert-error">
+            <span>!</span>
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <div class="card">
+            <div class="section-title">➕ 새 카테고리 추가</div>
+            <form action="/category/add" method="post" class="add-form">
+                <div class="form-group">
+                    <label for="categoryName">카테고리명</label>
+                    <input type="text" id="categoryName" name="categoryName" required
+                           placeholder="예: 냉동식품, 소스류 등">
+                </div>
+                <button type="submit" class="btn btn-primary">추가하기</button>
             </form>
-        </td>
-        <td>
-            <button class="btn btn-warning" th:id="'edit-btn-' + ${category.categoryId}"
-                    th:attr="data-id=${category.categoryId}, data-name=${category.categoryName}"
-                    onclick="editCategory(this.dataset.id)">
-                수정
-            </button>
-            <button class="btn btn-primary" th:id="'save-btn-' + ${category.categoryId}"
-                    style="display: none;"
-                    th:attr="data-id=${category.categoryId}"
-                    onclick="saveCategory(this.dataset.id)">
-                저장
-            </button>
-            <button class="btn btn-secondary" th:id="'cancel-btn-' + ${category.categoryId}"
-                    style="display: none;"
-                    th:attr="data-id=${category.categoryId}, data-name=${category.categoryName}"
-                    onclick="cancelEdit(this.dataset.id, this.dataset.name)">
-                취소
-            </button>
-        </td>
-    </tr>
-</table>
+        </div>
 
-<div style="margin-top: 20px;">
-    <a href="/ingredient/list" class="btn btn-secondary">식재료 목록으로</a>
-    <a href="/statistics" class="btn btn-secondary">📊 통계</a>
-    <a href="/" class="btn btn-secondary">메인 페이지</a>
-</div>
+        <div class="card">
+            <div class="section-title">📁 현재 카테고리 목록</div>
 
-<script>
-    function editCategory(id) {
-        // Hide the name text and show the edit form
-        document.getElementById('name-text-' + id).style.display = 'none';
-        document.getElementById('edit-form-' + id).style.display = 'block';
+            <div th:if="${#lists.isEmpty(categories)}" class="empty-state">
+                <div class="icon">📂</div>
+                <p>등록된 카테고리가 없습니다.</p>
+                <p style="font-size: 14px; margin-top: 8px;">위에서 새 카테고리를 추가해보세요!</p>
+            </div>
 
-        // Show save and cancel buttons, hide edit button
-        document.getElementById('edit-btn-' + id).style.display = 'none';
-        document.getElementById('save-btn-' + id).style.display = 'inline-block';
-        document.getElementById('cancel-btn-' + id).style.display = 'inline-block';
+            <div class="category-grid" th:unless="${#lists.isEmpty(categories)}">
+                <div th:each="category : ${categories}"
+                     class="category-item"
+                     th:id="'item-' + ${category.categoryId}">
+                    <div class="category-id">ID: <span th:text="${category.categoryId}"></span></div>
 
-        // Highlight the row
-        document.getElementById('row-' + id).classList.add('edit-row');
+                    <div class="category-name" th:id="'name-container-' + ${category.categoryId}">
+                        <span th:id="'name-text-' + ${category.categoryId}" th:text="${category.categoryName}"></span>
+                        <form th:id="'edit-form-' + ${category.categoryId}"
+                              style="display: none;"
+                              th:action="@{/category/update}"
+                              method="post"
+                              onsubmit="return false;">
+                            <input type="hidden" name="categoryId" th:value="${category.categoryId}">
+                            <input type="text" name="categoryName"
+                                   th:value="${category.categoryName}"
+                                   th:id="'edit-input-' + ${category.categoryId}"
+                                   required>
+                        </form>
+                    </div>
 
-        // Focus the input
-        document.getElementById('edit-input-' + id).focus();
-    }
+                    <div class="category-actions">
+                        <button class="btn btn-warning btn-sm"
+                                th:id="'edit-btn-' + ${category.categoryId}"
+                                th:attr="data-id=${category.categoryId}, data-name=${category.categoryName}"
+                                onclick="editCategory(this.dataset.id)">
+                            수정
+                        </button>
+                        <button class="btn btn-success btn-sm"
+                                th:id="'save-btn-' + ${category.categoryId}"
+                                style="display: none;"
+                                th:attr="data-id=${category.categoryId}"
+                                onclick="saveCategory(this.dataset.id)">
+                            저장
+                        </button>
+                        <button class="btn btn-secondary btn-sm"
+                                th:id="'cancel-btn-' + ${category.categoryId}"
+                                style="display: none;"
+                                th:attr="data-id=${category.categoryId}, data-name=${category.categoryName}"
+                                onclick="cancelEdit(this.dataset.id, this.dataset.name)">
+                            취소
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    function cancelEdit(id, originalName) {
-        // Show the name text and hide the edit form
-        document.getElementById('name-text-' + id).style.display = 'inline';
-        document.getElementById('edit-form-' + id).style.display = 'none';
+    <script>
+        function editCategory(id) {
+            // Hide the name text and show the edit form
+            document.getElementById('name-text-' + id).style.display = 'none';
+            document.getElementById('edit-form-' + id).style.display = 'block';
 
-        // Show edit button, hide save and cancel buttons
-        document.getElementById('edit-btn-' + id).style.display = 'inline-block';
-        document.getElementById('save-btn-' + id).style.display = 'none';
-        document.getElementById('cancel-btn-' + id).style.display = 'none';
+            // Show save and cancel buttons, hide edit button
+            document.getElementById('edit-btn-' + id).style.display = 'none';
+            document.getElementById('save-btn-' + id).style.display = 'inline-block';
+            document.getElementById('cancel-btn-' + id).style.display = 'inline-block';
 
-        // Remove row highlight
-        document.getElementById('row-' + id).classList.remove('edit-row');
+            // Highlight the item
+            document.getElementById('item-' + id).classList.add('editing');
 
-        // Reset the input value
-        document.getElementById('edit-input-' + id).value = originalName;
-    }
-
-    function saveCategory(id) {
-        const newName = document.getElementById('edit-input-' + id).value.trim();
-
-        if (!newName) {
-            alert('카테고리명을 입력해주세요.');
-            return;
+            // Focus the input
+            document.getElementById('edit-input-' + id).focus();
         }
 
-        // Submit the form
-        const form = document.getElementById('edit-form-' + id);
-        form.submit();
-    }
-</script>
+        function cancelEdit(id, originalName) {
+            // Show the name text and hide the edit form
+            document.getElementById('name-text-' + id).style.display = 'inline';
+            document.getElementById('edit-form-' + id).style.display = 'none';
+
+            // Show edit button, hide save and cancel buttons
+            document.getElementById('edit-btn-' + id).style.display = 'inline-block';
+            document.getElementById('save-btn-' + id).style.display = 'none';
+            document.getElementById('cancel-btn-' + id).style.display = 'none';
+
+            // Remove item highlight
+            document.getElementById('item-' + id).classList.remove('editing');
+
+            // Reset the input value
+            document.getElementById('edit-input-' + id).value = originalName;
+        }
+
+        function saveCategory(id) {
+            const newName = document.getElementById('edit-input-' + id).value.trim();
+
+            if (!newName) {
+                alert('카테고리명을 입력해주세요.');
+                return;
+            }
+
+            // Submit the form
+            const form = document.getElementById('edit-form-' + id);
+            form.submit();
+        }
+
+        // 페이지 전환 효과
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.classList.add('loaded');
+        });
+
+        document.querySelectorAll('a').forEach(function(link) {
+            if (link.hostname === window.location.hostname && !link.hasAttribute('data-no-transition')) {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+                        e.preventDefault();
+                        document.body.classList.add('fade-out');
+                        setTimeout(function() {
+                            window.location.href = href;
+                        }, 300);
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
