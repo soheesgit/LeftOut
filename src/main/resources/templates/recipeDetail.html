@@ -345,7 +345,8 @@
 <body>
     <div class="container">
         <div class="header-actions">
-            <a href="javascript:void(0)" onclick="goBackSmart()" class="back-btn">← 뒤로가기</a>
+            <a href="/recipe/list" class="back-btn">← 목록으로</a>
+            <a href="/" class="back-btn">🏠 홈으로</a>
             <div>
                 <!-- 좋아요 버튼 -->
                 <button th:if="${loginUser != null}"
@@ -627,17 +628,6 @@
     </div>
 
     <script th:inline="javascript">
-        // 스마트 뒤로가기 (수정/작성 페이지에서 왔으면 목록으로, 아니면 히스토리 뒤로가기)
-        function goBackSmart() {
-            const ref = document.referrer;
-            // 수정, 작성, 삭제 페이지에서 왔거나 referrer가 없으면 목록으로
-            if (!ref || ref.includes('/recipe/edit') || ref.includes('/recipe/create') || ref.includes('/recipe/delete')) {
-                window.location.href = '/recipe/list';
-            } else {
-                history.back();
-            }
-        }
-
         // 좋아요 토글
         async function toggleLike(recipeId) {
             try {
