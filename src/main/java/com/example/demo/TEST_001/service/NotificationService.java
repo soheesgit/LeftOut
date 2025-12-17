@@ -4,11 +4,13 @@ import com.example.demo.TEST_001.dto.NotificationDTO;
 import com.example.demo.TEST_001.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,8 +26,11 @@ public class NotificationService {
     // 한 사용자가 여러 탭/브라우저에서 접속할 수 있으므로 List 사용
     private final Map<Long, CopyOnWriteArrayList<SseEmitter>> emitters = new ConcurrentHashMap<>();
 
-    // SSE 타임아웃: 30분 (밀리초)
-    private static final Long SSE_TIMEOUT = 30 * 60 * 1000L;
+    // SSE 타임아웃: 10분 (밀리초) - Heartbeat로 연결 유지
+    private static final Long SSE_TIMEOUT = 10 * 60 * 1000L;
+
+    // Heartbeat 전송 주기: 30초마다
+    private static final Long HEARTBEAT_INTERVAL = 30 * 1000L;
 
     /**
      * SSE 연결 생성
@@ -220,5 +225,101 @@ public class NotificationService {
     public boolean isUserConnected(Long userId) {
         CopyOnWriteArrayList<SseEmitter> userEmitters = emitters.get(userId);
         return userEmitters != null && !userEmitters.isEmpty();
+    }
+
+    /**
+     * Heartbeat 스케줄러: 30초마다 모든 연결에 ping 전송
+     * 좀비 연결 자동 정리
+     */
+    @Scheduled(fixedRate = 30000) // 30초마다 실행
+    public void sendHeartbeat() {
+        if (emitters.isEmpty()) {
+            return;
+        }
+
+        log.debug("Heartbeat 전송 시작 - 총 사용자 수: {}", emitters.size());
+
+        int totalConnections = 0;
+        int failedConnections = 0;
+
+        // 모든 사용자의 emitter에 heartbeat 전송
+        for (Map.Entry<Long, CopyOnWriteArrayList<SseEmitter>> entry : emitters.entrySet()) {
+            Long userId = entry.getKey();
+            CopyOnWriteArrayList<SseEmitter> userEmitters = entry.getValue();
+
+            // 제거할 emitter 목록 (CopyOnWriteArrayList 순회 중 수정 방지)
+            List<SseEmitter> toRemove = new ArrayList<>();
+
+            for (SseEmitter emitter : userEmitters) {
+                totalConnections++;
+                try {
+                    // comment 이벤트로 heartbeat 전송 (클라이언트에서 무시됨)
+                    emitter.send(SseEmitter.event()
+                            .name("heartbeat")
+                            .data("ping")
+                            .comment("keep-alive"));
+
+                    log.trace("Heartbeat 전송 성공: userId={}", userId);
+                } catch (IOException e) {
+                    log.warn("Heartbeat 전송 실패 (좀비 연결 제거): userId={}", userId);
+                    toRemove.add(emitter);
+                    failedConnections++;
+                }
+            }
+
+            // 실패한 연결 제거
+            for (SseEmitter emitter : toRemove) {
+                removeEmitter(userId, emitter);
+            }
+        }
+
+        if (failedConnections > 0) {
+            log.info("Heartbeat 완료 - 총 연결: {}, 제거된 좀비 연결: {}",
+                    totalConnections, failedConnections);
+        }
+    }
+
+    /**
+     * 특정 사용자의 모든 연결에 수동으로 Heartbeat 전송
+     * 페이지 새로고침 전에 호출하여 기존 연결 정리 가능
+     */
+    public void sendHeartbeatToUser(Long userId) {
+        CopyOnWriteArrayList<SseEmitter> userEmitters = emitters.get(userId);
+        if (userEmitters == null || userEmitters.isEmpty()) {
+            return;
+        }
+
+        List<SseEmitter> toRemove = new ArrayList<>();
+
+        for (SseEmitter emitter : userEmitters) {
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("heartbeat")
+                        .data("ping"));
+            } catch (IOException e) {
+                log.debug("사용자 Heartbeat 실패: userId={}", userId);
+                toRemove.add(emitter);
+            }
+        }
+
+        for (SseEmitter emitter : toRemove) {
+            removeEmitter(userId, emitter);
+        }
+    }
+
+    /**
+     * 현재 연결 상태 로깅 (디버깅용)
+     */
+    public void logConnectionStatus() {
+        int totalUsers = emitters.size();
+        int totalConnections = emitters.values().stream()
+                .mapToInt(List::size)
+                .sum();
+
+        log.info("SSE 연결 상태 - 사용자 수: {}, 총 연결 수: {}", totalUsers, totalConnections);
+
+        for (Map.Entry<Long, CopyOnWriteArrayList<SseEmitter>> entry : emitters.entrySet()) {
+            log.debug("  userId={}: {} 연결", entry.getKey(), entry.getValue().size());
+        }
     }
 }

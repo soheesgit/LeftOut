@@ -2,11 +2,13 @@ package com.example.demo.TEST_001.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.connector.ClientAbortException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +20,26 @@ import java.util.Map;
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    /**
+     * AsyncRequestNotUsableException 처리 (SSE 연결 종료 시)
+     * 클라이언트가 연결을 끊었을 때 발생하는 정상적인 상황이므로 무시
+     */
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    public void handleAsyncRequestNotUsableException(AsyncRequestNotUsableException e) {
+        // 에러 로그 출력 안 함 (정상적인 클라이언트 연결 종료)
+        log.debug("클라이언트가 비동기 요청을 종료했습니다: {}", e.getMessage());
+    }
+
+    /**
+     * ClientAbortException 처리 (클라이언트 연결 중단)
+     * 클라이언트가 응답을 받기 전에 연결을 끊었을 때 발생
+     */
+    @ExceptionHandler(ClientAbortException.class)
+    public void handleClientAbortException(ClientAbortException e) {
+        // 에러 로그 출력 안 함 (정상적인 클라이언트 연결 종료)
+        log.debug("클라이언트가 연결을 중단했습니다: {}", e.getMessage());
+    }
 
     /**
      * 일반 페이지 요청에서 발생한 예외 처리

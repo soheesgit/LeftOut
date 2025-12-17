@@ -420,6 +420,11 @@
             reconnectAttempts = 0;
         });
 
+        // Heartbeat 이벤트 처리 (연결 유지 확인)
+        eventSource.addEventListener('heartbeat', function(e) {
+            console.log('Heartbeat 수신 - 연결 정상');
+        });
+
         // 안읽은 알림 개수 업데이트
         eventSource.addEventListener('unread-count', function(e) {
             updateBadge(parseInt(e.data));
@@ -453,6 +458,34 @@
             }
         };
     }
+
+    // SSE 연결 종료 함수
+    function disconnectSSE() {
+        if (eventSource) {
+            console.log('SSE 연결 종료');
+            eventSource.close();
+            eventSource = null;
+        }
+    }
+
+    // 페이지 이탈 시 연결 정리
+    window.addEventListener('beforeunload', function(e) {
+        disconnectSSE();
+    });
+
+    // 페이지 숨김 시 연결 정리 (브라우저 탭 전환, 최소화 등)
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            // 페이지가 숨겨질 때 연결 종료
+            disconnectSSE();
+        } else {
+            // 페이지가 다시 보일 때 재연결
+            if (!eventSource || eventSource.readyState === EventSource.CLOSED) {
+                console.log('페이지 재활성화 - SSE 재연결');
+                connectSSE();
+            }
+        }
+    });
 
     // 뱃지 업데이트
     function updateBadge(count) {
