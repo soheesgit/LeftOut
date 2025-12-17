@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,11 +43,67 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * IOException 처리 (네트워크 연결 문제)
+     * 클라이언트 연결 종료로 인한 IOException은 무시
+     */
+    @ExceptionHandler(IOException.class)
+    public void handleIOException(IOException e) {
+        String message = e.getMessage();
+
+        // 클라이언트 연결 종료 관련 메시지는 무시
+        if (message != null && (
+            message.contains("현재 연결은") ||
+            message.contains("사용자의 호스트") ||
+            message.contains("중단되었습니다") ||
+            message.contains("Connection reset") ||
+            message.contains("Broken pipe") ||
+            message.contains("Connection aborted") ||
+            message.contains("연결이 끊어졌습니다") ||
+            message.contains("Socket closed")
+        )) {
+            log.debug("네트워크 연결 종료 (무시): {}", message);
+            return;
+        }
+
+        // 실제 IO 에러는 로그 출력
+        log.warn("IO 예외 발생: {}", message);
+    }
+
+    /**
      * 일반 페이지 요청에서 발생한 예외 처리
      * Whitelabel Error Page 대신 사용자 친화적인 에러 페이지 표시
      */
     @ExceptionHandler(Exception.class)
     public Object handleException(Exception e, HttpServletRequest request, Model model) {
+        // AsyncRequestNotUsableException과 ClientAbortException은 이미 별도 핸들러에서 처리하지만
+        // 혹시 모를 경우를 대비해 여기서도 한 번 더 체크
+        if (e instanceof AsyncRequestNotUsableException ||
+            e.getCause() instanceof AsyncRequestNotUsableException) {
+            log.debug("비동기 요청 사용 불가 (무시): {}", e.getMessage());
+            return null;
+        }
+        if (e instanceof ClientAbortException ||
+            e.getCause() instanceof ClientAbortException) {
+            log.debug("클라이언트 연결 중단 (무시): {}", e.getMessage());
+            return null;
+        }
+
+        // IOException 체크 (네트워크 연결 종료)
+        if (e instanceof IOException || e.getCause() instanceof IOException) {
+            String message = e.getMessage();
+            if (message != null && (
+                message.contains("현재 연결은") ||
+                message.contains("사용자의 호스트") ||
+                message.contains("중단되었습니다") ||
+                message.contains("Connection reset") ||
+                message.contains("Broken pipe") ||
+                message.contains("Connection aborted")
+            )) {
+                log.debug("네트워크 연결 종료 (무시): {}", message);
+                return null;
+            }
+        }
+
         log.error("예외 발생: {} - {}", request.getRequestURI(), e.getMessage(), e);
 
         // AJAX 요청인지 확인

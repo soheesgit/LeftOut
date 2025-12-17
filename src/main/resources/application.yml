@@ -39,3 +39,24 @@ brevo:
   api:
     key: ${BREVO_API_KEY:}
     sender-email: ${BREVO_SENDER_EMAIL:}
+
+# 로깅 설정
+logging:
+  level:
+    # 전체 root 로거
+    root: INFO
+    # AsyncRequestNotUsableException 무시
+    org.springframework.web.context.request.async: ERROR
+    # Thymeleaf 렌더링 에러 무시
+    org.thymeleaf.spring6.view: ERROR
+    # Dispatcher Servlet 에러 완전 차단
+    org.apache.catalina.core.ContainerBase.[Catalina].[localhost].[/].[dispatcherServlet]: OFF
+    # Spring MVC ExceptionHandler 경고 무시
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: ERROR
+    # Tomcat 네트워크 에러 무시
+    org.apache.tomcat.util.net: ERROR
+    org.apache.coyote: ERROR
+    # 애플리케이션 로그는 INFO
+    com.example.demo.TEST_001: INFO
+    # 글로벌 예외 핸들러는 INFO
+    com.example.demo.TEST_001.exception.GlobalExceptionHandler: INFO
